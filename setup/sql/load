@@ -1,1 +1,2 @@
-cat schema.sql data.sql | mysql -uroot -p
+#!/bin/bash
+cat schema.sql data.sql | mysql -uroot -p -D$1
