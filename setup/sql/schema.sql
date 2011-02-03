@@ -73,26 +73,6 @@ CREATE TABLE account_managers (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
--- Table structure for table addresses
---
-
-DROP TABLE IF EXISTS addresses;
-CREATE TABLE addresses (
-	id int unsigned auto_increment,
-	uid int unsigned NOT NULL default '0',
-	label_id int unsigned NULL default NULL,
-	address varchar(255) NOT NULL default '',
-	city varchar(25) NOT NULL default '',
-	state char(2) NOT NULL default '',
-	postal_code char(6) NOT NULL default '',
-	country char(2) NOT NULL default 'US',
-	PRIMARY KEY (id, uid),
-	CONSTRAINT fk_addr_uid FOREIGN KEY (uid)
-		REFERENCES users(id)
-		ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
-
---
 -- Table structure for table emails
 --
 
@@ -106,21 +86,6 @@ CREATE TABLE dumpster (
 	PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
---
--- Table structure for table emails
---
-
-DROP TABLE IF EXISTS emails;
-CREATE TABLE emails (
-	id int unsigned NOT NULL auto_increment,
-	uid int unsigned NOT NULL,
-	label_id int unsigned NULL default NULL,
-	email varchar(255) NOT NULL default '',
-	PRIMARY KEY (id),
-	CONSTRAINT fk_eml_uid FOREIGN KEY (uid)
-		REFERENCES users(id)
-		ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- Table structure for table permissions
@@ -133,34 +98,6 @@ CREATE TABLE permissions (
 	user_type tinyint unsigned NOT NULL default 4,
 	description varchar(30) NOT NULL default '',
 	PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
-
---
--- Table structure for table label
---
-
-DROP TABLE IF EXISTS labels;
-CREATE TABLE labels (
-	id int unsigned NOT NULL auto_increment,
-	uid int unsigned NOT NULL,
-	label varchar(24) NOT NULL,
-	PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
-
---
--- Table structure for table phone_numbers
---
-
-DROP TABLE IF EXISTS phone_numbers;
-CREATE TABLE phone_numbers (
-	id int unsigned NOT NULL auto_increment,
-	uid int unsigned NOT NULL,
-	label_id int unsigned NULL,
-	phone_number char(10),
-	PRIMARY KEY (id),
-	CONSTRAINT fk_pn_uid FOREIGN KEY (uid)
-		REFERENCES users(id)
-		ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
