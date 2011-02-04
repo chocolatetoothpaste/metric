@@ -74,6 +74,15 @@ else
 	header( "Content-Type: {$page->content_type}" );
 	$page->render( $page->body );
 
+	$body = ob_get_contents();
+	/*
+	preg_match( '#\<!(?i)doctype titan.*\>[\r\n]?#', $body, $matches );
+	if( $matches )
+	{
+		$body = str_replace( $matches[0], '', $body );
+		$body = $page->parseTags( $body );
+	}*/
+
 	// cache the page if the stars are aligned (no errors)
 	if( strlen( $page->body ) && $page->cache && !error_get_last() )
 	{
@@ -85,7 +94,7 @@ else
 		header( "Expires: {$date}" );
 
 		if( is_writable( PATH_CACHE . '/pages' ) )
-			file_put_contents( $cache_file, ob_get_contents(), LOCK_EX );
+			file_put_contents( $cache_file, $body, LOCK_EX );
 	}
 
 	// the page is displayed whether it's cached or not, so flush the buffer

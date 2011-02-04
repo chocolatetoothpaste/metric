@@ -150,6 +150,71 @@ class page
 
 
 	/**
+	 * Parses a string (page body) and looks for custom template tags
+	 * @param string $string
+	 * @return $return
+	 */
+
+	public function parseTags( $string )
+	{
+		$pattern = '#\<titan:(@|\#|\w*)([\w\._]*)[^\>]*/?>#';
+		preg_match_all($pattern, $string, $tags, PREG_SET_ORDER);
+
+		foreach( $tags as $t )
+		{
+			if( $t[1] == '@' )
+			{
+				if( strpos( $t[2], '.' ) )
+				{
+					$var = explode( '.', $t[2] );
+					global ${$var[0]};
+					if( is_object( ${$var[0]} ) && property_exists( ${$var[0]}, $var[1] ) )
+					{
+						$string = str_replace( $t[0], ${$var[0]}->$var[1], $string );
+					}
+					else
+					{
+						$string = str_replace( $t[0], '', $string );
+					}
+				}
+			}
+			elseif( $t[1] == 'form' )
+			{
+				$action = '';
+				$replace = preg_replace( array( '#titan:#', '#action="(\w*)"#' ), array( '', "action=\"$action/$1\"" ), $t[0]);
+				$string = str_replace( $t[0], $replace, $string );
+				$string = str_replace( '</titan:form>', '</form>', $string);
+			}
+			elseif( $t[1] == 'input' )
+			{
+				$p = '#value=@([\w\._]*)#';
+				preg_match_all( $p, $t[0], $m, PREG_SET_ORDER );
+
+				if( strpos( $m[0][1], '.' ) )
+				{
+					$vars = explode( '.', $m[0][1] );
+					list( $class, $var ) = $vars;
+					global ${$class};
+					$var =& ${$class}->$var;
+				}
+				else
+				{
+					$var = $m[0][1];
+					global ${$var};
+					$var = $$var;
+				}
+
+				$replace = preg_replace( array( '#titan:#', '#@[\w\._]*#' ), array( '', "\"$var\"" ), $t[0] );
+				$string = str_replace( $t[0], $replace, $string );
+			}
+		}
+		//die;
+		return $string;
+	} // end method parseTags
+
+
+
+	/**
 	 * Makes a reqeust to a URL and returns the output.
 	 * @param string $url
 	 * @param string $method
