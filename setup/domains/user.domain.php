@@ -38,7 +38,6 @@ class User extends DomainModel
 		$this->last_login = time();
 		$this->save();
 		$this->fetchPermissions();
-		// php FREAKS OUT if you don't unset $this->db and try to make it a session var
 		unset( $this->last_login );
 	} // end method login
 

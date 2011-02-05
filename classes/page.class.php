@@ -148,7 +148,7 @@ class page
 		return $this->headers;
 	}
 
-
+	
 	/**
 	 * Parses a string (page body) and looks for custom template tags
 	 * @param string $string
@@ -157,6 +157,8 @@ class page
 
 	public function parseTags( $string )
 	{
+
+		// had to put a space between the last '*' and '/' because it was breaking comments
 		$pattern = '#\<titan:(@|\#|\w*)([\w\._]*)[^\>]*/?>#';
 		preg_match_all($pattern, $string, $tags, PREG_SET_ORDER);
 
@@ -208,10 +210,14 @@ class page
 				$string = str_replace( $t[0], $replace, $string );
 			}
 		}
-		//die;
-		return $string;
-	} // end method parseTags
 
+		/*//
+		die( $string );
+		/*/
+		return $string;
+		//*/
+
+	} // end function parseTags
 
 
 	/**
