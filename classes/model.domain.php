@@ -6,10 +6,10 @@
  * @author rosspaskett
  */
 
-//namespace Domain;
+namespace Domain;
 
-//	class Model
-abstract class DomainModel
+abstract class Model
+//abstract class DomainModel
 {
 	protected $keys, $table, $db,
 		$meta_table, $meta_fields = array(), $meta_obj = array();
@@ -26,14 +26,14 @@ abstract class DomainModel
 	{
 		if( $params )
 		{
-			$db = mysql::instance( DB_NAME_MAIN );
+			$db = \mysql::instance( DB_NAME_MAIN );
 				if( !$db )
 					throw new Exception( 'Unable to connect to the database' );
 
 			$keys = $this->getKeys();
 			$fields = array_keys( $this->getFields() );
 			$pk = $keys['primary'];
-			$q = new query();
+			$q = new \query();
 
 			if( !is_array( $params ) ):
 				if( is_array( $pk ) )
@@ -43,8 +43,8 @@ abstract class DomainModel
 
 			//	commenting this out for now. it's a pretty abstract concept, needs
 			//	some real thought for reliable execution
-			//elseif( is_array( $pk ) && array_intersect_key( $pk, $params ) ):
-				//$params = array_combine( $pk, $params );
+			elseif( is_array( $pk ) && array_intersect_key( $pk, $params ) ):
+				$params = array_combine( $pk, $params );
 
 				/**
 				 * Not ready for this yet

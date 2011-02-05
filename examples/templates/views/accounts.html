@@ -1,0 +1,13 @@
+
+<a href="<?php echo URL_SECURE_AREA; ?>/account?add">
+	<img src="/images/icons/add.png" />
+	Add new account
+</a><br />
+	<?php foreach( $accounts as $row ): ?>
+
+	<div class="account_icon_container">
+	<a class="account_link" href="<?php echo URL_SECURE_AREA; ?>/account/<?php echo $row['id']; ?>?edit"><img class="account_icon" src="/images/login.png" />
+		<br /><?php echo $row['id']; ?></a>
+	</div>
+
+	<?php endforeach; ?>

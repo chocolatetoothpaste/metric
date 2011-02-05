@@ -1,0 +1,68 @@
+<form method="post" action="<?php echo $form_url; ?>" id="user_info">
+	<input type="hidden" name="action" value="<?php echo $action; ?>" />
+
+	<h6>User Information:</h6>
+	<label for="user_username">
+		Username:
+		<input
+			type="text"
+			name="form[username]"
+			id="user_username"
+			value="<?php echo $user->username; ?>"
+			validate="text" />
+	</label><br />
+	<label for="user_enabled">
+		Enabled:
+		<input type="hidden" name="form[enabled]" value="0" />
+		<input
+			id="user_enabled"
+			type="checkbox"
+			name="form[enabled]"
+			value="1" <?php echo ( $user->enabled == 1 ? 'checked="checked"' : '' ); ?> /><br />
+	</label>
+	<label for="user_email">
+		Email:
+			<input
+				type="text"
+				name="form[email]"
+				id="user_email"
+				value="<?php echo $user->email; ?>" />
+	</label><br />
+	<label for="user_first_name">
+		First Name:
+		<input
+			type="text"
+			name="form[first_name]"
+			id="user_first_name"
+			value="<?php echo $user->meta->first_name; ?>"
+			validate="text" />
+	</label><br />
+	<label for="user_middle_name">
+		Middle Name:
+		<input
+			type="text"
+			name="form[middle_name]"
+			id="user_middle_name"
+			value="<?php echo $user->meta->middle_name; ?>"
+			validate="text" />
+	</label><br />
+	<label for="user_last_name">
+		Last Name:
+		<input
+			type="text"
+			name="form[last_name]"
+			id="user_last_name"
+			value="<?php echo $user->meta->last_name; ?>" />
+	</label><br /><br />
+
+	<label for="user_password">
+		Password:
+		<input type="password" id="user_password" name="form[password]" />
+	</label><br />
+	<label for="user_confirm_password">
+		Confirm:
+		<input type="password" id="user_confirm_password" name="form[conf_password]" />
+	</label><br />
+	<br />
+	<input type="submit" name="submit" value="save" />
+</form>

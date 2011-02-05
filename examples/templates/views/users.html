@@ -1,0 +1,14 @@
+
+<a href="<?php echo URL_SECURE_AREA; ?>/user?add">
+	<img src="/images/icons/add.png" />
+	Add new user
+</a><br />
+<?php foreach( $users as $user ): ?>
+
+<div class="user_icon_container">
+	<a class="user_link" href="<?php echo URL_SECURE_AREA; ?>/user/<?php echo $user->id; ?>?edit"><img class="user_icon" src="/images/login.png" />
+	<br /><?php echo $user->username; ?></a><br />
+	<a href="<?php echo URL_SECURE_AREA; ?>/user/<?php echo $user->id; ?>?delete">Delete</a>
+</div>
+
+<?php endforeach; ?>
