@@ -1,0 +1,28 @@
+<form method="post" action="<?php echo $form_url; ?>" id="account_info">
+	<input type="hidden" name="action" value="<?php echo $action; ?>" />
+	<h6>Account Information:</h6>
+	<input type="hidden" name="form[uid]" value="1" />
+
+	<?php if( $action === 'update' ): ?>
+	ID: <?php echo $account->meta->friendly_id; ?><br />
+	<?php endif; ?>
+
+	<label for="account_status">
+		Status:
+		<select name="form[status]" id="account_status">
+			<?php foreach( $__account['status'] as $k => $v ):
+				echo '<option value="', $k, '"', iif( $account->status == $k, ' selected="selected"' ), '>', $v, '</option>';
+			endforeach; ?>
+		</select>
+	</label><br />
+
+	<label for="account_max_users">
+		Max Users:
+		<select name="form[max_users]" id="account_max_users">
+			<?php foreach( $__account['max_users'] as $v ):
+				echo '<option value="', $v, '"', iif( $account->meta->max_users == $v, ' selected="selected"'), '>', $v, '</option>';
+			endforeach; ?>
+		</select>
+	</label><br /><br />
+	<input type="submit" name="submit" value="save" />
+</form>
