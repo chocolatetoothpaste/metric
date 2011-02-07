@@ -40,8 +40,6 @@ abstract class Model
 
 				$params = array( $pk => $params );
 
-			//	commenting this out for now. it's a pretty abstract concept, needs
-			//	some real thought for reliable execution
 			elseif( is_array( $pk ) && array_intersect_key( $pk, $params ) ):
 				$params = array_combine( $pk, $params );
 
@@ -80,11 +78,11 @@ abstract class Model
 
 	public function save()
 	{
-		$db = mysql::instance( DB_NAME_MAIN );
+		$db = \mysql::instance( DB_MAIN );
 		if( !$db )
 			throw new Exception( 'No connection to database' );
 
-		$query = new query;
+		$query = new \query;
 		$update = false;
 		$params = $columns = $this->getFields();
 		$criteria = array();
@@ -126,7 +124,7 @@ abstract class Model
 
 	public function delete()
 	{
-		$db = mysql::instance( DB_MAIN );
+		$db = \mysql::instance( DB_MAIN );
 		$time = $db->dateTime();
 		$params = array(
 			'table_name' => $this->table,
@@ -184,8 +182,8 @@ abstract class Model
 
 
 	/**
-	 *
-	 * @return <type>
+	 * return all the fields of the relating meta table for a domain object
+	 * @return string
 	 */
 
 	final public function getMetaFields()
@@ -196,7 +194,7 @@ abstract class Model
 
 	/**
 	 *
-	 * @return <type>
+	 * @return array
 	 */
 
 	final public function getMetaKeys()
@@ -219,10 +217,10 @@ abstract class Model
 
 
 	/**
-	 * Returns a Meta object
+	 * Returns a Meta domain object
 	 * @param	booolean	$refresh	passing true will re-fetch meta fields
 	 * from the database and replace the Meta object [optional, default false]
-	 * @return	object		$this->meta	a meta object related to the main object
+	 * @return	object		$this->meta_obj	a meta object related to the main object
 	 */
 
 	public function getMeta( $refresh = false )
@@ -230,7 +228,7 @@ abstract class Model
 
 		if( $refresh || !( $this->meta_obj instanceof Meta ) )
 		{
-			$db = mysql::instance( DB_MAIN );
+			$db = \mysql::instance( DB_MAIN );
 			$this->meta_obj = new Meta;
 			foreach( $this->meta_fields as $prop )
 			{
@@ -293,6 +291,13 @@ abstract class Model
 	} // end method setMeta
 
 
+	/**
+	 * Get a group of domain objects based on criteria. Basically a db fetchAll,
+	 * but returns objects of child domain
+	 * @param	array	$params	params for the db query [optional, default array()]
+	 * @return	array	an array of objects (of child domain model)
+	 */
+
 	// function needs expansion using query object
 	// public static function collection( query $query = null )
 	public static function collection( $params = array() )
@@ -304,7 +309,6 @@ abstract class Model
 
 		if( $db->result )
 			return $db->result->fetchAll( \PDO::FETCH_CLASS, get_called_class() );
-
 	}
 
 }
