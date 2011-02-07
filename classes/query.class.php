@@ -6,7 +6,7 @@
 
 class query
 {
-	public	$params = array(), $criteria = array(), $query, $table;
+	public	$params = array(), $criteria = array(), $query, $table, $where;
 
 	final function __construct()
 	{
@@ -42,13 +42,20 @@ class query
 		$criteria = array();
 		$this->table = $table;
 
-		foreach( $where as $k => $v )
+		if( !$this->where )
 		{
-			// PDO doesn't like special chars as bound param names, so scrubbing
-			// them should reliably maintain unique param names
-			$f = preg_replace('#[^a-zA-Z0-9]#', '', $k);
-			$this->params[$f] = $v;
-			$criteria[] = "$k = :$f";
+			foreach( $where as $k => $v )
+			{
+				// PDO doesn't like special chars as bound param names, so scrubbing
+				// them should reliably maintain unique param names
+				$f = preg_replace('#[^a-zA-Z0-9]#', '', $k);
+				$this->params[$f] = $v;
+				$criteria[] = "$k = :$f";
+			}
+		}
+		else
+		{
+			$this->where = " WHERE $this->where";
 		}
 
 		$this->query = 'SELECT '
