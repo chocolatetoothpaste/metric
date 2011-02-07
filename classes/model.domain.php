@@ -272,5 +272,18 @@ abstract class Model
 		}
 	} // end method setMeta
 
+
+	public function collection( $params = array() )
+	{
+		$q = new \query;
+		$q->select( array_keys( $this->getFields() ), $this->table, $params );
+		$db = \mysql::instance(DB_MAIN);
+		$db->execute( $q->query, $q->params );
+
+		if( $db->result )
+			return $db->result->fetchAll(\PDO::FETCH_CLASS, get_class( $this ) );
+
+	}
+
 }
 ?>
