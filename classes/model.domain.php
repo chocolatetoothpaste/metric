@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Description of DomainModel
+ * Model
  *
  * @author rosspaskett
  */
@@ -11,14 +11,13 @@ namespace Domain;
 abstract class Model
 //abstract class DomainModel
 {
-	protected $keys, $table, $db,
-		$meta_table, $meta_fields = array(), $meta_obj = array();
+	protected static $keys, $table;
+	protected $meta_table, $meta_fields = array(), $meta_obj = array();
 
+	
 	/**
 	 * If params are passed, the constructor will attempt to update the object
-	 * with the corresponding row from the database. Presently multiple rows
-	 * are not possible since the object can't be cast to array upon creation
-	 * @global object $db
+	 * with a row from the database. For retrieving multiple rows, see collection()
 	 * @param mixed $params
 	 */
 
@@ -26,7 +25,7 @@ abstract class Model
 	{
 		if( $params )
 		{
-			$db = \mysql::instance( DB_NAME_MAIN );
+			$db = \mysql::instance( DB_MAIN );
 				if( !$db )
 					throw new Exception( 'Unable to connect to the database' );
 
@@ -107,6 +106,8 @@ abstract class Model
 			? $query->update( $this->table, $columns, $criteria )
 			: $query->insert( $this->table, $columns ) );
 
+		// @todo test using the fetchIntoObject method to see if PDO will
+		// correctly update a new/existing object
 		$db->execute( $sql, $query->params );
 
 		if( $db->result->errorCode() === '00000' )
@@ -125,7 +126,7 @@ abstract class Model
 
 	public function delete()
 	{
-		$db = mysql::instance( DB_NAME_MAIN );
+		$db = mysql::instance( DB_MAIN );
 		$time = $db->dateTime();
 		$params = array(
 			'table_name' => $this->table,
@@ -150,35 +151,53 @@ abstract class Model
 
 
 	/**
-	 * gets the keys for the table (domain object)
+	 * gets the keys for the table (domain object), utilizes late static binding
 	 * @return array
 	 */
 
 	final public function getKeys()
 	{
-		return $this->keys;
+		return static::$keys;
 	}
 
 
 	/**
-	 * gets the canonical name of the table for a domain object
+	 * returns the relative name of the db table for a domain object
 	 * @return string
 	 */
 
 	final public function getTable()
 	{
-		return $this->table;
+		return static::$table;
 	}
+
+
+	/**
+	 * returns the name of the db table containing meta data relating to a domain object
+	 * @return string
+	 */
 
 	final public function getMetaTable()
 	{
 		return $this->meta_table;
 	}
 
+
+	/**
+	 *
+	 * @return <type>
+	 */
+
 	final public function getMetaFields()
 	{
 		return $this->meta_fields;
 	}
+
+
+	/**
+	 *
+	 * @return <type>
+	 */
 
 	final public function getMetaKeys()
 	{
@@ -191,10 +210,11 @@ abstract class Model
 	 * @return array array of public properties for $this
 	 */
 
-	public function getFields()
+	public static function getFields()
 	{
+		$class = get_called_class();
 		$f = function( $obj ){ return get_object_vars( $obj ); };
-		return $f( $this );
+		return $f( new $class );
 	}
 
 
@@ -210,7 +230,7 @@ abstract class Model
 
 		if( $refresh || !( $this->meta_obj instanceof Meta ) )
 		{
-			$db = mysql::instance( DB_NAME_MAIN );
+			$db = mysql::instance( DB_MAIN );
 			$this->meta_obj = new Meta;
 			foreach( $this->meta_fields as $prop )
 			{
@@ -226,7 +246,7 @@ abstract class Model
 			if( $result )
 			{
 				$this->meta_obj->fk_id = $this->id;
-				$data = $result->fetchAll(PDO::FETCH_OBJ);
+				$data = $result->fetchAll( \PDO::FETCH_OBJ );
 				foreach( $data as $v )
 				{
 					$this->meta_obj->{$v->meta_key} = $v->meta_value;
@@ -273,15 +293,17 @@ abstract class Model
 	} // end method setMeta
 
 
-	public function collection( $params = array() )
+	// function needs expansion using query object
+	// public static function collection( query $query = null )
+	public static function collection( $params = array() )
 	{
 		$q = new \query;
-		$q->select( array_keys( $this->getFields() ), $this->table, $params );
-		$db = \mysql::instance(DB_MAIN);
+		$q->select( array_keys( static::getFields() ), static::$table, $q->params );
+		$db = \mysql::instance( DB_MAIN );
 		$db->execute( $q->query, $q->params );
 
 		if( $db->result )
-			return $db->result->fetchAll(\PDO::FETCH_CLASS, get_class( $this ) );
+			return $db->result->fetchAll( \PDO::FETCH_CLASS, get_called_class() );
 
 	}
 
