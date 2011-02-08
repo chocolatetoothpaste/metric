@@ -3,9 +3,10 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
-class Meta extends DomainModel
+namespace Domain;
+class Meta extends Model
 {
+	//protected static $table, $keys;
 	//public $id, $fk_id;
 	//protected $keys = array( 'primary' => array( 'id', 'fk_id' ) );
 
@@ -13,11 +14,11 @@ class Meta extends DomainModel
 	{
 		if( $params )
 		{
-			$db = mysql::instance( DB_NAME_MAIN );
+			$db = \mysql::instance( DB_NAME_MAIN );
 			$keys = $this->getKeys();
-			$fields = array_keys( $this->getFields() );
+			$fields = $this->getFields();
 			$pk = $keys['primary'];
-			$q = new query();
+			$q = new \query();
 
 			if( !is_array( $params ) )
 			{
@@ -68,8 +69,8 @@ class Meta extends DomainModel
 
 	public function save()
 	{
-		$db = mysql::instance( DB_NAME_MAIN );
-		$query = new query();
+		$db = \mysql::instance( DB_NAME_MAIN );
+		$query = new \query();
 		$columns = array();
 		$update = false;
 		$fields = $this->getFields();

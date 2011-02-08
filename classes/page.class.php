@@ -65,7 +65,7 @@ class page
 					'replace' => array(
 						'/([^/].*)',
 						'/([^/]*)',
-						'(?(/?)([^/]*))'
+						'/?([^/]*)'
 
 					)
 				);
@@ -238,10 +238,10 @@ class page
 
 		$content = http_build_query( $content );
 
-		if( $method == 'GET' )
+		if( $method == 'GET' && $content )
 		{
 			$url .= "?$content";
-			$content = '';
+			$content = array();
 		}
 
 		$length = strlen( $content );
