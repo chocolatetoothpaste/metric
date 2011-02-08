@@ -246,11 +246,13 @@ class page
 
 		$length = strlen( $content );
 		$header = "Content-Type: application/x-www-form-urlencoded\r\nContent-Lenght: $length\r\n"
+			. 'Connection: close' . "\r\n"
 			. 'Date: ' . gmdate('r') . "\r\n"
 			. $stream_headers;
 
 		$opts = array(
 			'http' => array(
+				'protocol_version' => '1.1',
 				'method'	=>	$method,
 				'header'	=>	$header,
 				'content'	=>	$content
