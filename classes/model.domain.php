@@ -30,7 +30,7 @@ abstract class Model
 					throw new Exception( 'Unable to connect to the database' );
 
 			$keys = $this->getKeys();
-			$fields = array_keys( $this->getFields() );
+			$fields = $this->getFields();
 			$pk = $keys['primary'];
 			$q = new \query();
 
@@ -78,13 +78,14 @@ abstract class Model
 
 	public function save()
 	{
+		var_dump(get_object_vars());
 		$db = \mysql::instance( DB_MAIN );
 		if( !$db )
 			throw new Exception( 'No connection to database' );
 
 		$query = new \query;
 		$update = false;
-		$params = $columns = $this->getFields();
+		$params = $columns = $this->getFields(true);
 		$criteria = array();
 		$keys = (array)$this->keys['primary'];
 
@@ -208,11 +209,11 @@ abstract class Model
 	 * @return array array of public properties for $this
 	 */
 
-	public static function getFields()
+	public static function getFields( $values = false)
 	{
 		$class = get_called_class();
-		$f = function( $obj ){ return get_object_vars( $obj ); };
-		return $f( new $class );
+		$f = function( $obj, $values ){ return ( $values ? get_object_vars( $obj ) : array_keys( get_object_vars( $obj ) ) ); };
+		return $f( new $class, $values );
 	}
 
 
@@ -225,8 +226,7 @@ abstract class Model
 
 	public function getMeta( $refresh = false )
 	{
-
-		if( $refresh || !( $this->meta_obj instanceof Meta ) )
+		if( $refresh || !( $this->meta_obj instanceof \Domain\Meta ) )
 		{
 			$db = \mysql::instance( DB_MAIN );
 			$this->meta_obj = new Meta;
@@ -238,7 +238,7 @@ abstract class Model
 			$this->meta_obj->setKeys( $this->getMetaKeys() );
 			$this->meta_obj->setTable( $this->getMetaTable() );
 			$query = 'SELECT meta_key, meta_value FROM '
-				. $this->meta_obj->getTable() . ' WHERE fk_id = ?';
+				. $this->meta_obj->table . ' WHERE fk_id = ?';
 			$result = $db->execute( $query, array( $this->id ) );
 
 			if( $result )
@@ -303,7 +303,7 @@ abstract class Model
 	public static function collection( $params = array() )
 	{
 		$q = new \query;
-		$q->select( array_keys( static::getFields() ), static::$table, $q->params );
+		$q->select( static::getFields(), static::$table, $q->params );
 		$db = \mysql::instance( DB_MAIN );
 		$db->execute( $q->query, $q->params );
 

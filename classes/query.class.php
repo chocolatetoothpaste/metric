@@ -42,7 +42,7 @@ class query
 		$criteria = array();
 		$this->table = $table;
 
-		if( !$this->where )
+		if( !$this->where && $where )
 		{
 			foreach( $where as $k => $v )
 			{
@@ -52,15 +52,16 @@ class query
 				$this->params[$f] = $v;
 				$criteria[] = "$k = :$f";
 			}
+			$this->where = ' WHERE ' . implode( ' AND ', $criteria );
 		}
-		else
+		elseif( $this->where )
 		{
 			$this->where = " WHERE $this->where";
 		}
 
 		$this->query = 'SELECT '
 			. implode( ', ', $columns )	. " FROM $table"
-			. ( $where ? ' WHERE ' . implode( ' AND ', $criteria ) : '' );
+			. $this->where;
 
 		return $this->query;
 	}
