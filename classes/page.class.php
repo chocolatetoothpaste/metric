@@ -88,7 +88,7 @@ class page
 
 					if( is_array( $action ) ):
 						$this->callback = $action;
-						$this->file = PATH_HTDOCS . '/rest.php';
+						$this->file = PATH_LIB . '/rest.php';
 					elseif( is_file( $action ) ):
 						$this->file = $action;
 					else:
