@@ -144,7 +144,6 @@ class query
 		return $this->query;
 	}
 
-
 }
 
 ?>

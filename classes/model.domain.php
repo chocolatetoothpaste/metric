@@ -303,7 +303,7 @@ abstract class Model
 	public static function collection( $params = array() )
 	{
 		$q = new \query;
-		$q->select( static::getFields(), static::$table, $q->params );
+		$q->select( static::getFields(), static::$table, $params );
 		$db = \mysql::instance( DB_MAIN );
 		$db->execute( $q->query, $q->params );
 
