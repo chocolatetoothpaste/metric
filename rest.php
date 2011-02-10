@@ -39,9 +39,12 @@ if( $format === 'json' )
 {
 	//header($__http_status[$response['status']]);
 	$page->content_type = 'application/json';
-	$__finish__ = explode( ' ', microtime() );
-	$__finish__ = $__finish__[1] + $__finish__[0];
-	$response['time'] = ( $__finish__ - $__start__ );
+	if( true || DEV )
+	{
+		$__finish__ = explode( ' ', microtime() );
+		$__finish__ = $__finish__[1] + $__finish__[0];
+		$response['time'] = ( $__finish__ - $__start__ );
+	}
 	echo json_encode( $response );
 }
 
