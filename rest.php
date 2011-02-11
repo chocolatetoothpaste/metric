@@ -1,10 +1,5 @@
 <?php
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 $page->template = false;
 $format = get('format', 'json');
 $response = array( 'success' => 'false', 'status' => HTTP_BAD_REQUEST );
@@ -40,9 +35,8 @@ if( !DEV )
 if( $format === 'json' )
 {
 	header($__http_status[$response['status']]);
-	//unset( $response['status'] );
 	$page->content_type = 'application/json';
-	if( true || DEV )
+	if(	DEV )
 	{
 		$__finish__ = microtime(true);
 		$response['time'] = ( $__finish__ - $__start__ );
