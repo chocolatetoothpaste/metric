@@ -25,7 +25,7 @@ class timer
 			$this->count[$name] = end( array_keys( $this->start[$name] ) );
 
 		$this->count[$name]++;
-		$this->start[$name][$this->count[$name]] = $this->microtime();
+		$this->start[$name][$this->count[$name]] = microtime(true);
 	}
 
 
@@ -43,7 +43,7 @@ class timer
 			foreach( $this->start[$name] as $k => $v )
 			{
 				if( !array_key_exists( $k, (array)$this->stop[$name] ) )
-					$this->stop[$name][$k] = $this->microtime();
+					$this->stop[$name][$k] = microtime(true);
 			}
 		}
 		else

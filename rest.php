@@ -18,10 +18,12 @@ $response = array( 'success' => 'false', 'status' => HTTP_BAD_REQUEST );
 	die;
 }*/
 
+$input = file_get_contents( 'php://input' );
+
 if( $_SERVER['REQUEST_METHOD'] === 'GET' )
 	$args = $_GET;
 else
-	parse_str( file_get_contents( 'php://input' ), $args );
+	parse_str( $input, $args );
 
 $page->params = $page->params + array( 'method' => $_SERVER['REQUEST_METHOD'], 'data' => $args );
 
@@ -37,12 +39,12 @@ if( !DEV )
 
 if( $format === 'json' )
 {
-	//header($__http_status[$response['status']]);
+	header($__http_status[$response['status']]);
+	//unset( $response['status'] );
 	$page->content_type = 'application/json';
 	if( true || DEV )
 	{
-		$__finish__ = explode( ' ', microtime() );
-		$__finish__ = $__finish__[1] + $__finish__[0];
+		$__finish__ = microtime(true);
 		$response['time'] = ( $__finish__ - $__start__ );
 	}
 	echo json_encode( $response );
