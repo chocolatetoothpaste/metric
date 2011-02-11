@@ -230,12 +230,6 @@ class page
 
 	public function request( $url, $method = 'GET', $content = array(), $headers = array() )
 	{
-		$stream_headers = '';
-		foreach( $headers as $header => $value )
-		{
-			$stream_headers .= "$header: $value";
-		}
-
 		$content = http_build_query( $content );
 
 		if( $method == 'GET' && $content )
@@ -243,24 +237,56 @@ class page
 			$url .= "?$content";
 			$content = array();
 		}
-
+		
 		$length = strlen( $content );
-		$header = "Content-Type: application/x-www-form-urlencoded\r\nContent-Lenght: $length\r\n"
-			. 'Connection: close' . "\r\n"
-			. 'Date: ' . gmdate('r') . "\r\n"
-			. $stream_headers;
 
-		$opts = array(
-			'http' => array(
-				'protocol_version' => '1.1',
-				'method'	=>	$method,
-				'header'	=>	$header,
-				'content'	=>	$content
-			)
-		);
+		/*//
+		//if( $curl )
+		{/*/
+			$headers = array_merge($headers, array(
+				'ContentType: application/x-www-form-urlencoded',
+				"Content-Lenght: $length",
+				'Connection: close',
+				'Date: ' . gmdate('r')
+			));
 
-		$context = stream_context_create( $opts );
-		$this->response = file_get_contents( $url, false, $context );
+			$ch = curl_init();
+			$options = array(
+				CURLOPT_URL				=>	$url,
+				CURLOPT_RETURNTRANSFER	=>	1,
+				CURLOPT_HTTPHEADER		=>	$headers,
+				CURLOPT_CUSTOMREQUEST	=>	$method,
+				CURLOPT_POSTFIELDS		=> $content,
+				CURL_HTTP_VERSION_1_1
+			);
+
+			curl_setopt_array($ch, $options);
+			$this->response = curl_exec($ch);
+			curl_close($ch);
+
+		/*/
+		//}
+		else
+		//{
+			$headers = "Content-Type: application/x-www-form-urlencoded\r\n"
+				. 'Connection: close' . "\r\n"
+				. 'Date: ' . gmdate('r') . "\r\n"
+				. implode("\r\n", $headers);
+
+			$opts = array(
+				'http' => array(
+					'protocol_version' => '1.1',
+					'method'	=>	$method,
+					'header'	=>	$headers,
+					'content'	=>	$content
+				)
+			);
+
+			$context = stream_context_create( $opts );
+			$this->response = file_get_contents( $url, false, $context );
+		}
+
+		//*/
 
 		return $this->response;
 	}

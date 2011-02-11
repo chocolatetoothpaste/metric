@@ -78,16 +78,18 @@ abstract class Model
 
 	public function save()
 	{
-		var_dump(get_object_vars());
 		$db = \mysql::instance( DB_MAIN );
 		if( !$db )
-			throw new Exception( 'No connection to database' );
+			throw new \Exception( 'No connection to database' );
 
 		$query = new \query;
 		$update = false;
-		$params = $columns = $this->getFields(true);
+		// passing true to get values with the object fields
+		$params = $columns = $this->getFields( true );
 		$criteria = array();
-		$keys = (array)$this->keys['primary'];
+		$keys = $this->getKeys();
+		$keys = (array)$keys['primary'];
+		$table = $this->getTable();
 
 		foreach( $keys as $k ):
 			// if a primary key is found and set in the property list, assume
@@ -102,8 +104,8 @@ abstract class Model
 		endforeach;
 
 		$sql = ( $update
-			? $query->update( $this->table, $columns, $criteria )
-			: $query->insert( $this->table, $columns ) );
+			? $query->update( $table, $columns, $criteria )
+			: $query->insert( $table, $columns ) );
 
 		// @todo test using the fetchIntoObject method to see if PDO will
 		// correctly update a new/existing object
@@ -213,7 +215,8 @@ abstract class Model
 	{
 		$class = get_called_class();
 		$f = function( $obj, $values ){ return ( $values ? get_object_vars( $obj ) : array_keys( get_object_vars( $obj ) ) ); };
-		return $f( new $class, $values );
+		//return $f( new $class, $values );
+		return $f( ( empty($this) ? new $class : $this ), $values );
 	}
 
 
