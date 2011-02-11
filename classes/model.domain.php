@@ -31,6 +31,7 @@ abstract class Model
 
 			$keys = $this->getKeys();
 			$fields = $this->getFields();
+//			$fields = get_object_vars($this);
 			$pk = $keys['primary'];
 			$q = new \query();
 
@@ -89,18 +90,22 @@ abstract class Model
 		$params = $columns = $this->getFields( true );
 		$criteria = array();
 		$keys = $this->getKeys();
-		$keys = (array)$keys['primary'];
+		$keys = $keys;
 		$table = $this->getTable();
 
-		foreach( $keys as $k ):
+		foreach( $keys as $type => $k ):
 			// if a primary key is found and set in the property list, assume
 			// updating an existing row
-			if( $this->$k ):
+			if( $this->$k )
+			{
 				$update = true;
-				$criteria[$k] = $this->$k;
-			else:
+				if( $type == 'primary' )
+					$criteria[$k] = $this->$k;
+			}
+			else
+			{
 				unset( $columns[$k] );
-			endif;
+			}
 			unset( $columns[$k] );
 		endforeach;
 
@@ -212,11 +217,11 @@ abstract class Model
 	 * @return array array of public properties for $this
 	 */
 
-	public static function getFields( $values = false)
+	public function getFields( $values = false )
 	{
 		$class = get_called_class();
 		$f = function( $obj, $values ){ return ( $values ? get_object_vars( $obj ) : array_keys( get_object_vars( $obj ) ) ); };
-		//return $f( new $class, $values );
+		//return $f( $this, $values );
 		return $f( ( empty($this) ? new $class : $this ), $values );
 	}
 
