@@ -9,9 +9,6 @@ namespace Service;
 
 abstract class Model
 {
-	protected $get, $post, $put, $delete;
-	static public $method;
-
 	public static function init( $id, $method = 'GET', $data = array() )
 	{
 		if( $method == 'GET' )
@@ -25,6 +22,9 @@ abstract class Model
 		else
 			return array( 'success' => 'false', 'status' => HTTP_NOT_IMPLEMENTED );
 	}
+
+	protected $get, $post, $put, $delete;
+	static public $method;
 
 	protected function parseRange()
 	{
