@@ -12,13 +12,18 @@ abstract class Model
 	protected $get, $post, $put, $delete;
 	static public $method;
 
-	public static function init()
+	public static function init( $id, $method = 'GET', $data = array() )
 	{
-		self::$method	= $_SERVER['REQUEST_METHOD'];
-		/*$this->get		= get();
-		$this->post		= post();
-		$this->put		= put();
-		$this->delete	= delete();*/
+		if( $method == 'GET' )
+			return static::read( $id );
+		elseif( $method == 'POST' )
+			return static::create( $data );
+		elseif( $method == 'PUT' )
+			return static::update( $id, $data );
+		elseif( $method == 'DELETE' )
+			return static::delete( $id );
+		else
+			return array( 'success' => 'false', 'status' => HTTP_NOT_IMPLEMENTED );
 	}
 
 	protected function parseRange()
@@ -26,10 +31,10 @@ abstract class Model
 		
 	}
 
-	/*abstract protected function create();
-	abstract protected function read( $id );
-	abstract protected function update( $id );
-	abstract protected function delete( $id );*/
+	abstract protected static function create( $post );
+	abstract protected static function read( $id );
+	abstract protected static function update( $id, $put );
+	abstract protected static function delete( $id );
 }
 
 ?>

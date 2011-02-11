@@ -29,6 +29,13 @@ class page
 	public $body;
 	public $response;
 	public $headers;
+	public $https;
+
+
+	function __construct()
+	{
+		$page->https = ( FORCE_SSL ? !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on' : true );
+	}
 
 
 	/**
@@ -250,7 +257,6 @@ class page
 				'Date: ' . gmdate('r')
 			));
 
-			$ch = curl_init();
 			$options = array(
 				CURLOPT_URL				=>	$url,
 				CURLOPT_RETURNTRANSFER	=>	1,
@@ -260,6 +266,7 @@ class page
 				CURL_HTTP_VERSION_1_1
 			);
 
+			$ch = curl_init();
 			curl_setopt_array($ch, $options);
 			$this->response = curl_exec($ch);
 			curl_close($ch);
@@ -301,10 +308,12 @@ class page
 
 	public function authenticate( $bit = 0, $permission = '' )
 	{
-		if( https() && keyAndValue( $_SESSION, 'user' ) instanceof User )
+		if( $this->https && keyAndValue( $_SESSION, 'user' ) instanceof User )
 		{
 			if( !$_SESSION['user']->authenticate( $bit, $permission ) )
-				die( $this->loadTag( 'permission_error', true ) );
+			{
+				die($this->render(require(PAGE_PERMISSION_DENIED)));
+			}
 			else
 				return true;
 		}

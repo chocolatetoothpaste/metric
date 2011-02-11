@@ -82,7 +82,7 @@ function br( $text = '' )
 
 function https()
 {
-		return ( FORCE_SSL ? !empty( $_SERVER['HTTPS'] ) : true );
+		return ( FORCE_SSL ? !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] == 'on' : true );
 }
 
 
