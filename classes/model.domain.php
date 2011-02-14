@@ -9,7 +9,6 @@
 namespace Domain;
 
 abstract class Model
-//abstract class DomainModel
 {
 	protected static $keys, $table;
 	protected $meta_table, $meta_fields = array(), $meta_obj = array();

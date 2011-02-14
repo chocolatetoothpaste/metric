@@ -1,16 +1,19 @@
 <?php
 
 /**
- * Description of model
- *
- * @author ross
+ * Service model determines http method and calls the proper static method.
+ * Model is never instantiated, but init is called through child classes.
  */
+
 namespace Service;
 
 abstract class Model
 {
 	public static function init( $id, $method = 'GET', $data = array() )
 	{
+		// determine http request method and call the proper static method.
+		// this method is only called by child classes, service model is never
+		// instantiated. see child service models for usage and implementation
 		if( $method == 'GET' )
 			return static::read( $id );
 		elseif( $method == 'POST' )
@@ -31,6 +34,8 @@ abstract class Model
 		
 	}
 
+	// child classes must define at least these 4 basic methods, even if they
+	// only return a 501 (not implemented) message
 	abstract protected static function create( $post );
 	abstract protected static function read( $id );
 	abstract protected static function update( $id, $put );
