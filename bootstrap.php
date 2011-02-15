@@ -14,9 +14,10 @@
 // using this instead of timer class to avoid interference with benchmarking
 // that will occur on other pages. also, this way, no time is lost waiting for
 // the timer class to be loaded while other things may happen in the meantime
-
 $__start__ = microtime(true);
-include( dirname( __DIR__ . '../' ) . '/lib/include/include.inc.php' );
+
+session_start();
+include( 'include/include.inc.php' );
 
 $page = new page();
 $page->template = PAGE_TEMPLATE;
@@ -47,16 +48,19 @@ elseif( file_exists( $cache_file ) && filesize( $cache_file ) > 0 )
 else
 {
 	ob_start();
-	/*// This is out for now, maybe forever
+	
+	///
+	require( $page->file );
+	/*/
 
-	// $declared_classes = get_declared_classes();
+	//grab all declared class names to compare after including file
+	$declared_classes = get_declared_classes();
+	require( $page->file );
 
-	// still have to grab the file though :)
-	*/require( $page->file );/*
-
-
-	// grab the list of classes and compare it with classes before the page is loaded, then call the new class and class::init()
+	// grab the new list of classes and see if there was one defined in $page->file
 	$new_class = array_diff( get_declared_classes(), $declared_classes );
+
+	// if a new class was found, instantiate it and call init function
 	if( $new_class )
 	{
 		list( $new_class ) = array_values( $new_class );
@@ -69,9 +73,9 @@ else
 	if( $page->view )
 		require( $page->view );
 
-	$page->body = ob_get_clean();
+	$body = ob_get_clean();
 	header( "Content-Type: {$page->content_type}" );
-	$page->render( $page->body );
+	$page->render( $body );
 
 	// cache the page if the stars are aligned (no errors)
 	if( strlen( $page->body ) && $page->cache && !error_get_last() )
