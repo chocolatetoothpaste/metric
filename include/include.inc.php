@@ -32,12 +32,4 @@ function __autoload( $file )
 
 }
 
-// $__session should be set as one of the very first lines
-// in a page, even before the bootstrap or main include
-
-if( get( '__s' ) != 'false' )
-{
-	session_start();
-}
-
 ?>

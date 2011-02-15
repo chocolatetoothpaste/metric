@@ -115,7 +115,7 @@ class page
 		// check for a view associated with the page that's found
 		$path = pathinfo( $this->file );
 		$path['dirname'] = str_replace( PATH_PAGE, PATH_VIEW, $path['dirname'] );
-		$this->view = "$path[dirname]/$path[filename].html";
+		$this->view = "$path[dirname]/$path[filename].phtml";
 
 		if( !file_exists( $this->view ) )
 			$this->view = null;
@@ -364,10 +364,12 @@ class page
 
 	public function render( $body = '' )
 	{
+		$this->body = $body;
+		
 		if( !$this->template )
 		{
 			header( 'X-Title: ' . $this->title );
-			echo $body;
+			echo $this->body;
 		}
 		else
 		{
