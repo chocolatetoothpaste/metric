@@ -447,4 +447,28 @@ function encrypt_password( $password )
 	return substr( sha1( md5( $password ) ), 5, 32 );
 } //	end function __encryption_algorithm
 
+
+function parseRange( $values )
+{
+	$ranges = explode(',', $values);
+	$ret = array();
+	foreach( $ranges as $key => $range )
+	{
+		if( strpos($range, '-') !== false )
+		{
+			$range = explode('-', $range);
+			if(empty($range[0]))
+				$range[0] = '1';
+
+			$range = range($range[0], $range[1]);
+			$ret = array_merge($ret,$range);
+		}
+		else
+		{
+			$ret[] = intval($range);
+		}
+	}
+	unset( $ranges, $values, $key, $range);
+	return $ret;
+}
 ?>

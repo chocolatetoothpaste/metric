@@ -26,13 +26,28 @@ abstract class Model
 			return array( 'success' => 'false', 'status' => HTTP_NOT_IMPLEMENTED );
 	}
 
+	public static function getRanges( $ranges )
+	{
+		$ranges = preg_split('/;\s?/', $ranges);
+		$range = array();
+		foreach( $ranges as $ranges )
+		{
+			$pair = explode('=', $ranges);
+			if( false === strpos( $pair[1], '/' ) )
+			{
+
+				$range[$pair[0]] = \parseRange($pair[1]);
+			}
+			else
+			{
+				$range[$pair[0]] = "'" . str_replace('/', '\' AND \'', $pair[1]) . "'";
+			}
+		}
+		return $range;
+	}
+
 	protected $get, $post, $put, $delete;
 	static public $method;
-
-	protected function parseRange()
-	{
-		
-	}
 
 	// child classes must define at least these 4 basic methods, even if they
 	// only return a 501 (not implemented) message
