@@ -35,6 +35,7 @@ if( !DEV )
 if( $format === 'json' )
 {
 	header($__http_status[$response['status']]);
+	header('Date: ' . gmdate('r'));
 	$page->content_type = 'application/json';
 	if(	DEV )
 	{
