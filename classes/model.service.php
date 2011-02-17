@@ -35,7 +35,6 @@ abstract class Model
 			$pair = explode('=', $ranges);
 			if( false === strpos( $pair[1], '/' ) )
 			{
-
 				$range[$pair[0]] = \parseRange($pair[1]);
 			}
 			else
