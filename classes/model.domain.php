@@ -89,7 +89,10 @@ abstract class Model
 		$params = $columns = $this->getFields( true );
 		$criteria = array();
 		$keys = $this->getKeys();
-		$keys = $keys;
+		if( !empty( $keys['unique'] ) )
+			$keys = array_merge((array)$keys['primary'], (array)$keys['unique']);
+		else
+			$keys = (array)$keys['primary'];
 		$table = $this->getTable();
 
 		foreach( $keys as $type => $k ):
@@ -97,20 +100,29 @@ abstract class Model
 			// updating an existing row
 			if( $this->$k )
 			{
-				$update = true;
 				if( $type == 'primary' )
+				{
+					$update = true;
 					$criteria[$k] = $this->$k;
+					unset( $columns[$k] );
+				}
+				elseif( $update == true )
+				{
+					unset( $columns[$k] );
+				}
 			}
 			else
 			{
 				unset( $columns[$k] );
 			}
-			unset( $columns[$k] );
 		endforeach;
 
 		$sql = ( $update
 			? $query->update( $table, $columns, $criteria )
 			: $query->insert( $table, $columns ) );
+
+		//echo $sql;
+		//die;
 
 		// @todo test using the fetchIntoObject method to see if PDO will
 		// correctly update a new/existing object
