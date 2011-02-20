@@ -16,8 +16,8 @@
 // the timer class to be loaded while other things may happen in the meantime
 $__start__ = microtime(true);
 
-session_start();
 include( 'include/include.inc.php' );
+session_start();
 
 $page = new page();
 $page->template = PAGE_TEMPLATE;
