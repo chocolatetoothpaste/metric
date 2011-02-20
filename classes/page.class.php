@@ -308,7 +308,8 @@ class page
 
 	public function authenticate( $bit = 0, $permission = '' )
 	{
-		if( $this->https && keyAndValue( $_SESSION, 'user' ) instanceof User )
+		//if( $this->https && keyAndValue( $_SESSION, 'user' ) instanceof User )
+		if( keyAndValue( $_SESSION, 'user' ) instanceof \Domain\User )
 		{
 			if( !$_SESSION['user']->authenticate( $bit, $permission ) )
 			{
@@ -319,7 +320,7 @@ class page
 		}
 		else
 		{
-			self::redirect( 'https://' . server('SERVER_NAME') . '/login' );
+			self::redirect( 'http://' . server('SERVER_NAME') . '/login' );
 		}
 	}
 
