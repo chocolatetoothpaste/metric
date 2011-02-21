@@ -251,8 +251,8 @@ class page
 		//if( $curl )
 		{/*/
 			$headers = array_merge($headers, array(
-				'ContentType: application/x-www-form-urlencoded',
-				"Content-Lenght: $length",
+				'Content-Type: application/x-www-form-urlencoded',
+				"Content-Length: $length",
 				'Connection: close',
 				'Date: ' . gmdate('r')
 			));
