@@ -45,6 +45,16 @@ abstract class Model
 		return $range;
 	}
 
+	public static function collection( $method, $get = array() )
+	{
+		// GET is the only method allowed for collections
+		if( $method != 'GET' )
+			return array( 'success' => 'false', 'status' => HTTP_METHOD_NOT_ALLOWED );
+
+		return static::coll();
+
+	}
+
 	protected $get, $post, $put, $delete;
 	static public $method;
 
