@@ -471,4 +471,17 @@ function parseRange( $values )
 	unset( $ranges, $values, $key, $range);
 	return $ret;
 }
+
+function array_pluck( $key, $array )
+{
+	$array = (array)$array;
+	$return = array();
+	array_walk_recursive($array, function( $arr, $k ) use( $key, &$return )
+		{
+			if( $k === $key && isset( $arr[$key] ) )
+				$return[$arr[$key]] = $k;
+		});
+		return $return;
+}
+
 ?>
