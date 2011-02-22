@@ -96,9 +96,8 @@ abstract class Model
 		$table = $this->getTable();
 
 		foreach( $keys as $type => $k ):
-			// if a primary key is found and set in the property list, assume
-			// updating an existing row
-			if( $this->$k )
+			// if a primary key has a value in the property list, update an existing row
+			if( !empty( $this->$k ) )
 			{
 				if( $type == 'primary' )
 				{
@@ -121,11 +120,6 @@ abstract class Model
 			? $query->update( $table, $columns, $criteria )
 			: $query->insert( $table, $columns ) );
 
-		//echo $sql;
-		//die;
-
-		// @todo test using the fetchIntoObject method to see if PDO will
-		// correctly update a new/existing object
 		$db->execute( $sql, $query->params );
 
 		if( $db->result->errorCode() === '00000' )
