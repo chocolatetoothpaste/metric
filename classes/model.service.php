@@ -9,6 +9,8 @@ namespace Service;
 
 abstract class Model
 {
+	protected static $domain;
+	
 	public static function init( $id, $method = 'GET', $data = array() )
 	{
 		// determine http request method and call the proper static method.
@@ -30,9 +32,9 @@ abstract class Model
 	{
 		$ranges = preg_split('/;\s?/', $ranges);
 		$range = array();
-		foreach( $ranges as $ranges )
+		foreach( $ranges as $r )
 		{
-			$pair = explode('=', $ranges);
+			$pair = explode('=', $r);
 			if( false === strpos( $pair[1], '/' ) )
 			{
 				$range[$pair[0]] = \parseRange($pair[1]);
@@ -43,6 +45,26 @@ abstract class Model
 			}
 		}
 		return $range;
+	}
+
+
+	/**
+	 * Parse a string (typically the HTTP_PRAGMA header) for options to
+	 * manipulate data structure
+	 * @param string $options a string to parse for options
+	 */
+
+	public static function getOptions( $options )
+	{
+		$options = preg_split( '/;\s?/', $options );
+		$option = array();
+		foreach( $options as $opt )
+		{
+			$opt = explode( '=', $opt );
+			$option[$opt[0]] = $opt[1];
+		}
+
+		return $option;
 	}
 
 	public static function collection( $method, $get = array() )
