@@ -9,7 +9,7 @@
  *
  * @author ross paskett <rpaskett@gmail.com>
  */
-asdfasd
+
 // starting a timer to time how long it takes to process a page request.
 // using this instead of timer class to avoid interference with benchmarking
 // that will occur on other pages. also, this way, no time is lost waiting for
