@@ -29,8 +29,7 @@ abstract class Model
 					throw new Exception( 'Unable to connect to the database' );
 
 			$keys = $this->getKeys();
-			$fields = $this->getFields();
-//			$fields = get_object_vars($this);
+			$fields = static::getFields();
 			$pk = $keys['primary'];
 			$q = new \query();
 
@@ -85,9 +84,7 @@ abstract class Model
 
 		$query = new \query;
 		$update = false;
-		$vars = call_user_func('get_class_vars', get_called_class());
-		$properties = get_object_vars($this);
-		$columns = array_intersect_key( $properties, $vars );
+		$columns = array_intersect_key( get_object_vars($this), $this->getProperties() );
 		$criteria = array();
 		$keys = $this->getKeys();
 
@@ -217,6 +214,28 @@ abstract class Model
 	final public function getMetaKeys()
 	{
 		return $this->meta_keys;
+	}
+
+
+	/**
+	 * returns an array of public vars for the called class
+	 * @return array the array of vars
+	 */
+
+	final public static function getFields()
+	{
+		return array_keys( call_user_func('get_class_vars', get_called_class()) );
+	}
+
+
+	/**
+	 * Returns an associateive array of the public properties and their values in the called class
+	 * @return array array of properties => values
+	 */
+
+	final public function getProperties()
+	{
+		return array_intersect_key( get_object_vars($this), call_user_func('get_class_vars', get_called_class()) );
 	}
 
 
