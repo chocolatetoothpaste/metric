@@ -85,7 +85,7 @@ abstract class Model
 
 		$query = new \query;
 		$update = false;
-		$vars = call_user_func('get_class_vars', '\Domain\User');
+		$vars = call_user_func('get_class_vars', get_called_class());
 		$properties = get_object_vars($this);
 		$columns = array_intersect_key( $properties, $vars );
 		$criteria = array();
