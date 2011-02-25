@@ -82,10 +82,10 @@ abstract class Model
 
 	// child classes must define at least these 4 basic methods, even if they
 	// only return a 501 (not implemented) message
-	abstract protected static function create( $post );
-	abstract protected static function read( $id );
-	abstract protected static function update( $id, $put );
-	abstract protected static function delete( $id );
+//	abstract protected static function create( $post );
+//	abstract protected static function read( $id );
+//	abstract protected static function update( $id, $put );
+//	abstract protected static function delete( $id );
 }
 
 ?>

@@ -59,12 +59,12 @@ class Meta extends Model
 
 	public function setKeys( $keys )
 	{
-		$this->keys = $keys;
+		static::$keys = $keys;
 	}
 
 	public function setTable( $table )
 	{
-		$this->table = $table;
+		static::$table = $table;
 	}
 
 	public function save()

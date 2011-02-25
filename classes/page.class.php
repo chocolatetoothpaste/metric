@@ -34,7 +34,7 @@ class page
 
 	function __construct()
 	{
-		$page->https = ( FORCE_SSL ? !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on' : true );
+		$this->https = ( FORCE_SSL ? !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on' : true );
 	}
 
 
@@ -308,7 +308,7 @@ class page
 
 	public function authenticate( $bit = 0, $permission = '' )
 	{
-		//if( $this->https && keyAndValue( $_SESSION, 'user' ) instanceof User )
+//		if( $this->https && keyAndValue( $_SESSION, 'user' ) instanceof User )
 		if( keyAndValue( $_SESSION, 'user' ) instanceof \Domain\User )
 		{
 			if( !$_SESSION['user']->authenticate( $bit, $permission ) )
