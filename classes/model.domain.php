@@ -221,18 +221,6 @@ abstract class Model
 
 
 	/**
-	 * returns all public properties of an object
-	 * @return array array of public properties for $this
-	 */
-
-	public function getFields( $values = false )
-	{
-		$f = function( $obj, $values ){ return ( $values ? get_object_vars( $obj ) : array_keys( get_object_vars( $obj ) ) ); };
-		return $f( $this, $values );
-	}
-
-
-	/**
 	 * Returns a Meta domain object
 	 * @param	booolean	$refresh	passing true will re-fetch meta fields
 	 * from the database and replace the Meta object [optional, default false]
