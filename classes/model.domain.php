@@ -13,7 +13,7 @@ abstract class Model
 	protected static $keys, $table;
 	protected $meta_table, $meta_fields = array(), $meta_obj = array();
 
-	
+
 	/**
 	 * If params are passed, the constructor will attempt to update the object
 	 * with a row from the database. For retrieving multiple rows, see collection()
@@ -85,10 +85,12 @@ abstract class Model
 
 		$query = new \query;
 		$update = false;
-		// passing true to get values with the object fields
-		$params = $columns = $this->getFields( true );
+		$vars = call_user_func('get_class_vars', '\Domain\User');
+		$properties = get_object_vars($this);
+		$columns = array_intersect_key( $properties, $vars );
 		$criteria = array();
 		$keys = $this->getKeys();
+
 		if( !empty( $keys['unique'] ) )
 			$keys = array_merge((array)$keys['primary'], (array)$keys['unique']);
 		else
@@ -167,7 +169,7 @@ abstract class Model
 	 * @return array
 	 */
 
-	final public function getKeys()
+	final public static function getKeys()
 	{
 		return static::$keys;
 	}
@@ -178,7 +180,8 @@ abstract class Model
 	 * @return string
 	 */
 
-	final public function getTable()
+	final public static function getTable()
+	//final public static function getTable()
 	{
 		return static::$table;
 	}
@@ -224,10 +227,8 @@ abstract class Model
 
 	public function getFields( $values = false )
 	{
-		$class = get_called_class();
 		$f = function( $obj, $values ){ return ( $values ? get_object_vars( $obj ) : array_keys( get_object_vars( $obj ) ) ); };
-		//return $f( $this, $values );
-		return $f( ( empty($this) ? new $class : $this ), $values );
+		return $f( $this, $values );
 	}
 
 
@@ -252,7 +253,7 @@ abstract class Model
 			$this->meta_obj->setKeys( $this->getMetaKeys() );
 			$this->meta_obj->setTable( $this->getMetaTable() );
 			$query = 'SELECT meta_key, meta_value FROM '
-				. $this->meta_obj->table . ' WHERE fk_id = ?';
+				. $this->meta_obj->getTable() . ' WHERE fk_id = ?';
 			$result = $db->execute( $query, array( $this->id ) );
 
 			if( $result )

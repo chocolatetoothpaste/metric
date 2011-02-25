@@ -7,12 +7,10 @@
 
 $_SESSION = array();
 
-/*//
 function exception_error_handler($errno, $errstr, $errfile, $errline ) {
     throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 }
 set_error_handler('exception_error_handler');
-//*/
 
 // these files are required, they include some
 // essential constants and some setup functions
@@ -29,6 +27,8 @@ function __autoload( $file )
 	global $__files;
 	if( is_file( $__files['classes'][$file] ) )
 		require_once( $__files['classes'][$file] );
+	else
+		throw new Exception("Unable to load file $file");
 
 }
 
