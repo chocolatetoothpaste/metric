@@ -34,14 +34,21 @@ abstract class Model
 		$range = array();
 		foreach( $ranges as $r )
 		{
-			$pair = explode('=', $r);
-			if( false === strpos( $pair[1], '/' ) )
+			if( !empty( $r ) )
 			{
-				$range[$pair[0]] = \parseRange($pair[1]);
-			}
-			else
-			{
-				$range[$pair[0]] = "'" . str_replace('/', '\' AND \'', $pair[1]) . "'";
+				$pair = explode('=', $r);
+				if( false !== strpos( $pair[1], ',' ) )
+				{
+					$range[$pair[0]] = \parseRange($pair[1]);
+				}
+				elseif( false !== strpos( $pair[1], '/' ) )
+				{
+					$range[$pair[0]] = "'" . str_replace('/', '\' AND \'', $pair[1]) . "'";
+				}
+				else
+				{
+					$range[$pair[0]] = $pair[1];
+				}
 			}
 		}
 		return $range;
