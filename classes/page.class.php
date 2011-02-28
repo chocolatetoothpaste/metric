@@ -64,17 +64,9 @@ class page
 			foreach( $__urls as $url => $action )
 			{
 				$regex = array(
-					'match' => array(
-						'#/\*#',		// wildcard match
-						'#/@[\w]+#',	// required params
-						'#/%[\w]+#'		// optional params
-					),
-					'replace' => array(
-						'/([^/].*)',
-						'/([^/]*)',
-						'/?([^/]*)'
-
-					)
+					// wildcard match, required params, optional params
+					'match'		=> array( '#/\*#', '#/@[\w]+#', '#/%[\w]+#' ),
+					'replace'	=> array( '/([^/].*)', '/([^/]*)', '/?([^/]*)' )
 				);
 
 				// TODO: figure out a way to cache the urls once params have been replaced
