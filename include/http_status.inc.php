@@ -62,7 +62,6 @@ $__http_status = array(
 	HTTP_EXPECTATION_FAILED		=>	'HTTP/1.1 417 Expectation Failed',
 	HTTP_INTERNAL_SERVER_ERROR	=>	'HTTP/1.1 500 Internal Server Error',
 	HTTP_NOT_IMPLEMENTED		=>	'HTTP/1.1 501 Not Implemented'
-
 );
 
 ?>
