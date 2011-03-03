@@ -38,8 +38,10 @@ abstract class Model
 		{
 			if( !empty( $range ) )
 			{
+				//if( preg_match( '#(\d*[,-]?\d*-?)*#', $range ) )
 				if( false !== strpos( $range, ',' ) )
 				{
+die;
 					$return[$field] = \parseRange($range);
 				}
 				elseif( false !== strpos( $range, '/' ) )
@@ -54,7 +56,6 @@ abstract class Model
 		}
 		return $return;
 	}
-
 
 	/**
 	 * Parse a string (typically the HTTP_PRAGMA header) for options to
@@ -90,6 +91,7 @@ abstract class Model
 
 		if( !empty( $ranges ) )
 		{
+			//return array('status' => HTTP_OK, 'data' => 'must be a range issue');
 			$ranges = static::getRanges( $ranges );
 			if( isset( $ranges['date'] ) )
 			{
