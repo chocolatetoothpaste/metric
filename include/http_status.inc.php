@@ -54,6 +54,7 @@ define('HTTP_HTTP_VERSION_NOT_SUPPORT', 505);
 $__http_status = array(
 	HTTP_OK						=>	'HTTP/1.1 200 Ok',
 	HTTP_CREATED				=>	'HTTP/1.1 201 Created',
+	HTTP_ACCEPTED				=>	'HTTP/1.1 202 Accepted',
 	HTTP_PARTIAL_CONTENT		=>	'HTTP/1.1 206 Partial Content',
 	HTTP_NOT_MODIFIED			=>	'HTTP/1.1 304 Not Modified',
 	HTTP_UNAUTHORIZED			=>	'HTTP/1.1 401 Unauthorized',

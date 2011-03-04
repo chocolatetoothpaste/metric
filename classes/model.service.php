@@ -38,11 +38,14 @@ abstract class Model
 		{
 			if( !empty( $range ) )
 			{
-				//if( preg_match( '#(\d*[,-]?\d*-?)*#', $range ) )
+//				if( preg_match( '#(\d*[,-]?\d*-?)*#', $range ) && false === strpos( $range, '/' ) )
 				if( false !== strpos( $range, ',' ) )
 				{
-die;
-					$return[$field] = \parseRange($range);
+//					error_log("$range");
+					$return[$field] = parseRange($range);
+					$return[$field] = implode( ',', $return[$field] );
+//					error_log("$return[$field]");
+//					die;
 				}
 				elseif( false !== strpos( $range, '/' ) )
 				{
@@ -78,6 +81,7 @@ die;
 
 	public static function collection( $method, $get = array() )
 	{
+//		return array('status' => HTTP_OK, 'data' => 'must be a range issue');
 		// GET is the only method allowed for collections
 		if( $method != 'GET' )
 			return array( 'success' => 'false', 'status' => HTTP_METHOD_NOT_ALLOWED );
@@ -87,25 +91,41 @@ die;
 		$q = new \query;
 		$true_status = HTTP_OK;
 		$ranges = static::tokenize( $_SERVER['HTTP_RANGE'] );
-		$ranges = array_intersect_key( $ranges, array_flip($fields) );
-
+		//$ranges = array_intersect_key( $ranges, array_flip( $fields ) );
+//		return array('status' => HTTP_OK, 'message' => 'must be a range issue', 'data' => $ranges);
 		if( !empty( $ranges ) )
 		{
-			//return array('status' => HTTP_OK, 'data' => 'must be a range issue');
 			$ranges = static::getRanges( $ranges );
+
+//			return array('status' => HTTP_OK, 'message' => 'range parsing issue', 'data' => $ranges);
 			if( isset( $ranges['date'] ) )
 			{
 				$q->where[] = '`date` BETWEEN ' . $ranges['date'] . '';
 			}
+			if( isset( $ranges['id'] ) )
+			{
+				$q->where[] = 'id IN (' . $ranges['id'] . ')';
+			}
+			if( isset( $ranges['metaphone'] ) )
+			{
+//				return array('status' => HTTP_OK, 'data' => 'setting metaphone fields');
+				$q->where[] = 'metaphone_first LIKE :metaphone OR metaphone_last LIKE :metaphone';
+				$q->params['metaphone'] = metaphone($ranges['metaphone']) . '%';
+			}
+
 
 			$true_status = HTTP_PARTIAL_CONTENT;
 			$q->where = implode(' AND ', $q->where );
 		}
 
 		$q->select( $fields, $domain::getTable() );
+//		return array('status' => HTTP_OK, 'message' => 'query object', 'data' => $q);
+
 		$db = \mysql::instance( DB_MAIN );
 		$db->quote($q->query);
-		$stmt = $db->execute( $q->query );
+		$stmt = $db->execute( $q->query, $q->params );
+//		return array('status' => HTTP_OK, 'message' => 'statement', 'data' => $stmt->fetchAll( \PDO::FETCH_ASSOC ) );
+
 
 		if( $stmt )
 		{
