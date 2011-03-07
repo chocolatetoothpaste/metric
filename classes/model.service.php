@@ -43,13 +43,13 @@ abstract class Model
 				{
 //					error_log("$range");
 					$return[$field] = parseRange($range);
-					$return[$field] = implode( ',', $return[$field] );
+					$return[$field] = $field . ' IN (' . implode( ',', $return[$field] ) . ')';
 //					error_log("$return[$field]");
 //					die;
 				}
 				elseif( false !== strpos( $range, '/' ) )
 				{
-					$return[$field] = "'" . str_replace('/', '\' AND \'', $range) . "'";
+					$return[$field] = "$field BETWEEN '" . str_replace('/', '\' AND \'', $range) . "'";
 				}
 				else
 				{
@@ -98,22 +98,22 @@ abstract class Model
 			$ranges = static::getRanges( $ranges );
 
 //			return array('status' => HTTP_OK, 'message' => 'range parsing issue', 'data' => $ranges);
-			if( isset( $ranges['date'] ) )
+			/*if( isset( $ranges['date'] ) )
 			{
-				$q->where[] = '`date` BETWEEN ' . $ranges['date'] . '';
+				$q->where[] = $ranges['date'];
 			}
 			if( isset( $ranges['id'] ) )
 			{
-				$q->where[] = 'id IN (' . $ranges['id'] . ')';
-			}
+				$q->where[] = $ranges['id'];
+			}*/
 			if( isset( $ranges['metaphone'] ) )
 			{
 //				return array('status' => HTTP_OK, 'data' => 'setting metaphone fields');
-				$q->where[] = 'metaphone_first LIKE :metaphone OR metaphone_last LIKE :metaphone';
 				$q->params['metaphone'] = metaphone($ranges['metaphone']) . '%';
+				$ranges['metaphone'] = 'metaphone_first LIKE :metaphone OR metaphone_last LIKE :metaphone';
 			}
 
-
+			$q->where = $ranges;
 			$true_status = HTTP_PARTIAL_CONTENT;
 			$q->where = implode(' AND ', $q->where );
 		}
