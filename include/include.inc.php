@@ -29,7 +29,7 @@ function __autoload( $file )
 	if( is_file( $__files['classes'][$file] ) )
 		require_once( $__files['classes'][$file] );
 	else
-		throw new Exception("Unable to load file $file");
+		throw new Exception( "Unable to load class: $file" );
 
 }
 ?>
