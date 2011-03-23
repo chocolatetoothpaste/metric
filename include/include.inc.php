@@ -32,5 +32,4 @@ function __autoload( $file )
 		throw new Exception("Unable to load file $file");
 
 }
-
 ?>
