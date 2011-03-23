@@ -14,7 +14,8 @@ set_error_handler('exception_error_handler');
 
 // these files are required, they include some
 // essential constants and some setup functions
-require_once( dirname( $_SERVER['DOCUMENT_ROOT'] . '../' ) . '/config.inc.php' );
+require( dirname( $_SERVER['DOCUMENT_ROOT'] . '../' ) . '/config.inc.php' );
+require( 'config.inc.php' );
 include( 'http_status.inc.php' );
 include( 'functions.inc.php' );
 
@@ -31,6 +32,5 @@ function __autoload( $file )
 		throw new Exception("Unable to load file $file");
 
 }
-
 
 ?>
