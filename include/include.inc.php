@@ -12,6 +12,12 @@ function exception_error_handler($errno, $errstr, $errfile, $errline ) {
 }
 set_error_handler('exception_error_handler');
 
+class config
+{
+	public static $classes = array();
+	public static $urls = array();
+}
+
 // these files are required, they include some
 // essential constants and some setup functions
 require( dirname( $_SERVER['DOCUMENT_ROOT'] . '../' ) . '/config.inc.php' );
@@ -25,9 +31,8 @@ include( 'functions.inc.php' );
 
 function __autoload( $file )
 {
-	global $__files;
-	if( is_file( $__files['classes'][$file] ) )
-		require_once( $__files['classes'][$file] );
+	if( is_file( config::$classes[$file] ) )
+		require_once( config::$classes[$file] );
 	else
 		throw new Exception( "Unable to load class: $file" );
 
