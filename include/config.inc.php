@@ -1,9 +1,9 @@
 <?php
 
-define( 'PATH_LIB_CLASS',		PATH_LIB . '/classes' );
+define( 'PATH_LIB_CLASS',		PATH_LIB . '/class' );
 define( 'PATH_LIB_INCLUDE',		PATH_LIB . '/include' );
 
-$__files['classes'] = array_merge( array(
+config::$classes = array_merge( array(
 		'message'				=>	PATH_LIB_CLASS . '/message.class.php',
 		'timer'					=>	PATH_LIB_CLASS . '/timer.class.php',
 		'mysql'					=>	PATH_LIB_CLASS . '/mysql.class.php',
@@ -14,6 +14,6 @@ $__files['classes'] = array_merge( array(
 		'Domain\Model'			=>	PATH_LIB_CLASS . '/model.domain.php',
 		'Domain\Meta'			=>	PATH_LIB_CLASS . '/meta.domain.php',
 		'Service\Model'			=>	PATH_LIB_CLASS . '/model.service.php',
-), $__files['classes'] );
+), config::$classes );
 
 ?>
