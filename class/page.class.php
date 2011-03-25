@@ -57,20 +57,16 @@ class page
 			$this->file = PATH_PAGE . $this->request . '.php';
 		else
 		{
-			global $__urls;
-
 			// loop through the urls in the main config file and find any that match
 			// the page request, return filename and register page params
-			foreach( $__urls as $url => $action )
+			foreach( config::$urls as $url => $action )
 			{
-				$regex = array(
-					// wildcard match, required params, optional params
-					'match'		=> array( '#/\*#', '#/@[\w]+#', '#/%[\w]+#' ),
-					'replace'	=> array( '/([^/].*)', '/([^/]*)', '/?([^/]*)' )
-				);
+					// matches:			wildcard,		required,		optional
+					$match		= array( '#/\*#',		'#/@[\w]+#',	'#/%[\w]+#' );
+					$replace	= array( '/([^/].*)',	'/([^/]*)',		'/?([^/]*)' );
 
 				// TODO: figure out a way to cache the urls once params have been replaced
-				$pattern = preg_replace( $regex['match'], $regex['replace'], $url );
+				$pattern = preg_replace( $match, $replace, $url );
 				preg_match_all( "#^{$pattern}$#", $this->request, $matches, PREG_SET_ORDER );
 
 				// if any urls in config match the page request, set the filename or
