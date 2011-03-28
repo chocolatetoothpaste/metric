@@ -53,13 +53,10 @@ class mysql extends database
 	 * @param string $name
 	 */
 
-	public function __construct( $name )
+	public function __construct( &$info )
 	{
-		global $__db_connections;
-		extract($__db_connections[$name]);
-		$dsn = "$driver:host=$host;dbname=$dbname;";
-		parent::__construct( $dsn, $username, $password );
-
+		$dsn = "{$info['driver']}:host={$info['host']};dbname={$info['dbname']};";
+		parent::__construct( $dsn, $info['username'], $info['password'] );
 	}	//	end function __construct
 
 

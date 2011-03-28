@@ -19,15 +19,16 @@ abstract class database extends PDO
 	 * @return object
 	 */
 
-	public static function instance( $db_name )
+	public static function instance( $db_info )
 	{
+		$name = md5( implode( ';', $db_info ) );
 		$class = get_called_class();
-		if( !array_key_exists( $class, self::$instance ) || !array_key_exists( $db_name, self::$instance[$class] ) )
+		if( !array_key_exists( $class, self::$instance ) || !array_key_exists( $name, self::$instance[$class] ) )
 		{
-			self::$instance[$class][$db_name] = new $class( $db_name );
+			self::$instance[$class][$name] = new $class( $db_info );
 		}
 
-		return self::$instance[$class][$db_name];
+		return self::$instance[$class][$name];
     }
 
 
