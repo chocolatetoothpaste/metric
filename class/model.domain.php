@@ -178,7 +178,6 @@ abstract class Model
 	 */
 
 	final public static function getTable()
-	//final public static function getTable()
 	{
 		return static::$table;
 	}
