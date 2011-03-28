@@ -10,12 +10,14 @@ $_SESSION = array();
 function exception_error_handler($errno, $errstr, $errfile, $errline ) {
     throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 }
+
 set_error_handler('exception_error_handler');
 
 class config
 {
 	public static $classes = array();
 	public static $urls = array();
+	public static $db = array();
 }
 
 // these files are required, they include some

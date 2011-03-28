@@ -132,8 +132,9 @@ abstract class Model
 		$q = new \query;
 		$true_status = HTTP_OK;
 		$ranges = static::tokenize( $_SERVER['HTTP_RANGE'] );
-		$ranges = static::filterOptions( $ranges, array_flip( $fields ) );
-//		return array('status' => HTTP_OK, 'message' => 'must be a range issue', 'data' => $ranges);
+		//$ranges = static::filterOptions( $ranges, $fields );
+		//$ranges = array_intersect_key( $ranges, $fields );
+//		return array('status' => HTTP_OK, 'message' => 'must be a range issue', 'data' => $fields);
 		
 		if( !empty( $ranges ) )
 		{
@@ -157,7 +158,7 @@ abstract class Model
 		$q->select( $fields, $domain::getTable() );
 //		return array('status' => HTTP_OK, 'message' => 'query object', 'data' => $q);
 
-		$db = \mysql::instance( DB_MAIN );
+		$db = \mysql::instance( \config::$db[DB_MAIN] );
 		$db->quote($q->query);
 		$stmt = $db->execute( $q->query, $q->params );
 //		return array('status' => HTTP_OK, 'message' => 'statement', 'data' => $stmt->fetchAll( \PDO::FETCH_ASSOC ) );
