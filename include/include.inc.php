@@ -1,11 +1,7 @@
 <?php
 /**
- * the main include file.  anything that should
- * be included or set up should be done here or in config.inc.php
  * @author ross paskett <rpaskett@gmail.com>
  */
-
-$_SESSION = array();
 
 function exception_error_handler($errno, $errstr, $errfile, $errline ) {
     throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
@@ -13,16 +9,12 @@ function exception_error_handler($errno, $errstr, $errfile, $errline ) {
 
 set_error_handler('exception_error_handler');
 
-class config
-{
-	public static $classes = array();
-	public static $urls = array();
-	public static $db = array();
-}
+class config{}
+$config = new config;
 
 // these files are required, they include some
 // essential constants and some setup functions
-require( dirname( $_SERVER['DOCUMENT_ROOT'] . '../' ) . '/config.inc.php' );
+require( dirname( $_SERVER['DOCUMENT_ROOT'] ) . '/config.inc.php' );
 require( 'config.inc.php' );
 include( 'http_status.inc.php' );
 include( 'functions.inc.php' );
@@ -33,10 +25,13 @@ include( 'functions.inc.php' );
 
 function __autoload( $file )
 {
-	if( is_file( config::$classes[$file] ) )
-		require_once( config::$classes[$file] );
+	$part = explode( '\\', $file );
+	global $config;
+	$sub = ( empty( $part[1] ) ? 'class' : $part[0] );
+	//echo $sub;
+	if( is_file( $config->classes[$file] ) )
+		require_once( $config->classes[$file] );
 	else
 		throw new Exception( "Unable to load class: $file" );
-
 }
 ?>
