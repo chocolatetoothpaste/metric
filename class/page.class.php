@@ -46,6 +46,7 @@ class page
 
 	public function parseURL( $request )
 	{
+		global $config;
 		// trim query string from the request
 		$this->request = strtok( $request, '?' );
 
@@ -59,7 +60,7 @@ class page
 		{
 			// loop through the urls in the main config file and find any that match
 			// the page request, return filename and register page params
-			foreach( config::$urls as $url => $action )
+			foreach( $config->urls as $url => $action )
 			{
 					// matches:			wildcard,		required,		optional
 					$match		= array( '#/\*#',		'#/@[\w]+#',	'#/%[\w]+#' );

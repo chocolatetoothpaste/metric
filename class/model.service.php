@@ -122,6 +122,7 @@ abstract class Model
 
 	public static function collection( $method, $get = array() )
 	{
+		global $config;
 //		return array('status' => HTTP_OK, 'data' => 'must be a range issue');
 		// GET is the only method allowed for collections for now
 		if( $method != 'GET' )
@@ -158,7 +159,7 @@ abstract class Model
 		$q->select( $fields, $domain::getTable() );
 //		return array('status' => HTTP_OK, 'message' => 'query object', 'data' => $q);
 
-		$db = \mysql::instance( \config::$db[DB_MAIN] );
+		$db = \mysql::instance( $config->db[DB_MAIN] );
 		$db->quote($q->query);
 		$stmt = $db->execute( $q->query, $q->params );
 //		return array('status' => HTTP_OK, 'message' => 'statement', 'data' => $stmt->fetchAll( \PDO::FETCH_ASSOC ) );
