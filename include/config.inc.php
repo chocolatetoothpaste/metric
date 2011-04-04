@@ -51,5 +51,4 @@ $config->classes = array_merge( array(
 		'Domain\Meta'			=>	PATH_LIB_CLASS . '/meta.domain.php',
 		'Service\Model'			=>	PATH_LIB_CLASS . '/model.service.php',
 ), $config->classes );
-
 ?>
