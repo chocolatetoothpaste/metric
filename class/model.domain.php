@@ -68,7 +68,7 @@ abstract class Model
 
 	public function capture( &$array, $scrub = array() )
 	{
-		array_merge_object( $this, $array, $scrub );
+		\array_merge_object( $this, $array, $scrub );
 	}
 
 
