@@ -483,5 +483,4 @@ function array_pluck( $key, $array )
 		});
 		return $return;
 }
-
 ?>

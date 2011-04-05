@@ -132,6 +132,7 @@ abstract class Model
 		$fields = $domain::getFields();
 		$q = new \query;
 		$true_status = HTTP_OK;
+		if( !empty( $_SERVER['HTTP_RANGE'] ) )
 		$ranges = static::tokenize( $_SERVER['HTTP_RANGE'] );
 		//$ranges = static::filterOptions( $ranges, $fields );
 		//$ranges = array_intersect_key( $ranges, $fields );
