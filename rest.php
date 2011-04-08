@@ -39,8 +39,8 @@ if( $format === 'json' )
 	$page->content_type = 'application/json';
 	if(	DEV )
 	{
-		$__finish__ = microtime(true);
-		$response['time'] = ( $__finish__ - $__start__ );
+		$_finish__ = microtime(true);
+		$response['time'] = ( $_finish__ - $_start__ );
 	}
 	echo json_encode( $response );
 }
