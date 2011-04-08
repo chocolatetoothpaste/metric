@@ -9,6 +9,8 @@ function exception_error_handler($errno, $errstr, $errfile, $errline ) {
 
 set_error_handler('exception_error_handler');
 
+date_default_timezone_set('America/Denver');
+
 class config{}
 $config = new config;
 
