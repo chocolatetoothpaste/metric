@@ -91,8 +91,11 @@ abstract class Model
 		$option = array();
 		foreach( $options as $opt )
 		{
-			$opt = explode( '=', $opt );
-			$option[$opt[0]] = $opt[1];
+			if( $opt )
+			{
+				$opt = explode( '=', $opt );
+				$option[$opt[0]] = $opt[1];
+			}
 		}
 		unset( $options, $opt );
 		return $option;
@@ -133,7 +136,9 @@ abstract class Model
 		$q = new \query;
 		$true_status = HTTP_OK;
 		if( !empty( $_SERVER['HTTP_RANGE'] ) )
-		$ranges = static::tokenize( $_SERVER['HTTP_RANGE'] );
+			$ranges = static::tokenize( $_SERVER['HTTP_RANGE'] );
+		if( !empty( $_SERVER['HTTP_PRAGMA'] ) )
+			$options = static::tokenize( $_SERVER['HTTP_PRAGMA'] );
 		//$ranges = static::filterOptions( $ranges, $fields );
 		//$ranges = array_intersect_key( $ranges, $fields );
 //		return array('status' => HTTP_OK, 'message' => 'must be a range issue', 'data' => $fields);
@@ -157,6 +162,10 @@ abstract class Model
 			$q->where = implode(' AND ', $q->where );
 		}
 
+		if( !empty( $options['order'] ) )
+			$q->where .= " ORDER BY {$options['order']}";
+
+//		return array('status' => HTTP_OK, 'message' => 'query object', 'data' => $q, 'extra' => $options);
 		$q->select( $fields, $domain::getTable() );
 //		return array('status' => HTTP_OK, 'message' => 'query object', 'data' => $q);
 
@@ -168,7 +177,7 @@ abstract class Model
 
 		if( $stmt )
 		{
-			if( isset( $_SERVER['HTTP_PRAGMA'] ) )
+			if( !empty( $options ) )
 			{
 				$data = array();
 				$options = static::tokenize( $_SERVER['HTTP_PRAGMA'] );
