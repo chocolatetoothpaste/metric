@@ -51,10 +51,10 @@ abstract class Model
 	public static function getRanges( array $ranges )
 	{
 		//$ranges = static::tokenize( $ranges );
-		$return = array();
+		$return = array(); 
 		foreach( $ranges as $field => $range )
 		{
-			if( !empty( $range ) )
+			if( !empty( $range ) || $range == 0 )
 			{
 //				if( preg_match( '#(\d*[,-]?\d*-?)*#', $range ) && false === strpos( $range, '/' ) )
 				if( false !== strpos( $range, ',' ) )
@@ -71,7 +71,7 @@ abstract class Model
 				}
 				else
 				{
-					$return[$field] = $range;
+					$return[$field] = $range;//"{$field}={$range}";
 				}
 			}
 		}
@@ -141,7 +141,7 @@ abstract class Model
 			$options = static::tokenize( $_SERVER['HTTP_PRAGMA'] );
 		//$ranges = static::filterOptions( $ranges, $fields );
 		//$ranges = array_intersect_key( $ranges, $fields );
-//		return array('status' => HTTP_OK, 'message' => 'must be a range issue', 'data' => $fields);
+//		return array('status' => HTTP_OK, 'message' => 'must be a range issue', 'data' => $ranges);
 		
 		if( !empty( $ranges ) )
 		{
@@ -165,7 +165,7 @@ abstract class Model
 		if( !empty( $options['order'] ) )
 			$q->where .= " ORDER BY {$options['order']}";
 
-//		return array('status' => HTTP_OK, 'message' => 'query object', 'data' => $q, 'extra' => $options);
+//		return array('status' => HTTP_OK, 'message' => 'query object', 'data' => $q, 'extra' => $ranges);
 		$q->select( $fields, $domain::getTable() );
 //		return array('status' => HTTP_OK, 'message' => 'query object', 'data' => $q);
 
