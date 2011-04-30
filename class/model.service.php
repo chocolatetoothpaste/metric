@@ -64,7 +64,8 @@ abstract class Model
 				}
 				else
 				{
-					$return[$field] = $range;//"{$field}={$range}";
+					$return[$field] = $range;
+					$return[$field] = "{$field}={$range}";
 				}
 			}
 		}
@@ -133,14 +134,11 @@ abstract class Model
 			$ranges = static::tokenize( $_SERVER['HTTP_RANGE'] );
 		if( !empty( $_SERVER['HTTP_PRAGMA'] ) )
 			$options = static::tokenize( $_SERVER['HTTP_PRAGMA'] );
-		//$ranges = static::filterOptions( $ranges, $fields );
-		//$ranges = array_intersect_key( $ranges, $fields );
 //		return array('status' => HTTP_OK, 'message' => 'must be a range issue', 'data' => $ranges);
 		
 		if( !empty( $ranges ) )
 		{
 			$ranges = static::getRanges( $ranges );
-
 //			return array('status' => HTTP_OK, 'message' => 'range parsing issue', 'data' => $ranges);
 
 			// this needs to be moved into the contact service, just not sure how to approach the problem
@@ -151,9 +149,8 @@ abstract class Model
 				$ranges['metaphone'] = 'metaphone_first LIKE :metaphone OR metaphone_last LIKE :metaphone';
 			}
 
-			$q->where = $ranges;
 			$true_status = HTTP_PARTIAL_CONTENT;
-			$q->where = implode(' AND ', $q->where );
+			$q->where = implode(' AND ', $ranges );
 		}
 
 		if( !empty( $options['order'] ) )
