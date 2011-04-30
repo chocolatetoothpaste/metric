@@ -125,7 +125,6 @@ abstract class Model
 		if( $method != 'GET' )
 			return array( 'success' => 'false', 'status' => HTTP_METHOD_NOT_ALLOWED );
 
-
 		$domain = static::$domain;
 		$fields = $domain::getFields();
 		$q = new \query;
@@ -142,12 +141,12 @@ abstract class Model
 //			return array('status' => HTTP_OK, 'message' => 'range parsing issue', 'data' => $ranges);
 
 			// this needs to be moved into the contact service, just not sure how to approach the problem
-			if( isset( $ranges['metaphone'] ) )
+			/*if( isset( $ranges['metaphone'] ) )
 			{
 //				return array('status' => HTTP_OK, 'data' => 'setting metaphone fields');
 				$q->params['metaphone'] = metaphone($ranges['metaphone']) . '%';
 				$ranges['metaphone'] = 'metaphone_first LIKE :metaphone OR metaphone_last LIKE :metaphone';
-			}
+			}*/
 
 			$true_status = HTTP_PARTIAL_CONTENT;
 			$q->where = implode(' AND ', $ranges );
