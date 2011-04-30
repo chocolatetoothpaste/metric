@@ -21,7 +21,7 @@ $config = new config;
 
 // these files are required, they include some
 // essential constants and some setup functions
-require( dirname( $_SERVER['DOCUMENT_ROOT'] ) . '/config.inc.php' );
+require( '../config.inc.php' );
 require( 'config.inc.php' );
 include( 'http_status.inc.php' );
 include( 'functions.inc.php' );
