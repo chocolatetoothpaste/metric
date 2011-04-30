@@ -53,24 +53,18 @@ abstract class Model
 				if( false !== strpos( $range, ',' ) )
 				{
 //					error_log("$range");
-					$range = implode( ',', parseRange( $range ) );
-					$return[$field] = "$field IN ($range)";
+					$return[$field] = parseRange($range);
+					$return[$field] = $field . ' IN (' . implode( ',', $return[$field] ) . ')';
 //					error_log("$return[$field]");
 //					die;
 				}
 				elseif( false !== strpos( $range, '/' ) )
 				{
-					$range = str_replace('/', '\' AND \'', $range);
-					$return[$field] = "$field BETWEEN '$range'";
+					$return[$field] = "$field BETWEEN '" . str_replace('/', '\' AND \'', $range) . "'";
 				}
 				else
 				{
-					// setting the key to the range value breaks ranges that pass a normal value
-					$return[$field] = $range;
-					// but doing a comparison like field = value breaks the metaphone look up
-					$return[$field] = "{$field} = '{$range}'";
-					// ...so it's about time to move the metaphone stuff to the contact class and
-					// figure out the best way to do some overloading in a way that makes sense.
+					$return[$field] = $range;//"{$field}={$range}";
 				}
 			}
 		}
