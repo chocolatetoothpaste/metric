@@ -130,22 +130,6 @@ class page
 
 
 	/**
-	 * Get the request headers passed by the client
-	 * @return array all headers received by the page
-	 */
-
-	public function headers()
-	{
-		if( empty( $this->headers ) )
-		{
-			$this->headers = apache_request_headers();
-		}
-
-		return $this->headers;
-	}
-
-	
-	/**
 	 * Parses a string (page body) and looks for custom template tags
 	 * @param string $string
 	 * @return $return
