@@ -23,7 +23,7 @@ abstract class database extends PDO
 	{
 		$name = md5( implode( ';', $db_info ) );
 		$class = get_called_class();
-		if( !array_key_exists( $class, self::$instance ) || !array_key_exists( $name, self::$instance[$class] ) )
+		if( empty( $class, self::$instance ) || empty( $name, self::$instance[$class] ) )
 		{
 			self::$instance[$class][$name] = new $class( $db_info );
 		}

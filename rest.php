@@ -1,7 +1,7 @@
 <?php
 
 $page->template = false;
-$format = get('format', 'json');
+$page->content_type = $_SERVER['HTTP_ACCEPT'];
 $response = array( 'success' => 'false', 'status' => HTTP_BAD_REQUEST );
 
 //$signature = $_SERVER['REQUEST_METHOD'] "\n\n" . $page->headers['Date'] . file_get_contents('php://input');
@@ -32,17 +32,23 @@ if( is_callable( $page->callback ) )
 if( !DEV )
 	ob_clean();
 
-if( $format === 'json' )
+if( $page->content_type === 'application/json' )
 {
-	header($__http_status[$response['status']]);
-	header('Date: ' . gmdate('r'));
-	$page->content_type = 'application/json';
-	if(	DEV )
-	{
-		$_finish__ = microtime(true);
-		$response['time'] = ( $_finish__ - $_start__ );
-	}
-	echo json_encode( $response );
+	$page->body = json_encode( $response );
+}
+else
+{
+	$response['status'] = $__http_status[HTTP_NOT_ACCEPTABLE];
+	$page->body = 'Invalid format';
 }
 
+header($__http_status[$response['status']]);
+header('Date: ' . gmdate('r'));
+if(	DEV )
+{
+	$_finish__ = microtime(true);
+	header('X-Execute-Time: ' .  $_finish__ - $_start__ );
+}
+
+$page->render( $page->body );
 ?>
