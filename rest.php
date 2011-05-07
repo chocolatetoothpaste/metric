@@ -38,7 +38,7 @@ if( $page->content_type === 'application/json' )
 }
 else
 {
-	$response['status'] = $__http_status[HTTP_NOT_ACCEPTABLE];
+	$response['status'] = HTTP_NOT_ACCEPTABLE;
 	$page->body = 'Invalid format';
 }
 
