@@ -227,6 +227,7 @@ class page
 				'Content-Type: application/x-www-form-urlencoded',
 				"Content-Length: $length",
 				'Connection: close',
+				'Accept: application/json',
 				'Date: ' . gmdate('r')
 			));
 
