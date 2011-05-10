@@ -32,8 +32,18 @@ if( is_callable( $page->callback ) )
 if( !DEV )
 	ob_clean();
 
+// determine reponse format and set up response
 if( $page->content_type === 'application/json' )
 {
+	$page->body = json_encode( $response );
+}
+elseif( $page->content_type === 'application/xml' )
+{
+	// handle xml
+}
+elseif( DEV )
+{
+	$page->content_type = 'application/json';
 	$page->body = json_encode( $response );
 }
 else
@@ -44,6 +54,7 @@ else
 
 header($__http_status[$response['status']]);
 header('Date: ' . gmdate('r'));
+
 if(	DEV )
 {
 	$_finish__ = microtime(true);

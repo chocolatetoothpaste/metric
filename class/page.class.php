@@ -54,17 +54,19 @@ class page
 		// protected pages dir, else check if request is defined in config file
 		if( is_file( PATH_HTDOCS . $this->request ) )
 			$this->file = PATH_HTDOCS . $this->request;
-		elseif( file_exists( PATH_PAGE . $this->request . '.php' ) )
-			$this->file = PATH_PAGE . $this->request . '.php';
+		elseif( file_exists( PATH_CONTROLLER . $this->request . '.php' ) )
+			$this->file = PATH_CONTROLLER . $this->request . '.php';
+		elseif( file_exists( PATH_VIEW . $this->request . '.phtml' ) )
+			$this->file = PATH_VIEW . $this->request . '.phtml';
 		else
 		{
 			// loop through the urls in the main config file and find any that match
 			// the page request, return filename and register page params
 			foreach( $config->urls as $url => $action )
 			{
-					// matches:			wildcard,		required,		optional
-					$match		= array( '#/\*#',		'#/@[\w]+#',	'#/%[\w]+#' );
-					$replace	= array( '/([^/].*)',	'/([^/]*)',		'/?([^/]*)' );
+					// matches:			 required,		optional
+					$match		= array( '#/@[\w]+#',	'#/%[\w]+#' );
+					$replace	= array( '/([^/]*)',	'/?([^/]*)' );
 
 				// TODO: figure out a way to cache the urls once params have been replaced
 				$pattern = preg_replace( $match, $replace, $url );
@@ -103,10 +105,10 @@ class page
 
 		// check for a view associated with the page that's found
 		$path = pathinfo( $this->file );
-		$path['dirname'] = str_replace( PATH_PAGE, PATH_VIEW, $path['dirname'] );
+		$path['dirname'] = str_replace( PATH_CONTROLLER, PATH_VIEW, $path['dirname'] );
 		$this->view = "$path[dirname]/$path[filename].phtml";
 
-		if( !file_exists( $this->view ) )
+		if( !file_exists( $this->view ) || $this->view === $this->file )
 			$this->view = null;
 
 		// set the "last modified" time of the file or view for cache verifications
