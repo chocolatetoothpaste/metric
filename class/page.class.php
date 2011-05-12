@@ -51,7 +51,8 @@ class page
 		$this->request = strtok( $request, '?' );
 
 		// check if the page is in the public dir, elseif check if page is in
-		// protected pages dir, else check if request is defined in config file
+		// protected pages dir, elseif see if a "view" exists else check if
+		// request is defined in config file
 		if( is_file( PATH_HTDOCS . $this->request ) )
 			$this->file = PATH_HTDOCS . $this->request;
 		elseif( file_exists( PATH_CONTROLLER . $this->request . '.php' ) )
@@ -124,8 +125,12 @@ class page
 
 	public function mtime()
 	{
-		if( empty( $this->mtime ) )
+		if( is_array( $this->file ) ):
+			$this->time = array_map( 'filemtime', $this->file );
+			$this->time = max( $this->time );
+		else:
 			$this->mtime = max( filemtime( $this->view ), filemtime( $this->file ) );
+		endif;
 
 		return $this->mtime;
 	}
