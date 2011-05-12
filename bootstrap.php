@@ -20,20 +20,43 @@ include( 'include/include.inc.php' );
 session_start();
 
 $page = new page();
-$page->template = PAGE_TEMPLATE;
 $page->uid = get( 'uid', '0' );
-$page->parseURL( getenv( 'REQUEST_URI' ) );
-$page->mtime();
 
+// determine if it's a request for js/css resources, or a page, then do some set up
+if( $page->request = get( 'js' ) ):
+	$page->content_type = 'text/javascript';
+	$dir = PATH_JS;
+	$type = 'js';
+elseif( $page->request = get( 'css' ) ):
+	$page->content_type = 'text/css';
+	$dir = PATH_CSS;
+	$type = 'css';
+else:
+	$page->parseURL( getenv( 'REQUEST_URI' ) );
+	$page->template = PAGE_TEMPLATE;
+	$cache_file = PATH_CACHE . '/page';
+endif;
+
+if( $page->content_type === 'text/javascript' || $page->content_type === 'text/css' )
+{
+	$page->template = false;
+	$cache_file = PATH_CACHE . "/$type";
+	$page->file = explode( ',', $page->request );
+	foreach( $page->file as $k => $v )
+		$page->file[$k] = "$dir/$v.$type";
+}
+
+// grab the most recent mtime of a file/files, create a hash
+$page->mtime();
 $hash = md5( $page->request ) . "-{$page->uid}-{$page->mtime}";
-$cache_file = PATH_CACHE . "/pages/{$hash}";
+$cache_file = "$cache_file/{$hash}";
 
 $visibility = 'public';
 header( "Cache-Control: $visibility, must-revalidate, max-age=0" );
 
 // check if user has a local cached file
 // else check for a server cached file
-// else generate a new file and cache it if possible
+// else generate a new file and if possible cache it
 if( keyAndValue( $_SERVER, 'HTTP_IF_NONE_MATCH', $hash ) )
 {
 	header( $__http_status[HTTP_NOT_MODIFIED] );
@@ -48,40 +71,38 @@ elseif( file_exists( $cache_file ) && filesize( $cache_file ) > 0 )
 else
 {
 	ob_start();
-	
-	///
-	require( $page->file );
-	/*/
 
-	//grab all declared class names to compare after including file
-	$declared_classes = get_declared_classes();
-	require( $page->file );
+	if( is_array( $page->file ) ):
+		foreach( $page->file as $file )
+			include( $file );
+	else:
+		/*//grab all declared class names to compare after including file
+		$declared_classes = get_declared_classes();
+		//*/
+		require( $page->file );
+		if( $page->view )
+			require( $page->view );
+		
+		/*// grab the new list of classes and see if there was one defined in $page->file
+		$new_class = array_diff( get_declared_classes(), $declared_classes );
 
-	// grab the new list of classes and see if there was one defined in $page->file
-	$new_class = array_diff( get_declared_classes(), $declared_classes );
-
-	// if a new class was found, instantiate it and call init function
-	if( $new_class )
-	{
-		list( $new_class ) = array_values( $new_class );
-		$class = new $new_class;
-		$class->init();
-	}
-	//*/
-
-	// grab buffer contents and clear it to prepare to render
-	if( $page->view )
-		require( $page->view );
+		// if a new class was found, instantiate it and call init function
+		if( $new_class )
+		{
+			list( $new_class ) = array_values( $new_class );
+			$class = new $new_class;
+			$class->init();
+		}
+		//*/
+	endif;
 
 	$body = ob_get_clean();
 	header( "Content-Type: {$page->content_type}" );
 	$page->render( $body );
 
-	// cache the page if the stars are aligned (no errors)
+	// cache the page if the stars are aligned (no errors), because caching an errored page would be stupid
 	if( strlen( $page->body ) && $page->cache && !error_get_last() )
 	{
-		// this header !!MUST!! be left here otherwise browsers will cache
-		// pages that contain errors or otherwise shouldn't be cached
 		$date = strtotime( '+1 month' );
 		$date = gmdate( 'D, d M Y H:i:s T', $date );
 		header( "Etag: {$hash}" );
