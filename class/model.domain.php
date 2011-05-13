@@ -187,7 +187,8 @@ abstract class Model
 
 
 	/**
-	 * returns the name of the db table containing meta data relating to a domain object
+	 * returns the name of the db table containing
+	 * meta data relating to a domain object
 	 * @return string
 	 */
 
@@ -226,18 +227,23 @@ abstract class Model
 
 	final public static function getFields()
 	{
-		return array_keys( call_user_func('get_class_vars', get_called_class()) );
+		$class = get_called_class();
+		return array_keys( call_user_func('get_class_vars', $class ) );
 	}
 
 
 	/**
-	 * Returns an associateive array of the public properties and their values in the called class
+	 * Returns an associateive array of the public
+	 * properties and their values in the called class
 	 * @return array array of properties => values
 	 */
 
 	final public function getProperties()
 	{
-		return array_intersect_key( get_object_vars($this), call_user_func('get_class_vars', get_called_class()) );
+		$vars = get_object_vars($this);
+		$class = get_called_class();
+		return array_intersect_key( $vars,
+			call_user_func('get_class_vars', $class ) );
 	}
 
 
@@ -245,7 +251,7 @@ abstract class Model
 	 * Returns a Meta domain object
 	 * @param	booolean	$refresh	passing true will re-fetch meta fields
 	 * from the database and replace the Meta object [optional, default false]
-	 * @return	object		$this->meta_obj	a meta object related to the main object
+	 * @return	object					a meta object related to the main object
 	 */
 
 	public function getMeta( $refresh = false )
@@ -284,7 +290,8 @@ abstract class Model
 	/**
 	 * Returns a property from private Meta object
 	 * @param	string	$key	The property to get
-	 * @return	mixed			Returns the property or returns false if property does not exist
+	 * @return	mixed			Returns the property or returns
+	 * false if property does not exist
 	 */
 
 	public function meta( $key )
@@ -300,7 +307,8 @@ abstract class Model
 
 
 	/**
-	 * Accepts an array or object of type Meta and will either assign values or will replace meta object completely
+	 * Accepts an array or object of type Meta and will either
+	 * assign values or will replace meta object completely
 	 * @param	mixed	$meta	an array/object to update the current Meta object with
 	 */
 
@@ -322,7 +330,7 @@ abstract class Model
 	 * Get a group of domain objects based on criteria. Basically a db fetchAll,
 	 * but returns objects of child domain
 	 * @param	array	$params	params for the db query [optional, default array()]
-	 * @return	array	an array of objects (of child domain model)
+	 * @return	array			an array of objects (of child domain model)
 	 */
 
 	// function needs expansion using query object
