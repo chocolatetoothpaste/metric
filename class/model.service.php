@@ -54,13 +54,14 @@ abstract class Model
 				{
 //					error_log("$range");
 					$return[$field] = parseRange($range);
-					$return[$field] = $field . ' IN (' . implode( ',', $return[$field] ) . ')';
+					$return[$field] = "$field IN (" . implode( ',', $return[$field] ) . ')';
 //					error_log("$return[$field]");
 //					die;
 				}
 				elseif( false !== strpos( $range, '/' ) )
 				{
-					$return[$field] = "$field BETWEEN '" . str_replace('/', '\' AND \'', $range) . "'";
+					$return[$field] = "$field BETWEEN '"
+						. str_replace('/', '\' AND \'', $range) . "'";
 				}
 				else
 				{

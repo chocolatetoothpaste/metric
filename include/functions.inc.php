@@ -82,7 +82,9 @@ function br( $text = '' )
 
 function https()
 {
-		return ( FORCE_SSL ? !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] == 'on' : true );
+		return ( FORCE_SSL
+			? !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] == 'on'
+			: true );
 }
 
 
@@ -323,7 +325,7 @@ function array_flatten_flip( $array, $strict = true )
 
 function is_multi( array &$array )
 {
-	return ( count( $array ) != count( $array, 1 ) );
+	return ( count( $array ) != count( $array, COUNT_RECURSIVE ) );
 }
 
 
@@ -471,6 +473,13 @@ function parseRange( $values )
 	unset( $ranges, $values, $key, $range);
 	return $ret;
 }
+
+
+/**
+ * Recursively find a key within an array
+ * @param	string	$key	the name of the key to find
+ * @param	array	$array	the array to search
+ */
 
 function array_pluck( $key, &$array )
 {
