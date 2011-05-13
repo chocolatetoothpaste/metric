@@ -34,7 +34,9 @@ class page
 
 	function __construct()
 	{
-		$this->https = ( FORCE_SSL ? !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on' : true );
+		$this->https = ( FORCE_SSL
+			? !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on'
+			: true );
 	}
 
 

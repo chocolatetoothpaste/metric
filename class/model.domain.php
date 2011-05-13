@@ -293,7 +293,9 @@ abstract class Model
 		{
 			$this->meta_obj = $this->getMeta();
 		}
-		return ( property_exists( $this->meta_obj, $key ) ? $this->meta_obj->$key : false );
+		return ( property_exists( $this->meta_obj, $key )
+			? $this->meta_obj->$key
+			: false );
 	} // end method meta
 
 

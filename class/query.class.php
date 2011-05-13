@@ -56,12 +56,11 @@ class query
 		}
 		elseif( $this->where )
 		{
-			$this->where = " WHERE $this->where";
+			$this->where = " WHERE {$this->where}";
 		}
 
-		$this->query = 'SELECT '
-			. implode( ', ', $columns )	. " FROM $table"
-			. $this->where;
+		$columns = implode( ', ', $columns );
+		$this->query = "SELECT $columns FROM $table {$this->where}";
 
 		return $this->query;
 	}
@@ -117,9 +116,8 @@ class query
 			$params = sprintf( '(%s)', $params );
 		}
 
-		$this->query = "INSERT INTO $table "
-			. sprintf( '(%s)', implode( ', ', $columns ) ) . ' VALUES '
-			. $params;
+		$columns = sprintf( '(%s)', implode( ', ', $columns ) );
+		$this->query = "INSERT INTO $table $columns VALUES $params";
 
 		return $this->query;
 	}
@@ -137,9 +135,10 @@ class query
 	{
 		$this->params = $params + $where;
 		$columns = asprintf( '%1$s = :%1$s', array_keys( $params ) );
+		$columns = implode( ', ', $columns );
 		$where = asprintf( '%1$s = :%1$s', array_keys( $where ) );
-		$this->query = 'UPDATE ' . $table . ' SET ' . implode( ', ', $columns )
-			. ' WHERE ' .  implode( ' AND ',  $where );
+		$where = implode( ' AND ', $where );
+		$this->query = "UPDATE $table SET $columns WHERE $where";
 
 		return $this->query;
 	}
