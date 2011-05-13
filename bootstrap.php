@@ -22,7 +22,8 @@ session_start();
 $page = new page();
 $page->uid = get( 'uid', '0' );
 
-// determine if it's a request for js/css resources, or a page, then do some set up
+// determine if it's a request for js/css
+// resources, or a page, then do some set up
 if( $page->request = get( 'js' ) ):
 	$page->content_type = 'text/javascript';
 	$dir = PATH_JS;
@@ -37,7 +38,8 @@ else:
 	$cache_file = PATH_CACHE . '/page';
 endif;
 
-if( $page->content_type === 'text/javascript' || $page->content_type === 'text/css' )
+if( $page->content_type === 'text/javascript'
+	|| $page->content_type === 'text/css' )
 {
 	$page->template = false;
 	$cache_file = PATH_CACHE . "/$type";
@@ -83,7 +85,8 @@ else
 		if( $page->view )
 			require( $page->view );
 		
-		/*// grab the new list of classes and see if there was one defined in $page->file
+		/*// grab the new list of classes and see
+		// if there was one defined in $page->file
 		$new_class = array_diff( get_declared_classes(), $declared_classes );
 
 		// if a new class was found, instantiate it and call init function
@@ -100,7 +103,8 @@ else
 	header( "Content-Type: {$page->content_type}" );
 	$page->render( $body );
 
-	// cache the page if the stars are aligned (no errors), because caching an errored page would be stupid
+	// cache the page if the stars are aligned (no errors),
+	// because caching an errored page would be stupid
 	if( strlen( $page->body ) && $page->cache && !error_get_last() )
 	{
 		$date = strtotime( '+1 month' );
@@ -115,7 +119,8 @@ else
 	// the page is displayed whether it's cached or not, so flush the buffer
 	ob_end_flush();
 
-	// stop the timer and calculate execution time, displays as comment after </html>
+	// stop the timer and calculate execution
+	// time, displays as comment after </html>
 	$_finish__ = microtime(true);
 	if( $page->template )
 		printf( '<!-- %f hash: %s-->', ( $_finish__ - $_start__ ), $hash );
