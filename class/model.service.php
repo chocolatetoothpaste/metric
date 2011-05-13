@@ -49,19 +49,20 @@ abstract class Model
 		{
 			if( !empty( $range ) || $range == 0 )
 			{
-//				if( preg_match( '#(\d*[,-]?\d*-?)*#', $range ) && false === strpos( $range, '/' ) )
+//				if( preg_match( '#^(\d*[,-]?\d*-?)*$#', $range ) && false === strpos( $range, '/' ) )
 				if( false !== strpos( $range, ',' ) )
 				{
 //					error_log("$range");
 					$return[$field] = parseRange($range);
-					$return[$field] = "$field IN (" . implode( ',', $return[$field] ) . ')';
+					$return[$field] = implode( ',', $return[$field] );
+					$return[$field] = "$field IN ({$return['field']})";
 //					error_log("$return[$field]");
 //					die;
 				}
 				elseif( false !== strpos( $range, '/' ) )
 				{
-					$return[$field] = "$field BETWEEN '"
-						. str_replace('/', '\' AND \'', $range) . "'";
+					$range = str_replace( '/', '\' AND \'', $range );
+					$return[$field] = "$field BETWEEN '$range'";
 				}
 				else
 				{
@@ -121,55 +122,80 @@ abstract class Model
 	public static function collection( $method, $get = array() )
 	{
 		global $config;
-//		return array('status' => HTTP_OK, 'data' => 'must be a range issue');
+
 		// GET is the only method allowed for collections for now
 		if( $method != 'GET' )
 			return array( 'success' => 'false', 'status' => HTTP_METHOD_NOT_ALLOWED );
 
+		// static::$domain is defined in individual services
 		$domain = static::$domain;
 		$fields = $domain::getFields();
 		$q = new \query;
-		$true_status = HTTP_OK;
+		$true_status = HTTP_OK; // default status
+
+		// check for ranges and custom options
 		if( !empty( $_SERVER['HTTP_RANGE'] ) )
 			$ranges = static::tokenize( $_SERVER['HTTP_RANGE'] );
 		if( !empty( $_SERVER['HTTP_PRAGMA'] ) )
 			$options = static::tokenize( $_SERVER['HTTP_PRAGMA'] );
-//		return array('status' => HTTP_OK, 'message' => 'must be a range issue', 'data' => $ranges);
+		
+		/*//
+		return array(
+			'status'	=>	HTTP_OK,
+			'message'	=>	'must be a range issue',
+			'data'		=>	$ranges
+		);//*/
 		
 		if( !empty( $ranges ) )
 		{
 			$ranges = static::getRanges( $ranges );
-//			return array('status' => HTTP_OK, 'message' => 'range parsing issue', 'data' => $ranges);
-
-			// this needs to be moved into the contact service, just not sure how to approach the problem
-			/*if( isset( $ranges['metaphone'] ) )
-			{
-//				return array('status' => HTTP_OK, 'data' => 'setting metaphone fields');
-				$q->params['metaphone'] = metaphone($ranges['metaphone']) . '%';
-				$ranges['metaphone'] = 'metaphone_first LIKE :metaphone OR metaphone_last LIKE :metaphone';
-			}*/
+			/*//
+			return array(
+				'status'	=>	HTTP_OK,
+				'message'	=>	'range parsing issue',
+				'data'		=>	$ranges
+			);//*/
 
 			$true_status = HTTP_PARTIAL_CONTENT;
 			$q->where = implode(' AND ', $ranges );
 		}
 
 		if( !empty( $options['order'] ) )
-			$q->where .= " ORDER BY {$options['order']}";
+		{
+			$q->where .= " ORDER BY :order_by";
+			$q->params['order_by'] = $options['order'];
+		}
 
-//		return array('status' => HTTP_OK, 'message' => 'query object', 'data' => $q, 'extra' => $ranges);
+		/*//
+		return array(
+			'status'	=>	HTTP_OK,
+			'message'	=>	'query object',
+			'data'		=>	$q,
+			'extra'		=>	$ranges
+		);//*/
+
 		$q->select( $fields, $domain::getTable() );
-//		return array('status' => HTTP_OK, 'message' => 'query object', 'data' => $q);
+
+		//return array('status' => HTTP_OK, 'message' => 'query object', 'data' => $q);
 
 		$db = \mysql::instance( $config->db[DB_MAIN] );
 		$db->quote($q->query);
 		$stmt = $db->execute( $q->query, $q->params );
-//		return array('status' => HTTP_OK, 'message' => 'statement', 'data' => $stmt->fetchAll( \PDO::FETCH_ASSOC ) );
+
+		/*//
+		return array(
+			'status'	=>	HTTP_OK,
+			'message'	=>	'statement',
+			'data'		=>	$stmt->fetchAll( \PDO::FETCH_ASSOC )
+		);//*/
 
 		if( $stmt )
 		{
 			if( !empty( $options ) )
 			{
 				$data = array();
+
+				// check to see if a custom indexing scheme was requested
 				$options = static::tokenize( $_SERVER['HTTP_PRAGMA'] );
 				if( !empty( $options['group'] ) && !empty( $options['index'] ) )
 				{
@@ -191,10 +217,17 @@ abstract class Model
 				$data = $stmt->fetchAll( \PDO::FETCH_ASSOC );
 			}
 
-			$message = array( 'success' => 'true', 'data' => $data, 'status' => $true_status );
+			$message = array(
+				'success'	=>	'true',
+				'data'		=>	$data,
+				'status'	=>	$true_status
+			);
 		}
 		else
-			$message = array( 'success' => 'false', 'status' => HTTP_BAD_REQUEST );
+			$message = array(
+				'success'	=>	'false',
+				'status'	=>	HTTP_BAD_REQUEST
+			);
 
 		return $message;
 	} // end method collection
