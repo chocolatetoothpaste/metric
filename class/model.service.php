@@ -49,13 +49,12 @@ abstract class Model
 		{
 			if( !empty( $range ) || $range == 0 )
 			{
-//				if( preg_match( '#^(\d*[,-]?\d*-?)*$#', $range ) && false === strpos( $range, '/' ) )
-				if( false !== strpos( $range, ',' ) )
+				if( 0 !== preg_match( '#^(\d*[,-]?\d*-?)*$#', $range ) )
 				{
 //					error_log("$range");
 					$return[$field] = parseRange($range);
 					$return[$field] = implode( ',', $return[$field] );
-					$return[$field] = "$field IN ({$return['field']})";
+					$return[$field] = "$field IN ({$return[$field]})";
 //					error_log("$return[$field]");
 //					die;
 				}
@@ -66,7 +65,6 @@ abstract class Model
 				}
 				else
 				{
-					$return[$field] = $range;
 					$return[$field] = "{$field}={$range}";
 				}
 			}
