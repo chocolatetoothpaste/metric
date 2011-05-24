@@ -6,24 +6,32 @@
 
 abstract class database extends PDO
 {
-	abstract public function fetchIntoObject( &$obj, $query, array $params = array() );
-	abstract public function fetchClass( $class, $query, array $params = array() );
-	abstract public function next();
-	abstract public function execute( $query, array $params = array() );
+	abstract public
+		function fetchIntoObject( &$obj, $query, array $params = array() );
+	abstract public
+		function fetchClass( $class, $query, array $params = array() );
+	abstract public
+		function next();
+	abstract public
+		function execute( $query, array $params = array() );
+
 	private static $instance = array();
 
 
 	/**
-	 * Returns an instance of the database, separates database driver and db connection name as defined in config.inc.php
+	 * Returns an instance of the database, separates database
+	 * driver and db connection name as defined in config.inc.php
 	 * @param string $db_name
 	 * @return object
 	 */
 
-	public static function instance( $db_info )
+	final public static function instance( $db_info )
 	{
-		$name = md5( implode( ';', $db_info ) );
+		// convert connection info into a string and create a unique hash
+		$name = md5( implode( '', $db_info ) );
 		$class = get_called_class();
-		if( empty( self::$instance[$class] ) || empty( self::$instance[$class][$name] ) )
+		if( empty( self::$instance[$class] )
+			|| empty( self::$instance[$class][$name] ) )
 		{
 			self::$instance[$class][$name] = new $class( $db_info );
 		}
@@ -45,7 +53,8 @@ abstract class database extends PDO
 
 
 	/**
-	 * takes an array of fields and prepares them for use in a query statement
+	 * takes an array of fields and prepares
+	 * them for use in a query statement
 	 * @param array $fields
 	 * @return array
 	 */
