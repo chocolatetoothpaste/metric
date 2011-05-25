@@ -29,7 +29,7 @@ echo $hash;
 
 if( $hash !== $user_name[1] )
 {
-	header('HTTP/1.1 Unauthorized');
+	header($__http_status[HTTP_UNAUTHORIZRD]);
 	die;
 }
 */
