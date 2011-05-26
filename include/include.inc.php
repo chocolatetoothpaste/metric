@@ -34,6 +34,7 @@ function __autoload( $file )
 	$part = explode( '\\', $file );
 	global $config;
 	$sub = ( empty( $part[1] ) ? 'class' : $part[0] );
+	$file = trim( $file, '\\' );
 	try
 	{
 		if( !is_file( $config->classes[$file] ) )

@@ -237,7 +237,6 @@ class page
 				"Content-Length: $length",
 				'Connection: close',
 				'Accept: application/json',
-				'Date: ' . gmdate('r')
 			));
 
 			$options = array(
