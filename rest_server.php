@@ -1,5 +1,4 @@
 <?php
-
 $page->template = false;
 $page->content_type = $_SERVER['HTTP_ACCEPT'];
 $response = array( 'success' => 'false', 'status' => HTTP_BAD_REQUEST );
@@ -7,13 +6,13 @@ $response = array( 'success' => 'false', 'status' => HTTP_BAD_REQUEST );
 $user_name = apache_request_headers();
 if( empty( $user_name['Authorization'] ) )
 {
-	header($__http_status[HTTP_UNAUTHORIZED]);
+	header( $__http_status[HTTP_UNAUTHORIZED] );
 	die;
 }
 $user_name = $user_name['Authorization'];
 $user_name = explode( ':', $user_name);
 
-$db = mysql::instance($config->db[DB_MAIN]);
+$db = mysql::instance( $config->db[DB_MAIN] );
 $query = <<<EOSQL
 	SELECT
 		api_key
@@ -37,20 +36,26 @@ else
 	parse_str( $input, $data );
 }
 
-$contents = $_SERVER['REQUEST_METHOD']
-	. ':' . $_SERVER['HTTP_DATE']
-	. ':' . $input;
-$hash = hash_hmac( 'sha1', utf8_encode($contents), $key );
+
+// This will change how a message is hashed, so any changes to this composition
+// could potentially break code. see also request.class.php; changes to this
+// composition must also be reflected in that class!!!
+$contents = "{$_SERVER['REQUEST_METHOD']} {$_SERVER['SERVER_PROTOCOL']}"
+	. " {$page->request}\n"
+	. "Date: {$_SERVER['HTTP_DATE']}\n\n"
+	. "$input";
+
+$hash = hash_hmac( 'sha1', utf8_encode( $contents ), $key );
 
 if( $hash !== $user_name[1] )
 {
-	header($__http_status[HTTP_UNAUTHORIZED]);
+	header( $__http_status[HTTP_UNAUTHORIZED] );
 	die;
 }
 
 $page->params = $page->params + array(
-	'method' => $_SERVER['REQUEST_METHOD'],
-	'data' => $data
+	'method'	=>	$_SERVER['REQUEST_METHOD'],
+	'data'		=>	$data
 );
 
 if( is_callable( $page->callback ) )
@@ -78,13 +83,13 @@ else
 	$page->body = 'Invalid format';
 }
 
-header($__http_status[$response['status']]);
-header('Date: ' . gmdate('D, d M Y H:i:s \G\M\T'));
+header( $__http_status[$response['status']] );
+header( 'Date: ' . gmdate( 'D, d M Y H:i:s \G\M\T' ) );
 
 if(	DEV )
 {
-	$_finish__ = microtime(true);
-	header('X-Execute-Time: ' .  $_finish__ - $_start__ );
+	$_finish__ = microtime( true );
+	header( 'X-Execute-Time: ' .  $_finish__ - $_start__ );
 }
 
 $page->render( $page->body );

@@ -48,8 +48,12 @@ class request
 
 	private function hash()
 	{
+		$url = str_replace( URL_API, '', $this->url );
 		$this->date = gmdate('D, d M Y H:i:s \G\M\T');
-		$this->hash = "{$this->method}:{$this->date}:{$this->content}";
+		
+		$this->hash = "{$this->method} HTTP/1.1 {$url}\n"
+			. "Date: {$this->date}\n\n"
+			. "{$this->content}";
 		$this->hash = hash_hmac( 'sha1', $this->hash, $this->key );
 	}
 
