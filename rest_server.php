@@ -9,7 +9,7 @@ if( empty( $user_name['Authorization'] ) )
 	header( $__http_status[HTTP_UNAUTHORIZED] );
 	die;
 }
-$user_name = $user_name['Authorization'];
+$user_name = base64_decode( $user_name['Authorization'] );
 $user_name = explode( ':', $user_name);
 
 $db = mysql::instance( $config->db[DB_MAIN] );
