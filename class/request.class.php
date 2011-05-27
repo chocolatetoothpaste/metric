@@ -1,9 +1,8 @@
 <?php
-
 class request
 {
-	public $method = 'GET', $headers = array(), $content = array(), $response,
-		$format = 'application/json', $username, $password;
+	public $method = 'GET', $headers = array(), $content = array(), $auth,
+		$response, $format = 'application/json', $username, $password;
 
 	public function __construct( $url )
 	{
@@ -22,12 +21,13 @@ class request
 		}
 		
 		$this->hash();
+		$this->auth = base64_encode( "{$this->username}:{$this->hash}" );
 
 		$headers = array_merge($this->headers, array(
 			'Content-Type: application/x-www-form-urlencoded',
 			'Connection: close',
 			"Accept: {$this->format}",
-			"Authorization: {$this->username}:{$this->hash}",
+			"Authorization: {$this->auth}",
 			"Date: {$this->date}"
 		));
 
