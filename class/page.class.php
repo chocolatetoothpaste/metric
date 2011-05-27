@@ -215,7 +215,6 @@ class page
 	 * @param string $method
 	 * @param array $params
 	 * @return string
-	 */
 
 	public function request( $url, $method = 'GET', $content = array(), $headers = array() )
 	{
@@ -229,9 +228,6 @@ class page
 		
 		$length = strlen( $content );
 
-		/*//
-		//if( $curl )
-		{/*/
 			$headers = array_merge($headers, array(
 				'Content-Type: application/x-www-form-urlencoded',
 				"Content-Length: $length",
@@ -253,33 +249,10 @@ class page
 			$this->response = curl_exec($ch);
 			curl_close($ch);
 
-		/*/
-		//}
-		else
-		//{
-			$headers = "Content-Type: application/x-www-form-urlencoded\r\n"
-				. 'Connection: close' . "\r\n"
-				. 'Date: ' . gmdate('r') . "\r\n"
-				. implode("\r\n", $headers);
-
-			$opts = array(
-				'http' => array(
-					'protocol_version' => '1.1',
-					'method'	=>	$method,
-					'header'	=>	$headers,
-					'content'	=>	$content
-				)
-			);
-
-			$context = stream_context_create( $opts );
-			$this->response = file_get_contents( $url, false, $context );
-		}
-
-		//*/
-
 		return $this->response;
 	}
 
+	*/
 
 
 	/**

@@ -11,10 +11,7 @@
  */
 
 // starting a timer to time how long it takes to process a page request.
-// using this instead of timer class to avoid interference with benchmarking
-// that will occur on other pages. also, this way, no time is lost waiting for
-// the timer class to be loaded while other things may happen in the meantime
-$_start__ = microtime(true);
+$_start__ = microtime( true );
 
 include( 'include/include.inc.php' );
 session_start();
@@ -121,7 +118,7 @@ else
 
 	// stop the timer and calculate execution
 	// time, displays as comment after </html>
-	$_finish__ = microtime(true);
+	$_finish__ = microtime( true );
 	if( $page->template )
 		printf( '<!-- %f hash: %s-->', ( $_finish__ - $_start__ ), $hash );
 }
