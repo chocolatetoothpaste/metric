@@ -244,7 +244,7 @@ class page
 				CURLOPT_RETURNTRANSFER	=>	1,
 				CURLOPT_HTTPHEADER		=>	$headers,
 				CURLOPT_CUSTOMREQUEST	=>	$method,
-				CURLOPT_POSTFIELDS		=> $content,
+				CURLOPT_POSTFIELDS		=>	$content,
 				CURL_HTTP_VERSION_1_1
 			);
 
