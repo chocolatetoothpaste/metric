@@ -49,6 +49,7 @@ abstract class Model
 		{
 			if( !empty( $range ) || $range == 0 )
 			{
+				$date_regex = '\d{4}-\d{2}-\d{2} (([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9])';
 				if( 0 !== preg_match( '#^(\d*[,-]?\d*-?)*$#', $range ) )
 				{
 //					error_log("$range");
@@ -58,7 +59,7 @@ abstract class Model
 //					error_log("$return[$field]");
 //					die;
 				}
-				elseif( false !== strpos( $range, '/' ) )
+				elseif( 0 !== preg_match( "#{$date_regex}\/{$date_regex}#", $range ) )
 				{
 					$range = str_replace( '/', '\' AND \'', $range );
 					$return[$field] = "$field BETWEEN '$range'";
