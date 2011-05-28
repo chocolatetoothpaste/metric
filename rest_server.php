@@ -3,26 +3,26 @@ $page->template = false;
 $page->content_type = $_SERVER['HTTP_ACCEPT'];
 $response = array( 'success' => 'false', 'status' => HTTP_BAD_REQUEST );
 
-$user_name = apache_request_headers();
-if( empty( $user_name['Authorization'] ) )
+$auth = apache_request_headers();
+if( empty( $auth['Authorization'] ) )
 {
 	header( $__http_status[HTTP_UNAUTHORIZED] );
 	die;
 }
-$user_name = base64_decode( $user_name['Authorization'] );
-$user_name = explode( ':', $user_name);
+
+$auth = base64_decode( $auth['Authorization'] );
+list( $username, $signature ) = explode( ':', $auth );
 
 $db = mysql::instance( $config->db[DB_MAIN] );
-$query = <<<EOSQL
+$query = "
 	SELECT
 		api_key
 	FROM
 		users
 	WHERE
-		enabled = 1 AND username = :username
-EOSQL;
+		enabled = 1 AND username = :username";
 
-$db->execute( $query, array( 'username' => $user_name[0] ) );
+$db->execute( $query, array( 'username' => $username ) );
 $key = $db->result->fetchColumn();
 
 if( $_SERVER['REQUEST_METHOD'] === 'GET' )
@@ -40,14 +40,15 @@ else
 // This will change how a message is hashed, so any changes to this composition
 // could potentially break code. see also request.class.php; changes to this
 // composition must also be reflected in that class!!!
-$contents = "{$_SERVER['REQUEST_METHOD']} {$_SERVER['SERVER_PROTOCOL']}"
+$contents =
+	"{$_SERVER['REQUEST_METHOD']} {$_SERVER['SERVER_PROTOCOL']}"
 	. " {$page->request}\n"
 	. "Date: {$_SERVER['HTTP_DATE']}\n\n"
 	. "$input";
 
 $hash = hash_hmac( 'sha1', utf8_encode( $contents ), $key );
 
-if( $hash !== $user_name[1] )
+if( $hash !== $signature )
 {
 	header( $__http_status[HTTP_UNAUTHORIZED] );
 	die;
