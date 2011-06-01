@@ -78,7 +78,12 @@ if( $page->content_type === 'application/json' )
 }
 elseif( $page->content_type === 'application/xml' )
 {
-	// handle xml
+	$xml = new SimpleXMLElement( '<response/>' );
+	array_walk_recursive( $response, function( $v, $k ) use ( $xml )
+	{
+		$xml->addChild( $k, $v );
+	});
+	$page->body = $xml->asXML();
 }
 else
 {
