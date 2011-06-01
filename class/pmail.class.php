@@ -1,10 +1,7 @@
 <?php
 
 /**
-* @author ross paskett - rpaskett@gmail.com
-* @copyright 2007, 2009 ross paskett
-* @package PMail v1.0
-* revised:	2009-09-21
+* @author ross paskett [rpaskett@gmail.com]
 *
 */
 
@@ -88,7 +85,7 @@ class pmail
 	 * content type of the main message
 	 * @var string
 	 */
-	public $content_type;
+	private $content_type;
 
 
 
@@ -98,8 +95,8 @@ class pmail
 
 	public function __construct()
 	{
-		$this->__boundary = '<boundary>' . md5( 'PMAIL_BOUNDARY' . time() ) . '</boundary>';
-		$this->__alt_boundary = '<boundary>' . md5( 'PMAIL_ALT_BOUNDARY' . time() ) . '</boundary>';
+		$this->__boundary = '<boundary>' . sha1( 'PMAIL_BOUNDARY' . time() ) . '</boundary>';
+		$this->__alt_boundary = '<boundary>' . sha1( 'PMAIL_ALT_BOUNDARY' . time() ) . '</boundary>';
 
 		$this->boundary = '--' . $this->__boundary;
 		$this->alt_boundary = '--' . $this->__alt_boundary;
@@ -116,8 +113,8 @@ class pmail
 		$header = '';
 
 		if( $this->text_msg && $this->attachments ):
-				$header = "{$this->alt_boundary}\r\n";
-				$this->html_msg .= "\r\n{$this->alt_boundary}--\r\n";
+			$header = "{$this->alt_boundary}\r\n";
+			$this->html_msg .= "\r\n{$this->alt_boundary}--\r\n";
 		elseif( $this->text_msg || $this->attachments ):
 			$header = "$this->boundary\r\n";
 		else:
@@ -156,9 +153,9 @@ class pmail
 		endif;
 
 		$this->text_msg = $header
-			. 'Content-Type: text/html; charset="utf-8"' . "\r\n"
-			. 'Content-Transfer-Encoding: quoted-printable' . "\r\n"
-			. 'Content-Disposition: inline' . "\r\n\r\n" . $this->text_msg . "\r\n";
+			. "Content-Type: text/html; charset=\"utf-8\"\r\n"
+			. "Content-Transfer-Encoding: quoted-printable\r\n"
+			. "Content-Disposition: inline;\r\n\r\n{$this->text_msg}\r\n";
 
 		return $this->text_msg;
 	}
@@ -190,12 +187,13 @@ class pmail
 		
 		$headers = array
 		(
-			'Message-Id'		=>	"<{$this->to}:" . time() . '>',
-			'Date'					=>	gmdate('r'),
-			'X-Mailer'			=>	'PMail v1',
-			'X-Priority'		=>	'3',
-			'MIME-Version'	=>	'1.0',
-			'Content-Type'	=>	$this->content_type . ";\r\n\tboundary=\"{$this->__boundary}\"\r\n"
+			'Message-Id'	=> "<{$this->to}:" . time() . '>',
+			'Date'			=> date( DATE_RFC2822 ),
+			'X-Mailer'		=> 'PMail v1',
+			'X-Priority'	=> '3',
+			'MIME-Version'	=> '1.0',
+			'Content-Type'	=> $this->content_type
+				. ";\r\n	boundary=\"{$this->__boundary}\"\r\n"
 		);
 
 		foreach( $headers as $k => $v )
@@ -245,12 +243,12 @@ class pmail
 			$this->headers .= "Return-Receipt-To: {$this->return_address}\r\n";
 		}
 
-		$this->headers .= 'X-Mailer: PMail v1' . "\r\n";
-		$this->headers .= 'X-Priority: 3' . "\r\n";
-		$this->headers .= 'MIME-Version: 1.0' . "\r\n";
-		$this->headers .= 'Content-Type: ' . "{$content_type};\r\n";
+		$this->headers .= "X-Mailer: PMail v1\r\n";
+		$this->headers .= "X-Priority: 3\r\n";
+		$this->headers .= "MIME-Version: 1.0\r\n";
+		$this->headers .= "Content-Type: {$content_type};\r\n";
 		$this->headers .= "	boundary=\"{$this->__boundary}\"\r\n\r\n";
-		//	$this->headers .= "This is a multi-part message in MIME format.\r\n";
+		// $this->headers .= "This is a multi-part message in MIME format.\r\n";
 
 		return true;
 
@@ -270,19 +268,19 @@ class pmail
 		$this->alt_msg = wordwrap( $this->alt_msg, 70 );
 
 		$this->msg = "{$this->boundary}\r\n";
-		$this->msg .= 'Content-Type: multipart/alternative;' . "\r\n";
+		$this->msg .= "Content-Type: multipart/alternative;\r\n";
 		$this->msg .= "	boundary=\"{$this->__alt_boundary}\"\r\n\r\n";
 
 		$this->msg .= "{$this->alt_boundary}\r\n";
-		$this->msg .= 'Content-Type: text/plain; charset="utf-8"' . "\r\n";
-		$this->msg .= 'Content-Transfer-Encoding: quoted-printable' . "\r\n";
-		$this->msg .= 'Content-Disposition: inline' . "\r\n\r\n";
+		$this->msg .= "Content-Type: text/plain; charset=\"utf-8\"\r\n";
+		$this->msg .= "Content-Transfer-Encoding: quoted-printable\r\n";
+		$this->msg .= "Content-Disposition: inline\r\n\r\n";
 		$this->msg .= "{$this->alt_msg}\r\n\r\n";
 
 		if( $this->html ):
 			$this->msg .= "{$this->alt_boundary}\r\n";
-			$this->msg .= 'Content-Type: text/html; charset="utf-8"' . "\r\n";
-			$this->msg .= 'Content-Transfer-Encoding: quoted-printable' . "\r\n";
+			$this->msg .= "Content-Type: text/html; charset=\"utf-8\"\r\n";
+			$this->msg .= "Content-Transfer-Encoding: quoted-printable\r\n";
 			$this->msg .= 'Content-Disposition: inline' . "\r\n\r\n";
 			$this->msg .= "{$this->message}\r\n\r\n\r\n";
 		endif;
@@ -302,25 +300,24 @@ class pmail
 	public function attach( $attachments = array() )
 	{
 		foreach( $attachments as $file )
-	  {
-  		if( $f = file_get_contents( $file ) )
-  		{
+		{
+  			if( $f = file_get_contents( $file ) )
+			{
 				//	encode the file and create the proper headers
-  			$file_encoded = chunk_split( base64_encode( $f ) );
+				$file_encoded = chunk_split( base64_encode( $f ) );
 				$mime = mime_content_type( $file );
 				$base = basename($file);
 
-  			$this->attachments .= "{$this->boundary}\r\n";
-  			$this->attachments .= "Content-Type: {$mime};"
-					. " name=\"{$base}\"\r\n";
-  			$this->attachments .= 'Content-Transfer-Encoding: base64' . "\r\n";
-  			$this->attachments .= 'Content-Disposition: attachment;'
-					. " filename=\"{$base}\"\r\n\r\n";
-  			$this->attachments .= "{$file_encoded}\r\n\r\n";
-
-    		unset( $file_encoded, $base, $mime );
-  	  }
-    }
+				$this->attachments .= "{$this->boundary}\r\n";
+				$this->attachments .= "Content-Type: {$mime};"
+					. "	name=\"{$base}\"\r\n";
+				$this->attachments .= "Content-Transfer-Encoding: base64\r\n";
+				$this->attachments .= 'Content-Disposition: attachment;'
+					. "	filename=\"{$base}\"\r\n\r\n";
+				$this->attachments .= "{$file_encoded}\r\n\r\n";
+				unset( $file_encoded, $base, $mime );
+			}
+		}
 	}	//	end method attach
 
 
@@ -351,7 +348,6 @@ class pmail
 
 			$this->msg .= "{$this->boundary}--\r\n";
 			$return = mail( $this->to, $this->subject, $this->msg, $this->headers );
-			ini_restore( 'sendmail_from' );
 			return $return;
 		}*/
 	}	//	end method send

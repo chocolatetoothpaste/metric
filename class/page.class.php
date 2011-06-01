@@ -67,16 +67,18 @@ class page
 			// the page request, return filename and register page params
 			foreach( $config->urls as $url => $action )
 			{
-					// matches:			 required,		optional
-					$match		= array( '#/@[\w]+#',	'#/%[\w]+#' );
-					$replace	= array( '/([^/]*)',	'/?([^/]*)' );
+				// matches:			 required,		optional
+				$match		= array( '#/@[\w]+#',	'#/%[\w]+#' );
+				$replace	= array( '/([^/]*)',	'/?([^/]*)' );
 
-				// TODO: figure out a way to cache the urls once params have been replaced
+				// TODO: figure out a way to cache the
+				// urls once params have been replaced
 				$pattern = preg_replace( $match, $replace, $url );
-				preg_match_all( "#^{$pattern}$#", $this->request, $matches, PREG_SET_ORDER );
+				preg_match_all( "#^{$pattern}$#", $this->request,
+					$matches, PREG_SET_ORDER );
 
-				// if any urls in config match the page request, set the filename or
-				// method call and set any params passed in the url
+				// if any urls in config match the page request, set the
+				// filename or method call and set any params passed in the url
 				if( $matches )
 				{
 					preg_match_all('/\/[@|%]([\w]+)/', $url, $params );
@@ -84,7 +86,8 @@ class page
 					array_shift( $matches[0] );
 
 					if( $params[0] && $matches[0] ):
-						$this->params = array_combine( $params[0], $matches[0] );
+						$this->params =
+							array_combine( $params[0], $matches[0] );
 					endif;
 
 					if( is_array( $action ) ):
@@ -108,20 +111,23 @@ class page
 
 		// check for a view associated with the page that's found
 		$path = pathinfo( $this->file );
-		$path['dirname'] = str_replace( PATH_CONTROLLER, PATH_VIEW, $path['dirname'] );
+		$path['dirname'] =
+			str_replace( PATH_CONTROLLER, PATH_VIEW, $path['dirname'] );
 		$this->view = "$path[dirname]/$path[filename].phtml";
 
 		if( !file_exists( $this->view ) || $this->view === $this->file )
 			$this->view = null;
 
-		// set the "last modified" time of the file or view for cache verifications
+		// set the "last modified" time of the
+		// file or view for cache verifications
 
 
 	}	// end method parseURL
 
 
 	/**
-	 * Get the timestamp of the most recently modified file (either script or view) and return it
+	 * Get the timestamp of the most recently modified
+	 * file (either script or view) and return it
 	 * @return int the timestamp
 	 */
 
@@ -131,128 +137,12 @@ class page
 			$this->time = array_map( 'filemtime', $this->file );
 			$this->time = max( $this->time );
 		else:
-			$this->mtime = max( filemtime( $this->view ), filemtime( $this->file ) );
+			$this->mtime =
+				max( filemtime( $this->view ), filemtime( $this->file ) );
 		endif;
 
 		return $this->mtime;
 	}
-
-
-	/**
-	 * Parses a string (page body) and looks for custom template tags
-	 * @param string $string
-	 * @return $return
-	 */
-
-	public function parseTags( $string )
-	{
-
-		// had to put a space between the last '*' and '/' because it was breaking comments
-		$pattern = '#\<titan:(@|\#|\w*)([\w\._]*)[^\>]*/?>#';
-		preg_match_all($pattern, $string, $tags, PREG_SET_ORDER);
-
-		foreach( $tags as $t )
-		{
-			if( $t[1] == '@' )
-			{
-				if( strpos( $t[2], '.' ) )
-				{
-					$var = explode( '.', $t[2] );
-					global ${$var[0]};
-					if( is_object( ${$var[0]} ) && property_exists( ${$var[0]}, $var[1] ) )
-					{
-						$string = str_replace( $t[0], ${$var[0]}->$var[1], $string );
-					}
-					else
-					{
-						$string = str_replace( $t[0], '', $string );
-					}
-				}
-			}
-			elseif( $t[1] == 'form' )
-			{
-				$action = '';
-				$replace = preg_replace( array( '#titan:#', '#action="(\w*)"#' ), array( '', "action=\"$action/$1\"" ), $t[0]);
-				$string = str_replace( $t[0], $replace, $string );
-				$string = str_replace( '</titan:form>', '</form>', $string);
-			}
-			elseif( $t[1] == 'input' )
-			{
-				$p = '#value=@([\w\._]*)#';
-				preg_match_all( $p, $t[0], $m, PREG_SET_ORDER );
-
-				if( strpos( $m[0][1], '.' ) )
-				{
-					$vars = explode( '.', $m[0][1] );
-					list( $class, $var ) = $vars;
-					global ${$class};
-					$var =& ${$class}->$var;
-				}
-				else
-				{
-					$var = $m[0][1];
-					global ${$var};
-					$var = $$var;
-				}
-
-				$replace = preg_replace( array( '#titan:#', '#@[\w\._]*#' ), array( '', "\"$var\"" ), $t[0] );
-				$string = str_replace( $t[0], $replace, $string );
-			}
-		}
-
-		/*//
-		die( $string );
-		/*/
-		return $string;
-		//*/
-
-	} // end function parseTags
-
-
-	/**
-	 * Makes a reqeust to a URL and returns the output.
-	 * @param string $url
-	 * @param string $method
-	 * @param array $params
-	 * @return string
-
-	public function request( $url, $method = 'GET', $content = array(), $headers = array() )
-	{
-		$content = http_build_query( $content );
-
-		if( $method == 'GET' && $content )
-		{
-			$url .= "?$content";
-			$content = array();
-		}
-		
-		$length = strlen( $content );
-
-			$headers = array_merge($headers, array(
-				'Content-Type: application/x-www-form-urlencoded',
-				"Content-Length: $length",
-				'Connection: close',
-				'Accept: application/json',
-			));
-
-			$options = array(
-				CURLOPT_URL				=>	$url,
-				CURLOPT_RETURNTRANSFER	=>	1,
-				CURLOPT_HTTPHEADER		=>	$headers,
-				CURLOPT_CUSTOMREQUEST	=>	$method,
-				CURLOPT_POSTFIELDS		=>	$content,
-				CURL_HTTP_VERSION_1_1
-			);
-
-			$ch = curl_init();
-			curl_setopt_array($ch, $options);
-			$this->response = curl_exec($ch);
-			curl_close($ch);
-
-		return $this->response;
-	}
-
-	*/
 
 
 	/**
@@ -329,7 +219,8 @@ class page
 		}
 		else
 		{
-			// using $page instead of $this in template files is a bit less ambiguous
+			// using $page instead of $this in template
+			// files is a bit less ambiguous
 			$page =& $this;
 			require( PATH_TEMPLATE . "/$this->template" );
 		}
