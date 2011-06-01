@@ -1,13 +1,13 @@
 <?php
 $page->template = false;
 $page->content_type = $_SERVER['HTTP_ACCEPT'];
-$response = array( 'success' => 'false', 'status' => HTTP_BAD_REQUEST );
+$response = array( 'success' => 'false', 'status' => HTTP_UNAUTHORIZED );
 
 $auth = apache_request_headers();
 if( empty( $auth['Authorization'] ) )
 {
 	header( $__http_status[HTTP_UNAUTHORIZED] );
-	die;
+	die(json_encode($response));
 }
 
 $auth = base64_decode( $auth['Authorization'] );
@@ -40,18 +40,20 @@ else
 // This will change how a message is hashed, so any changes to this composition
 // could potentially break code. see also request.class.php; changes to this
 // composition must also be reflected in that class!!!
-$contents =
-	"{$_SERVER['REQUEST_METHOD']} {$_SERVER['SERVER_PROTOCOL']}"
-	. " {$page->request}\n"
-	. "Date: {$_SERVER['HTTP_DATE']}\n\n"
-	. "$input";
+$contents = <<<EODOC
+{$_SERVER['REQUEST_METHOD']} {$_SERVER['SERVER_PROTOCOL']} {$page->request}
+Date: {$_SERVER['HTTP_DATE']}
+
+$input
+EODOC;
 
 $hash = hash_hmac( 'sha1', utf8_encode( $contents ), $key );
 
 if( $hash !== $signature )
 {
+	$response['data'] = $hash;
 	header( $__http_status[HTTP_UNAUTHORIZED] );
-	die;
+	die(json_encode($response));
 }
 
 $page->params = $page->params + array(

@@ -105,7 +105,7 @@ else
 	if( strlen( $page->body ) && $page->cache && !error_get_last() )
 	{
 		$date = strtotime( '+1 month' );
-		$date = gmdate( 'D, d M Y H:i:s T', $date );
+		$date = gmdate( DATE_RFC1123, $date );
 		header( "Etag: {$hash}" );
 		header( "Expires: {$date}" );
 
