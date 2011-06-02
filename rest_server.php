@@ -3,13 +3,17 @@ $page->template = false;
 $page->content_type = $_SERVER['HTTP_ACCEPT'];
 $response = array( 'success' => 'false', 'status' => HTTP_UNAUTHORIZED );
 
+// Authorization header is hidden from PHPs $_SERVER super global, so grab it from apache
 $auth = apache_request_headers();
+
+// Make sure credentials were passed, otherwise there's no point in going any further
 if( empty( $auth['Authorization'] ) )
 {
 	header( $__http_status[HTTP_UNAUTHORIZED] );
-	die(json_encode($response));
+	die( json_encode( $response ) );
 }
 
+// Reset value of $auth to decoded Authorization header and extract $username and signed message hash
 $auth = base64_decode( $auth['Authorization'] );
 list( $username, $signature ) = explode( ':', $auth );
 
@@ -27,7 +31,7 @@ $key = $db->result->fetchColumn();
 
 if( $_SERVER['REQUEST_METHOD'] === 'GET' )
 {
-	$data = $_GET;
+	$data =& $_GET;
 	$input = http_build_query( $data );
 }
 else
@@ -35,7 +39,6 @@ else
 	$input = file_get_contents( 'php://input' );
 	parse_str( $input, $data );
 }
-
 
 // This will change how a message is hashed, so any changes to this composition
 // could potentially break code. see also request.class.php; changes to this
