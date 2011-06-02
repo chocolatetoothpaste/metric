@@ -30,8 +30,7 @@ abstract class database extends PDO
 		// convert connection info into a string and create a unique hash
 		$name = md5( implode( '', $db_info ) );
 		$class = get_called_class();
-		if( empty( self::$instance[$class] )
-			|| empty( self::$instance[$class][$name] ) )
+		if( empty( self::$instance[$class][$name] ) )
 		{
 			self::$instance[$class][$name] = new $class( $db_info );
 		}
