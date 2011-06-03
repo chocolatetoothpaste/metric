@@ -3,17 +3,21 @@ $page->template = false;
 $page->content_type = $_SERVER['HTTP_ACCEPT'];
 $response = array( 'success' => 'false', 'status' => HTTP_UNAUTHORIZED );
 
-// Authorization header is hidden from PHPs $_SERVER super global, so grab it from apache
+// Authorization header is hidden from PHP's
+// $_SERVER super global, so grab it from apache
 $auth = apache_request_headers();
 
-// Make sure credentials were passed, otherwise there's no point in going any further
+// Make sure credentials were passed, otherwise
+// there's no point in going any further
 if( empty( $auth['Authorization'] ) )
 {
-	header( $__http_status[HTTP_UNAUTHORIZED] );
+	header( $__http_status[$response['status']] );
+	header( 'WWW-Authenticate: Signature realm="Calendar"' );
 	die( json_encode( $response ) );
 }
 
-// Reset value of $auth to decoded Authorization header and extract $username and signed message hash
+// Reset value of $auth to decoded Authorization
+// header and extract $username and signed message hash
 $auth = base64_decode( $auth['Authorization'] );
 list( $username, $signature ) = explode( ':', $auth );
 
@@ -61,8 +65,8 @@ $hash = hash_hmac( 'sha1', utf8_encode( $doc ), $key );
 
 if( $hash !== $signature )
 {
-	$response['data'] = $hash;
-	header( $__http_status[HTTP_UNAUTHORIZED] );
+	$response['response'] = $hash;
+	header( $__http_status[$response['status']] );
 	die(json_encode($response));
 }
 
@@ -75,11 +79,6 @@ if( is_callable( $page->callback ) )
 {
 	$response = call_user_func_array( $page->callback, $page->params );
 }
-
-// if not in dev environment, clean the output buffer
-// so any errors don't screw up the server response
-if( !DEV )
-	ob_clean();
 
 // determine reponse format and set up response
 if( $page->content_type === 'application/json' )
@@ -102,7 +101,7 @@ else
 }
 
 header( $__http_status[$response['status']] );
-header( 'Date: ' . gmdate( 'D, d M Y H:i:s \G\M\T' ) );
+header( 'Date: ' . gmdate( DATE_RFC1123 ) );
 
 if(	DEV )
 {
