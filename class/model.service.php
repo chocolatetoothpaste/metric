@@ -22,8 +22,10 @@ abstract class Model
 		// determine http request method and call the proper static method.
 		// this method is only called by child classes, service model is never
 		// instantiated. see child service models for usage and implementation
-		if( $method == 'GET' )
+		if( $method == 'GET' && !empty( $id ) )
 			return static::read( $id );
+		elseif( $method == 'GET' )
+			return static::collection();
 		elseif( $method == 'POST' )
 			return static::create( $data );
 		elseif( $method == 'PUT' )
@@ -31,7 +33,10 @@ abstract class Model
 		elseif( $method == 'DELETE' )
 			return static::delete( $id );
 		else
-			return array( 'success' => 'false', 'status' => HTTP_NOT_IMPLEMENTED );
+			return array(
+				'success' => 'false',
+				'status' => HTTP_METHOD_NOT_ALLOWED
+			);
 	} // end method init
 
 	
@@ -49,17 +54,18 @@ abstract class Model
 		{
 			if( !empty( $range ) || $range == 0 )
 			{
-				$date_regex = '\d{4}-\d{2}-\d{2} (([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9])';
+				$date_regex = '\d{4}-\d{2}-\d{2} '
+					. '(([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9])';
 				if( 0 !== preg_match( '#^(\d*[,-]?\d*-?)*$#', $range ) )
 				{
-//					error_log("$range");
+					//error_log("$range");
 					$return[$field] = parseRange($range);
 					$return[$field] = implode( ',', $return[$field] );
 					$return[$field] = "$field IN ({$return[$field]})";
-//					error_log("$return[$field]");
-//					die;
+					//error_log("$return[$field]");
+					//die;
 				}
-				elseif( 0 !== preg_match( "#{$date_regex}\/{$date_regex}#", $range ) )
+				elseif( preg_match( "#{$date_regex}\/{$date_regex}#", $range ) )
 				{
 					$range = str_replace( '/', '\' AND \'', $range );
 					$return[$field] = "$field BETWEEN '$range'";
@@ -226,7 +232,7 @@ abstract class Model
 
 			$message = array(
 				'success'	=>	'true',
-				'data'		=>	$data,
+				'response'	=>	$data,
 				'status'	=>	$true_status
 			);
 		}
