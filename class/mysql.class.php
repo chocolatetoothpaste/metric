@@ -55,7 +55,7 @@ class mysql extends database
 
 	public function __construct( &$info )
 	{
-		$dsn = "{$info['driver']}:host={$info['host']};dbname={$info['dbname']};";
+		$dsn = "mysql:host={$info['host']};dbname={$info['dbname']};";
 		parent::__construct( $dsn, $info['username'], $info['password'] );
 	}	//	end function __construct
 

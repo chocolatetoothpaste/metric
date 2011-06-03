@@ -124,7 +124,10 @@ abstract class Model
 
 		// GET is the only method allowed for collections for now
 		if( $method != 'GET' )
-			return array( 'success' => 'false', 'status' => HTTP_METHOD_NOT_ALLOWED );
+			return array(
+				'success' => 'false',
+				'status' => HTTP_METHOD_NOT_ALLOWED
+			);
 
 		// static::$domain is defined in individual services
 		$domain = static::$domain;
@@ -138,7 +141,7 @@ abstract class Model
 		if( !empty( $_SERVER['HTTP_PRAGMA'] ) )
 			$options = static::tokenize( $_SERVER['HTTP_PRAGMA'] );
 		
-		/*//
+		/*// left here for debugging
 		return array(
 			'status'	=>	HTTP_OK,
 			'message'	=>	'must be a range issue',
@@ -148,7 +151,7 @@ abstract class Model
 		if( !empty( $ranges ) )
 		{
 			$ranges = static::getRanges( $ranges );
-			/*//
+			/*// left here for debugging
 			return array(
 				'status'	=>	HTTP_OK,
 				'message'	=>	'range parsing issue',
@@ -165,7 +168,7 @@ abstract class Model
 			$q->params['order_by'] = $options['order'];
 		}
 
-		/*//
+		/*// left here for debugging
 		return array(
 			'status'	=>	HTTP_OK,
 			'message'	=>	'query object',
@@ -175,13 +178,18 @@ abstract class Model
 
 		$q->select( $fields, $domain::getTable() );
 
-		//return array('status' => HTTP_OK, 'message' => 'query object', 'data' => $q);
+		/*// left here for debugging
+		return array(
+			'status' => HTTP_OK,
+			'message' => 'query object',
+			'data' => $q
+		);//*/
 
 		$db = \mysql::instance( $config->db[DB_MAIN] );
 		$db->quote($q->query);
 		$stmt = $db->execute( $q->query, $q->params );
 
-		/*//
+		/*// left here for debugging
 		return array(
 			'status'	=>	HTTP_OK,
 			'message'	=>	'statement',

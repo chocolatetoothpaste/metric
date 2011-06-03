@@ -40,17 +40,24 @@ else
 	parse_str( $input, $data );
 }
 
+// Grab the length of the actual request to make sure it hasn't been modified
+// in transit. This is safer than relying on the Content-Length header since
+// it could be spoofed. It won't matter though, if the request wasn't modified,
+// the lenghts will match and the signature will match
+$length = strlen( $input );
+
 // This will change how a message is hashed, so any changes to this composition
 // could potentially break code. see also request.class.php; changes to this
 // composition must also be reflected in that class!!!
-$contents = <<<EODOC
-{$_SERVER['REQUEST_METHOD']} {$_SERVER['SERVER_PROTOCOL']} {$page->request}
+$doc = <<<EODOC
+{$_SERVER['REQUEST_METHOD']} {$page->request} {$_SERVER['SERVER_PROTOCOL']}
 Date: {$_SERVER['HTTP_DATE']}
+Content-Length: {$length}
 
 $input
 EODOC;
 
-$hash = hash_hmac( 'sha1', utf8_encode( $contents ), $key );
+$hash = hash_hmac( 'sha1', utf8_encode( $doc ), $key );
 
 if( $hash !== $signature )
 {
