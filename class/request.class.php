@@ -1,12 +1,14 @@
 <?php
 class request
 {
-	public $method = 'GET', $headers = array(), $content = array(), $auth,
-		$response, $format = 'application/json', $username, $password, $host;
+	public $method = 'GET', $headers = array(), $content = array(),
+		$auth, $length, $response, $format = 'application/json',
+		$username, $password, $host;
 
 	public function __construct( $url )
 	{
 		$this->url = $url;
+		// @see config.inc.php
 		$this->host = URL_API;
 	}
 
@@ -14,6 +16,8 @@ class request
 	{
 		if( is_array( $this->content ) )
 			$this->content = http_build_query( $this->content );
+
+		$this->length = strlen( $this->content );
 
 		$this->hash();
 		$this->auth = base64_encode( "{$this->username}:{$this->hash}" );
@@ -23,6 +27,7 @@ class request
 			'Connection: close',
 			"Accept: {$this->format}",
 			"Authorization: {$this->auth}",
+			"Content-Length: {$this->length}",
 			"Date: {$this->date}"
 		));
 
@@ -58,9 +63,9 @@ class request
 		//$this->date = gmdate('D, d M Y H:i:s \G\M\T');
 		$this->date = gmdate(DATE_RFC1123);
 		
-		$this->hash = "{$this->method} HTTP/1.1 {$this->url}\n"
-			. "Date: {$this->date}\n\n"
-			//. "Content-Length: {$this->length}\n\n"
+		$this->hash = "{$this->method} {$this->url} HTTP/1.1\n"
+			. "Date: {$this->date}\n"
+			. "Content-Length: {$this->length}\n\n"
 			. "{$this->content}";
 		$this->hash = hash_hmac( 'sha1', $this->hash, $this->key );
 	}
