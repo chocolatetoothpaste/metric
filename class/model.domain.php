@@ -97,7 +97,8 @@ abstract class Model
 		$table = $this->getTable();
 
 		foreach( $keys as $type => $k ):
-			// if a primary key has a value in the property list, update an existing row
+			// if a primary key has a value in the
+			// property list, update an existing row
 			if( !empty( $this->$k ) )
 			{
 				if( $type == 'primary' )
@@ -300,7 +301,7 @@ abstract class Model
 		{
 			$this->meta_obj = $this->getMeta();
 		}
-		return ( property_exists( $this->meta_obj, $key )
+		return ( !empty( $this->meta_obj->$key )
 			? $this->meta_obj->$key
 			: false );
 	} // end method meta

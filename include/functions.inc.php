@@ -270,7 +270,8 @@ function array_merge_object( &$object, &$array, $scrub = array() )
 {
 	foreach( $array as $key => $value )
 	{
-		if( property_exists( $object, $key ) && !isset( $scrub[$key] ) )
+		//if( property_exists( $object, $key ) && !isset( $scrub[$key] ) )
+		if( !empty( $object->$key ) && !isset( $scrub[$key] ) )
 			$object->{$key} = $value;
 	}
 }

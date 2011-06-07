@@ -5,7 +5,7 @@
  * bootstrapper also does inline page control, it's sexy. Just add
  * this line to the top of the pages you want to process:
  *
- * require_once( getenv( 'DOCUMENT_ROOT' ) . '/bootstrap.php' );
+ * require_once( getenv( 'DOCUMENT_ROOT' ) . '/lib/bootstrap.php' );
  *
  * @author ross paskett <rpaskett@gmail.com>
  */
@@ -41,8 +41,11 @@ if( $page->content_type === 'text/javascript'
 	$page->template = false;
 	$cache_file = PATH_CACHE . "/$type";
 	$page->file = explode( ',', $page->request );
-	foreach( $page->file as $k => $v )
-		$page->file[$k] = "$dir/$v.$type";
+	/*foreach( $page->file as $k => $v )
+		$page->file[$k] = "$dir/$v.$type";*/
+	foreach( $page->file as &$file )
+		$file = "$dir/$file.$type";
+	unset( $file );
 }
 
 // grab the most recent mtime of a file/files, create a hash

@@ -42,7 +42,9 @@ class timer
 			krsort( $this->start[$name] );
 			foreach( $this->start[$name] as $k => $v )
 			{
-				if( !array_key_exists( $k, (array)$this->stop[$name] ) )
+				/*if( !array_key_exists( $k, (array)$this->stop[$name] ) )
+					$this->stop[$name][$k] = microtime(true);*/
+				if( empty( $this->stop[$name][$k] ) )
 					$this->stop[$name][$k] = microtime(true);
 			}
 		}
@@ -84,7 +86,8 @@ class timer
 				ksort($times);
 				foreach( $times as $k => $v )
 				{
-					if( array_key_exists( $k, $this->stop[$name] ) )
+					//if( array_key_exists( $k, $this->stop[$name] ) )
+					if( !empty( $this->stop[$name][$k] ) )
 					{
 						$start =& $this->start[$name][$k];
 						$stop =& $this->stop[$name][$k];
@@ -110,7 +113,8 @@ class timer
 				ksort($times);
 				foreach( $times as $k => $v )
 				{
-					if( array_key_exists( $k, $this->stop[$name] ) )
+					//if( array_key_exists( $k, $this->stop[$name] ) )
+					if( !empty( $this->stop[$name][$k] ) )
 					{
 						$start =& $this->start[$name][$k];
 						$stop =& $this->stop[$name][$k];
