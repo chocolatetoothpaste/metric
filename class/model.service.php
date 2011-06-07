@@ -49,8 +49,9 @@ abstract class Model
 
 	public static function getRanges( array $ranges )
 	{
-		$return = array(); 
-		foreach( $ranges as $field => $range )
+		//$return = array(); 
+		//foreach( $ranges as $field => $range )
+		foreach( $ranges as $field => &$range )
 		{
 			if( !empty( $range ) || $range == 0 )
 			{
@@ -59,24 +60,28 @@ abstract class Model
 				if( 0 !== preg_match( '#^(\d*[,-]?\d*-?)*$#', $range ) )
 				{
 					//error_log("$range");
-					$return[$field] = parseRange($range);
+					$range = parseRange($range);
+					$range = implode( ',', $range );
+					$range = "$field IN ({$range})";
+					/*$return[$field] = parseRange($range);
 					$return[$field] = implode( ',', $return[$field] );
-					$return[$field] = "$field IN ({$return[$field]})";
+					$return[$field] = "$field IN ({$return[$field]})";*/
 					//error_log("$return[$field]");
 					//die;
 				}
 				elseif( preg_match( "#{$date_regex}\/{$date_regex}#", $range ) )
 				{
 					$range = str_replace( '/', '\' AND \'', $range );
-					$return[$field] = "$field BETWEEN '$range'";
+					$range = "$field BETWEEN '$range'";
 				}
 				else
 				{
-					$return[$field] = "{$field}={$range}";
+					$range = "{$field}={$range}";
 				}
 			}
 		}
-		return $return;
+		return $ranges;
+		//return $return;
 	} // end method getRanges
 
 	

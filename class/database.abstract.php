@@ -80,7 +80,7 @@ abstract class database extends PDO
 			$ignore = array_flip( $ignore );
 			foreach ( $string as $key => $value )
 			{
-				if( !array_key_exists( $key, $ignore ) )
+				if( empty( $ignore[$key] ) )
 					$string[$key] = $this->sanitize( $value, $ignore );
 			}
 			return $string;
