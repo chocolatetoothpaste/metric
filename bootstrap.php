@@ -1,13 +1,7 @@
 <?php
 /**
- * This file is just a dispatcher.  It handles URL processing
- * and page rendering. See /pages for the actual page files. This
- * bootstrapper also does inline page control, it's sexy. Just add
- * this line to the top of the pages you want to process:
- *
- * require_once( getenv( 'DOCUMENT_ROOT' ) . '/lib/bootstrap.php' );
- *
  * @author ross paskett <rpaskett@gmail.com>
+ * @see /page/controller and /page/view for actual pages
  */
 
 // starting a timer to time how long it takes to process a page request.
@@ -18,43 +12,16 @@ session_start();
 
 $page = new page();
 $page->uid = get( 'uid', '0' );
-
-// determine if it's a request for js/css
-// resources, or a page, then do some set up
-if( $page->request = get( 'js' ) ):
-	$page->content_type = 'text/javascript';
-	$dir = PATH_JS;
-	$type = 'js';
-elseif( $page->request = get( 'css' ) ):
-	$page->content_type = 'text/css';
-	$dir = PATH_CSS;
-	$type = 'css';
-else:
-	$page->parseURL( getenv( 'REQUEST_URI' ) );
-	$page->template = PAGE_TEMPLATE;
-	$cache_file = PATH_CACHE . '/page';
-endif;
-
-if( $page->content_type === 'text/javascript'
-	|| $page->content_type === 'text/css' )
-{
-	$page->template = false;
-	$cache_file = PATH_CACHE . "/$type";
-	$page->file = explode( ',', $page->request );
-	/*foreach( $page->file as $k => $v )
-		$page->file[$k] = "$dir/$v.$type";*/
-	foreach( $page->file as &$file )
-		$file = "$dir/$file.$type";
-	unset( $file );
-}
+$page->parseURL( getenv( 'REQUEST_URI' ) );
+$page->template = PAGE_TEMPLATE;
 
 // grab the most recent mtime of a file/files, create a hash
 $page->mtime();
 $hash = md5( $page->request ) . "-{$page->uid}-{$page->mtime}";
-$cache_file = "$cache_file/{$hash}";
 
-$visibility = 'public';
-header( "Cache-Control: $visibility, must-revalidate, max-age=0" );
+//$visibility = 'public';
+//header( "Cache-Control: $visibility, must-revalidate, max-age=0" );
+header( "Cache-Control: public, must-revalidate, max-age=0" );
 
 // check if user has a local cached file
 // else check for a server cached file
@@ -74,30 +41,25 @@ else
 {
 	ob_start();
 
-	if( is_array( $page->file ) ):
-		foreach( $page->file as $file )
-			include( $file );
-	else:
-		/*//grab all declared class names to compare after including file
-		$declared_classes = get_declared_classes();
-		//*/
-		require( $page->file );
-		if( $page->view )
-			require( $page->view );
-		
-		/*// grab the new list of classes and see
-		// if there was one defined in $page->file
-		$new_class = array_diff( get_declared_classes(), $declared_classes );
+	/*//grab all declared class names to compare after including file
+	$declared_classes = get_declared_classes();
+	//*/
+	require( $page->file );
+	if( $page->view )
+		require( $page->view );
+	
+	/*// grab the new list of classes and see
+	// if there was one defined in $page->file
+	$new_class = array_diff( get_declared_classes(), $declared_classes );
 
-		// if a new class was found, instantiate it and call init function
-		if( $new_class )
-		{
-			list( $new_class ) = array_values( $new_class );
-			$class = new $new_class;
-			$class->init();
-		}
-		//*/
-	endif;
+	// if a new class was found, instantiate it and call init function
+	if( $new_class )
+	{
+	list( $new_class ) = array_values( $new_class );
+		$class = new $new_class;
+		$class->init();
+	}
+	//*/
 
 	$body = ob_get_clean();
 	header( "Content-Type: {$page->content_type}" );

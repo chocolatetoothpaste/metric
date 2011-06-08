@@ -52,9 +52,8 @@ class page
 		// trim query string from the request
 		$this->request = strtok( $request, '?' );
 
-		// check if the page is in the public dir, elseif check if page is in
-		// protected pages dir, elseif see if a "view" exists else check if
-		// request is defined in config file
+		// check if the page is in the public dir, protected pages dir, or if
+		// a "view" exists. finally, check if request is defined in config file
 		if( is_file( PATH_HTDOCS . $this->request ) )
 			$this->file = PATH_HTDOCS . $this->request;
 		elseif( file_exists( PATH_CONTROLLER . $this->request . '.php' ) )
@@ -63,8 +62,18 @@ class page
 			$this->file = PATH_VIEW . $this->request . '.phtml';
 		else
 		{
-			// loop through the urls in the main config file and find any that match
-			// the page request, return filename and register page params
+			if( $this->request === '/js' || $this->request === '/css' )
+			{
+				$this->request = $request;
+				$this->file = PAGE_JS_CSS;
+				return;
+			}
+
+			// set this to start with, if a match is found this will be changed
+			$this->file = PAGE_404;
+
+			// loop through defined urls (aliases) and find any that match
+			// the page request, return filename and set page params
 			foreach( $config->urls as $url => $action )
 			{
 				// matches:			 required,		optional
@@ -92,11 +101,13 @@ class page
 
 					if( is_array( $action ) ):
 						$this->callback = $action;
-						$this->file = PATH_LIB . '/rest.php';
+						$this->file = PAGE_REST_SERVER;
 					elseif( is_file( $action ) ):
 						$this->file = $action;
+					/* this shouldn't be necessary, since the same assignment
+						happens before the loop
 					else:
-						$this->file = PAGE_404;
+						$this->file = PAGE_404;*/
 					endif;
 
 					// a match was apparently found, so break the loop
@@ -104,12 +115,9 @@ class page
 				}	// end if $matches
 
 			}	// end foreach
+		}
 
-			if( !$matches )
-				$this->file = PAGE_404;
-		}	// end main if statement
-
-		// check for a view associated with the page that's found
+		// check for a view for the page
 		$path = pathinfo( $this->file );
 		$path['dirname'] =
 			str_replace( PATH_CONTROLLER, PATH_VIEW, $path['dirname'] );
@@ -117,10 +125,6 @@ class page
 
 		if( !file_exists( $this->view ) || $this->view === $this->file )
 			$this->view = null;
-
-		// set the "last modified" time of the
-		// file or view for cache verifications
-
 
 	}	// end method parseURL
 
@@ -153,7 +157,7 @@ class page
 
 	public function authenticate( $bit = 0, $permission = '' )
 	{
-//		if( $this->https && keyAndValue( $_SESSION, 'user' ) instanceof User )
+		//if( $this->https && keyAndValue( $_SESSION, 'user' ) instanceof User )
 		if( keyAndValue( $_SESSION, 'user' ) instanceof \Domain\User )
 		{
 			if( !$_SESSION['user']->authenticate( $bit, $permission ) )
