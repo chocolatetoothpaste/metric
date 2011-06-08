@@ -1,20 +1,21 @@
 <?php
 class request
 {
-	public $method = 'GET', $headers = array(), $content = array(),
+	public $method, $headers = array(), $content = array(),
 		$auth, $length, $response, $format = 'application/json',
 		$username, $password, $host;
 
-	public function __construct( $url )
+	public function __construct( $url, $method = 'GET' )
 	{
 		$this->url = $url;
+		$this->method = $method;
 		// @see config.inc.php
 		$this->host = URL_API;
 	}
 
 	public function exec()
 	{
-		if( is_array( $this->content ) )
+		//if( is_array( $this->content ) )
 			$this->content = http_build_query( $this->content );
 
 		$this->length = strlen( $this->content );
