@@ -15,7 +15,7 @@ class request
 
 	public function exec()
 	{
-		//if( is_array( $this->content ) )
+		if( is_array( $this->content ) )
 			$this->content = http_build_query( $this->content );
 
 		$this->length = strlen( $this->content );
