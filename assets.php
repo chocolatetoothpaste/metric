@@ -11,6 +11,8 @@ elseif( $files = get('css') ):
 	$type = 'css';
 endif;
 
+$page->cache( $files );
+
 $files = explode( ',', $files );
 
 $cache_file = PATH_CACHE . "/$type";

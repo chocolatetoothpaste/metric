@@ -282,8 +282,9 @@ class page
 
 				// cache the page if the stars are aligned (no errors),
 				// because caching an errored page would be stupid
-				if( strlen( $this->body ) && !error_get_last() )
+				if( strlen( $this->body ) )
 				{
+					die('caching');
 					$date = strtotime( '+1 month' );
 					$date = gmdate( DATE_RFC1123, $date );
 					header( "Etag: {$this->hash}" );
