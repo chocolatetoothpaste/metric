@@ -16,19 +16,16 @@ class page
 	public $js = array();
 	public $css = array();
 	public $file;
-	public $callback;
 	public $view;
 	public $title;
 	public $params = array();
-	public $uid;
 	public $mtime = 0;
 	public $authorized = false;
 	public $request;
 	public $cache = false;
 	public $content_type = 'text/html; charset=utf-8';
 	public $body;
-	public $response;
-	public $headers;
+	public $hash;
 	public $https;
 
 
@@ -62,7 +59,7 @@ class page
 			$this->file = PATH_VIEW . $this->request . '.phtml';
 		else
 		{
-			if( $this->request === '/js' || $this->request === '/css' )
+			if( $this->request === '/j' || $this->request === '/c' )
 			{
 				$this->request = $request;
 				$this->file = PAGE_JS_CSS;
@@ -150,6 +147,59 @@ class page
 
 
 	/**
+	 * Caches the output of a page
+	 */
+
+	public function cache( $request, $mtime = 0, $unique_id = 0 )
+	{
+		$this->hash = md5( $request ) . "-{$unique_id}-{$mtime}";
+		$cache_file = PATH_CACHE . "/{$this->hash}";
+
+		// check if user has a local cached file
+		// else check for a server cached file
+		// else generate a new file and if possible cache it
+		if( keyAndValue( $_SERVER, 'HTTP_IF_NONE_MATCH', $this->hash ) )
+		{
+			global $__http_status;
+			header( $__http_status[HTTP_NOT_MODIFIED] );
+			die;
+		}
+		elseif( file_exists( $cache_file ) && filesize( $cache_file ) > 0 )
+		{
+			header( "X-Cache-Retrieved: {$this->hash}" );
+			echo file_get_contents( $cache_file );
+			die;
+		}
+		else
+		{
+			$this->cache = true;
+			ob_start();
+
+			/*//grab all declared class names to compare after including file
+			$declared_classes = get_declared_classes();
+			//*/
+			/*require_once( $this->file );
+			if( $this->view )
+				require_once( $this->view );*/
+			
+			/*// grab the new list of classes and see
+			// if there was one defined in $page->file
+			$new_class = array_diff( get_declared_classes(), $declared_classes );
+
+			// if a new class was found, instantiate it and call init function
+			if( $new_class )
+			{
+			list( $new_class ) = array_values( $new_class );
+				$class = new $new_class;
+				$class->init();
+			}
+			//*/
+
+		}
+	}
+
+
+	/**
 	 * checks if the user has permission to view the page requested
 	 * @global object $auth
 	 * @param string $code
@@ -218,7 +268,6 @@ class page
 		
 		if( !$this->template )
 		{
-			header( 'X-Title: ' . $this->title );
 			echo $this->body;
 		}
 		else
@@ -227,6 +276,26 @@ class page
 			// files is a bit less ambiguous
 			$page =& $this;
 			require( PATH_TEMPLATE . "/$this->template" );
+			if( $this->cache )
+			{
+				header( "Content-Type: {$this->content_type}" );
+
+				// cache the page if the stars are aligned (no errors),
+				// because caching an errored page would be stupid
+				if( strlen( $this->body ) && !error_get_last() )
+				{
+					$date = strtotime( '+1 month' );
+					$date = gmdate( DATE_RFC1123, $date );
+					header( "Etag: {$this->hash}" );
+					header( "Expires: {$date}" );
+
+					if( is_writable( PATH_CACHE ) )
+						file_put_contents( PATH_CACHE . "/{$this->hash}", ob_get_contents(), LOCK_EX );
+				}
+
+				// the page is displayed whether it's cached or not, so flush the buffer
+				ob_end_flush();
+			}
 		}
 	}	// end method render
 
