@@ -127,38 +127,57 @@ class page
 
 
 	/**
-	 * Get the timestamp of the most recently modified
-	 * file (either script or view) and return it
-	 * @return int the timestamp
+	 * Sets up the page and displays it
+	 * @param string $contents
+	 * @global object $auth
 	 */
 
-	public function mtime()
+	public function render()
 	{
-		if( is_array( $this->file ) ):
-			$this->time = array_map( 'filemtime', $this->file );
-			$this->time = max( $this->time );
-		else:
-			$this->mtime =
-				max( filemtime( $this->view ), filemtime( $this->file ) );
-		endif;
+		header( "Content-Type: {$this->content_type}" );
+		
+		if( !$this->template )
+		{
+			echo $this->body;
+		}
+		else
+		{
+			require( PATH_TEMPLATE . "/$this->template" );
 
-		return $this->mtime;
-	}
+			// cache the page if the stars are aligned (no errors),
+			// because caching an errored page would be stupid
+			if( $this->cache && strlen( $this->body ) && !error_get_last() )
+			{
+				$date = strtotime( '+1 month' );
+				$date = gmdate( DATE_RFC1123, $date );
+				header( "Expires: {$date}" );
+
+				if( is_writable( PATH_CACHE ) )
+					file_put_contents( PATH_CACHE . "/{$this->hash}",
+						ob_get_contents(), LOCK_EX );
+			}
+
+			// the page is displayed whether it's cached or not, so flush the buffer
+			ob_end_flush();
+		}
+	}	// end method render
 
 
 	/**
 	 * Caches the output of a page
 	 */
 
-	public function cache( $request, $mtime = 0, $unique_id = 0 )
+	public function cache( $request = null, $mtime = 0, $unique_id = 0 )
 	{
+		$request = iif( !$request, $this->request );
 		$this->hash = md5( $request ) . "-{$unique_id}-{$mtime}";
 		$cache_file = PATH_CACHE . "/{$this->hash}";
+		header( "Etag: {$this->hash}" );
 
 		// check if user has a local cached file
 		// else check for a server cached file
 		// else generate a new file and if possible cache it
-		if( keyAndValue( $_SERVER, 'HTTP_IF_NONE_MATCH', $this->hash ) )
+		if( keyAndValue( $_SERVER, 'HTTP_IF_NONE_MATCH', "$this->hash" ) )
 		{
 			global $__http_status;
 			header( $__http_status[HTTP_NOT_MODIFIED] );
@@ -176,7 +195,7 @@ class page
 			ob_start();
 
 			/*//grab all declared class names to compare after including file
-			$declared_classes = get_declared_classes();
+			$classes = get_declared_classes();
 			//*/
 			/*require_once( $this->file );
 			if( $this->view )
@@ -184,18 +203,39 @@ class page
 			
 			/*// grab the new list of classes and see
 			// if there was one defined in $page->file
-			$new_class = array_diff( get_declared_classes(), $declared_classes );
+			$new_class = array_diff( get_declared_classes(), $classes );
+			unset( $classes );
 
 			// if a new class was found, instantiate it and call init function
 			if( $new_class )
 			{
-			list( $new_class ) = array_values( $new_class );
+				list( $new_class ) = $new_class;
 				$class = new $new_class;
 				$class->init();
 			}
 			//*/
 
 		}
+	}
+
+
+	/**
+	 * Get the timestamp of the most recently modified
+	 * file (either script or view) and return it
+	 * @return int the timestamp
+	 */
+
+	public function mtime()
+	{
+		if( is_array( $this->file ) ):
+			$this->time = array_map( 'filemtime', $this->file );
+			$this->time = max( $this->time );
+		else:
+			$this->mtime =
+				max( filemtime( $this->view ), filemtime( $this->file ) );
+		endif;
+
+		return $this->mtime;
 	}
 
 
@@ -254,51 +294,6 @@ class page
 		die( 'Redirecting... <a href="' . $url
 			. '">click here</a> if redirect fails.');
 	}	// end function redirect
-
-
-	/**
-	 * Sets up the page and displays it
-	 * @param string $contents
-	 * @global object $auth
-	 */
-
-	public function render( $body = '' )
-	{
-		$this->body = $body;
-		
-		if( !$this->template )
-		{
-			echo $this->body;
-		}
-		else
-		{
-			// using $page instead of $this in template
-			// files is a bit less ambiguous
-			$page =& $this;
-			require( PATH_TEMPLATE . "/$this->template" );
-			if( $this->cache )
-			{
-				header( "Content-Type: {$this->content_type}" );
-
-				// cache the page if the stars are aligned (no errors),
-				// because caching an errored page would be stupid
-				if( strlen( $this->body ) )
-				{
-					die('caching');
-					$date = strtotime( '+1 month' );
-					$date = gmdate( DATE_RFC1123, $date );
-					header( "Etag: {$this->hash}" );
-					header( "Expires: {$date}" );
-
-					if( is_writable( PATH_CACHE ) )
-						file_put_contents( PATH_CACHE . "/{$this->hash}", ob_get_contents(), LOCK_EX );
-				}
-
-				// the page is displayed whether it's cached or not, so flush the buffer
-				ob_end_flush();
-			}
-		}
-	}	// end method render
 
 
 	/**
