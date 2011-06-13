@@ -21,18 +21,17 @@ $page->mtime();
 //$visibility = 'public';
 //header( "Cache-Control: $visibility, must-revalidate, max-age=0" );
 header( "Cache-Control: public, must-revalidate, max-age=0" );
-
 /*//grab all declared class names to compare after including file
 $declared_classes = get_declared_classes();
 //*/
 ob_start();
-
+// grab the page and, if there is one, the view
 require_once( $page->file );
 if( $page->view )
 	require_once( $page->view );
+
 $page->body = ob_get_clean();
-header( "Content-Type: {$page->content_type}" );
-$page->render( $page->body );
+$page->render();
 
 //while( @ob_end_flush() );
 
