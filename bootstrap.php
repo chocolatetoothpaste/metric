@@ -21,14 +21,29 @@ $page->mtime();
 //$visibility = 'public';
 //header( "Cache-Control: $visibility, must-revalidate, max-age=0" );
 header( "Cache-Control: public, must-revalidate, max-age=0" );
-/*//grab all declared class names to compare after including file
-$declared_classes = get_declared_classes();
-//*/
+
 ob_start();
+
 // grab the page and, if there is one, the view
+
+/*// get all declared class names to compare after including file
+$classes = get_declared_classes();
+//*/
 require_once( $page->file );
 if( $page->view )
 	require_once( $page->view );
+
+/*// get the new list of classes and see if a new one was defined by controller
+$new_class = array_diff( get_declared_classes(), $classes );
+unset( $classes );
+// if a new class was found, instantiate it and call init function
+if( $new_class )
+{
+	list( $new_class ) = $new_class;
+	$class = new $new_class;
+	$class->init();
+}
+//*/
 
 $page->body = ob_get_clean();
 $page->render();

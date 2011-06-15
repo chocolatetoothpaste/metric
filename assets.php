@@ -11,15 +11,16 @@ elseif( $files = get('css') ):
 	$type = 'css';
 endif;
 
+$files = explode( ',', $files );
+foreach( $files as &$file )
+	$file = "$dir/$file.$type";
+unset( $file );
+$page->mtime = array_map( 'filemtime', $files );
+$page->mtime = max( $page->mtime );
 $page->cache( $files );
 
-$files = explode( ',', $files );
-
-$cache_file = PATH_CACHE . "/$type";
-/*foreach( $page->file as $k => $v )
-	$page->file[$k] = "$dir/$v.$type";*/
 foreach( $files as &$file )
-	include( "$dir/$file.$type" );
+	include( $file );
 unset( $file );
 
 ?>
