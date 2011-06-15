@@ -57,19 +57,17 @@ abstract class Model
 			{
 				$date_regex = '\d{4}-\d{2}-\d{2} '
 					. '(([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9])';
-				if( 0 !== preg_match( '#^(\d*[,-]?\d*-?)*$#', $range ) )
+				if( 0 !== preg_match( '#^(\d*[,-][^/]?\d*-?)*$#', $range ) )
 				{
 					//error_log("$range");
 					$range = parseRange($range);
 					$range = implode( ',', $range );
 					$range = "$field IN ({$range})";
-					/*$return[$field] = parseRange($range);
-					$return[$field] = implode( ',', $return[$field] );
-					$return[$field] = "$field IN ({$return[$field]})";*/
 					//error_log("$return[$field]");
 					//die;
 				}
-				elseif( preg_match( "#{$date_regex}\/{$date_regex}#", $range ) )
+				elseif( preg_match( "#{$date_regex}/{$date_regex}#", $range ) )
+				//if( strpos( $range, '/' ) !== false )
 				{
 					$range = str_replace( '/', '\' AND \'', $range );
 					$range = "$field BETWEEN '$range'";
@@ -199,6 +197,7 @@ abstract class Model
 		$db = \mysql::instance( $config->db[DB_MAIN] );
 		$db->quote($q->query);
 		$stmt = $db->execute( $q->query, $q->params );
+		error_log($q->query);
 
 		/*// left here for debugging
 		return array(

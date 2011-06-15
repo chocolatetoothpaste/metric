@@ -20,7 +20,6 @@ class page
 	public $title;
 	public $params = array();
 	public $mtime = 0;
-	public $authorized = false;
 	public $request;
 	public $cache = false;
 	public $content_type = 'text/html; charset=utf-8';
@@ -59,14 +58,8 @@ class page
 			$this->file = PATH_VIEW . $this->request . '.phtml';
 		else
 		{
-			if( $this->request === '/j' || $this->request === '/c' )
-			{
-				$this->request = $request;
-				$this->file = PAGE_JS_CSS;
-				return;
-			}
-
 			// set this to start with, if a match is found this will be changed
+			// otherwise it defaults to error page (which is a good thing)
 			$this->file = PAGE_404;
 
 			// loop through defined urls (aliases) and find any that match
@@ -167,12 +160,13 @@ class page
 	 * Caches the output of a page
 	 */
 
-	public function cache( $request = null, $mtime = 0, $unique_id = 0 )
+	public function cache( $request = null, $unique_id = 0 )
 	{
 		$request = iif( !$request, $this->request );
-		$this->hash = md5( $request ) . "-{$unique_id}-{$mtime}";
+		$this->hash = md5( $request ) . "-{$unique_id}-{$this->mtime}";
 		$cache_file = PATH_CACHE . "/{$this->hash}";
 		header( "Etag: {$this->hash}" );
+		header("Pragma: cache");
 
 		// check if user has a local cached file
 		// else check for a server cached file
@@ -193,28 +187,6 @@ class page
 		{
 			$this->cache = true;
 			ob_start();
-
-			/*//grab all declared class names to compare after including file
-			$classes = get_declared_classes();
-			//*/
-			/*require_once( $this->file );
-			if( $this->view )
-				require_once( $this->view );*/
-			
-			/*// grab the new list of classes and see
-			// if there was one defined in $page->file
-			$new_class = array_diff( get_declared_classes(), $classes );
-			unset( $classes );
-
-			// if a new class was found, instantiate it and call init function
-			if( $new_class )
-			{
-				list( $new_class ) = $new_class;
-				$class = new $new_class;
-				$class->init();
-			}
-			//*/
-
 		}
 	}
 
@@ -228,8 +200,8 @@ class page
 	public function mtime()
 	{
 		if( is_array( $this->file ) ):
-			$this->time = array_map( 'filemtime', $this->file );
-			$this->time = max( $this->time );
+			$this->mtime = array_map( 'filemtime', $this->file );
+			$this->mtime = max( $this->mtime );
 		else:
 			$this->mtime =
 				max( filemtime( $this->view ), filemtime( $this->file ) );
@@ -252,14 +224,15 @@ class page
 		{
 			if( !$_SESSION['user']->authenticate( $bit, $permission ) )
 			{
-				die($this->render(require(PAGE_PERMISSION_DENIED)));
+				$this->file = PAGE_PERMISSION_DENIED;
+				die($this->render());
 			}
 			else
 				return true;
 		}
 		else
 		{
-			self::redirect( 'http://' . server('SERVER_NAME') . '/login' );
+			self::redirect( 'http://' . getenv('SERVER_NAME') . '/login' );
 		}
 	}
 
