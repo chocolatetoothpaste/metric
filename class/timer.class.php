@@ -75,7 +75,7 @@ class timer
 	 * @param	string	$timers	limit to a specific timer name [optional, default '']
 	 */
 
-	public function showTimes( $format = false, $timers = '' )
+	public function show( $format = false, $timers = '', $strip = false )
 	{
 		$timers = ( $timers ? $this->start[$only] : $this->start );
 		if( $strip )
@@ -92,7 +92,10 @@ class timer
 						$start =& $this->start[$name][$k];
 						$stop =& $this->stop[$name][$k];
 						$time = ( $stop - $start );
-						echo "$name{$k}\t\t", sprintf( "%0.3f\t", $start ), sprintf( "%0.3f\t", $stop ), sprintf( "%0.3f\n", $time );
+						echo "$name{$k}\t\t",
+							sprintf( "%0.4f\t", $start ),
+							sprintf( "%0.4f\t", $stop ),
+							sprintf( "%0.4f\n", $time );
 					}
 				}
 			}
@@ -119,14 +122,15 @@ class timer
 						$start =& $this->start[$name][$k];
 						$stop =& $this->stop[$name][$k];
 						$time = ( $stop - $start );
-					?>
-						<tr>
-							<td><?php echo $name;?></td>
-							<td align="right"><?php echo sprintf( '%0.3f', $start );?></td>
-							<td align="right"><?php echo sprintf( '%0.3f', $stop );?></td>
-							<td align="right"><?php echo sprintf( '%0.3f', $time );?></td>
-						</tr>
-					<?php
+						echo '<tr><td>',
+							$name,
+							'</td><td align="right">',
+							sprintf( '%0.4f', $start ),
+							'</td><td align="right">',
+							sprintf( '%0.4f', $stop ),
+							'</td><td align="right">',
+							sprintf( '%0.4f', $time ),
+							'</td></tr>';
 					}
 				}
 			}

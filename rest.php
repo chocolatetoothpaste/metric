@@ -36,7 +36,7 @@ $key = $db->result->fetchColumn();
 if( $_SERVER['REQUEST_METHOD'] === 'GET' )
 {
 	$data =& $_GET;
-	$input = http_build_query( $data );
+	$input = $_SERVER['QUERY_STRING'];
 }
 else
 {
@@ -75,10 +75,7 @@ $page->params = $page->params + array(
 	'data'		=>	$data
 );
 
-if( is_callable( $page->callback ) )
-{
-	$response = call_user_func_array( $page->callback, $page->params );
-}
+$response = call_user_func_array( $page->callback, $page->params );
 
 // determine reponse format and set up response
 if( $page->content_type === 'application/json' )
@@ -87,12 +84,12 @@ if( $page->content_type === 'application/json' )
 }
 elseif( $page->content_type === 'application/xml' )
 {
-	$xml = new SimpleXMLElement( '<response/>' );
+	/*$xml = new SimpleXMLElement( '<response/>' );
 	array_walk_recursive( $response, function( $v, $k ) use ( $xml )
 	{
 		$xml->addChild( $k, $v );
 	});
-	$page->body = $xml->asXML();
+	$page->body = $xml->asXML();*/
 }
 else
 {

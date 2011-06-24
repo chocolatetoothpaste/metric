@@ -21,6 +21,7 @@ class page
 	public $params = array();
 	public $mtime = 0;
 	public $request;
+	public $callback;
 	public $cache = false;
 	public $content_type = 'text/html; charset=utf-8';
 	public $body;
@@ -166,12 +167,13 @@ class page
 		$this->hash = md5( $request ) . "-{$unique_id}-{$this->mtime}";
 		$cache_file = PATH_CACHE . "/{$this->hash}";
 		header( "Etag: {$this->hash}" );
-		header("Pragma: cache");
+		header( 'Pragma: cache' );
 
 		// check if user has a local cached file
 		// else check for a server cached file
 		// else generate a new file and if possible cache it
-		if( keyAndValue( $_SERVER, 'HTTP_IF_NONE_MATCH', "$this->hash" ) )
+		if( !empty( $_SERVER['HTTP_IF_NONE_MATCH'] )
+			&& $_SERVER['HTTP_IF_NONE_MATCH'] === "$this->hash" )
 		{
 			global $__http_status;
 			header( $__http_status[HTTP_NOT_MODIFIED] );
@@ -219,8 +221,8 @@ class page
 
 	public function authenticate( $bit = 0, $permission = '' )
 	{
-		//if( $this->https && keyAndValue( $_SESSION, 'user' ) instanceof User )
-		if( keyAndValue( $_SESSION, 'user' ) instanceof \Domain\User )
+		if( $this->https && keyAndValue( $_SESSION, 'user' ) instanceof User )
+		//if( keyAndValue( $_SESSION, 'user' ) instanceof \Domain\User )
 		{
 			if( !$_SESSION['user']->authenticate( $bit, $permission ) )
 			{
@@ -258,11 +260,10 @@ class page
 		}
 		else
 		{
-			?>
+			echo '
 			<script type="text/javascript">
-				document.location.replace('<?php echo addslashes( $url );?>');
-			</script>
-			<?php
+				document.location.replace(', addslashes( $url ), ');
+			</script>';
 		} // else headers sent
 		die( 'Redirecting... <a href="' . $url
 			. '">click here</a> if redirect fails.');
