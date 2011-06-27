@@ -75,7 +75,11 @@ $page->params = $page->params + array(
 	'data'		=>	$data
 );
 
+//error_log(print_r($page->callback,true));
 $response = call_user_func_array( $page->callback, $page->params );
+
+//error_log(print_r($page->params,true));
+//error_log(print_r($response,true));
 
 // determine reponse format and set up response
 if( $page->content_type === 'application/json' )

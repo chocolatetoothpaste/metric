@@ -57,12 +57,53 @@ class page
 			$this->file = PATH_CONTROLLER . $this->request . '.php';
 		elseif( file_exists( PATH_VIEW . $this->request . '.phtml' ) )
 			$this->file = PATH_VIEW . $this->request . '.phtml';
+		elseif( !empty( $config->redirect[$this->request] ) )
+			$this->file = $config->redirect[$this->request];
 		else
 		{
 			// set this to start with, if a match is found this will be changed
 			// otherwise it defaults to error page (which is a good thing)
 			$this->file = PAGE_404;
 
+			///
+			// grab all the services registered and combine them into a single
+			// string so the URL matching is only executed once. Do regex
+			// substitutions for extracting named params and the service name.
+			// The (?J) modifier allows duplicate named params
+			$string = '(?J)^' . implode( '$|^', $config->services ) . '$';
+			$match		= array( '#/:([\w]+)#',
+				'#/@(\w+)#', '#/%(\w+)#' );
+			$replace	= array( '/(?P<service>${1})',
+				'/(?P<${1}>[@\w]+)', '/?(?P<${1}>[%\w]+)*' );
+
+			$pattern = preg_replace( $match, $replace, $string );
+			$pattern = "#{$pattern}#";
+	
+			preg_match_all( $pattern, $this->request,
+				$matches, PREG_SET_ORDER );
+
+			if( $matches ):
+				// flatten the array
+				$matches = $matches[0];
+
+				// strip out numeric keys, the server only wants named params
+				array_walk( $matches, function( $v, $k ) use( &$matches )
+				{
+					if( !$v || is_numeric( $k ) )
+						unset($matches[$k]);
+				});
+
+				$this->file = PAGE_REST_SERVER;
+				$service = 'Service\\' . ucwords($matches['service']);
+
+				unset($matches['service']);
+
+				$this->params = $matches;
+				if( !empty( $config->classes[$service] ) )
+					$this->callback = array($service, 'init');
+
+			endif;
+			/*/
 			// loop through defined urls (aliases) and find any that match
 			// the page request, return filename and set page params
 			foreach( $config->urls as $url => $action )
@@ -89,23 +130,21 @@ class page
 						$this->params =
 							array_combine( $params[0], $matches[0] );
 					endif;
+					unset($this->params['id']);
 
 					if( is_array( $action ) ):
 						$this->callback = $action;
 						$this->file = PAGE_REST_SERVER;
 					elseif( is_file( $action ) ):
 						$this->file = $action;
-					/* this shouldn't be necessary, since the same assignment
-						happens before the loop
-					else:
-						$this->file = PAGE_404;*/
 					endif;
-
+error_log(print_r($this->params, true));
 					// a match was apparently found, so break the loop
 					break;
 				}	// end if $matches
 
-			}	// end foreach
+			} //end foreach
+			//*/
 		}
 
 		// check for a view for the page
@@ -221,8 +260,8 @@ class page
 
 	public function authenticate( $bit = 0, $permission = '' )
 	{
-		if( $this->https && keyAndValue( $_SESSION, 'user' ) instanceof User )
-		//if( keyAndValue( $_SESSION, 'user' ) instanceof \Domain\User )
+		//if( $this->https && keyAndValue( $_SESSION, 'user' ) instanceof User )
+		if( keyAndValue( $_SESSION, 'user' ) instanceof \Domain\User )
 		{
 			if( !$_SESSION['user']->authenticate( $bit, $permission ) )
 			{

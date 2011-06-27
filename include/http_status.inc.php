@@ -59,6 +59,7 @@ $__http_status = array(
 	HTTP_NOT_MODIFIED			=>	'HTTP/1.1 304 Not Modified',
 	HTTP_UNAUTHORIZED			=>	'HTTP/1.1 401 Unauthorized',
 	HTTP_NOT_FOUND				=>	'HTTP/1.1 404 Not Found',
+	HTTP_METHOD_NOT_ALLOWED		=>	'HTTP/1.1 405 Method Not Allowed',
 	HTTP_NOT_ACCEPTABLE			=>	'HTTP/1.1 406 Not Acceptable',
 	HTTP_EXPECTATION_FAILED		=>	'HTTP/1.1 417 Expectation Failed',
 	HTTP_INTERNAL_SERVER_ERROR	=>	'HTTP/1.1 500 Internal Server Error',
