@@ -55,15 +55,26 @@ class mysql extends database
 
 	public function __construct( &$info )
 	{
-		if( !empty( $info['host'] ) )
-			$host = "host={$info['host']};";
-		if( !empty( $info['port'] ) )
-			$host .= "port={$info['port']};";
-		if( !empty( $info['socket'] ) )
-			$host = "unix_socket={$info['socket']};";
+		// build the connection string and try to establish a connection,
+		// otherwise die with honor
+		try
+		{
+			if( !empty( $info['host'] ) )
+				$host = "host={$info['host']};";
+			if( !empty( $info['port'] ) )
+				$host .= "port={$info['port']};";
+			if( !empty( $info['socket'] ) )
+				$host = "unix_socket={$info['socket']};";
 
-		$dsn = "mysql:{$host}dbname={$info['dbname']};";
-		parent::__construct( $dsn, $info['username'], $info['password'] );
+			$dsn = "mysql:{$host}dbname={$info['dbname']};";
+			parent::__construct( $dsn, $info['username'], $info['password'],
+				array( PDO::ATTR_PERSISTENT => true ) );
+		}
+		catch( PDOException $e )
+		{
+			echo 'Error connecting to the database: ', $e->getMessage();
+			die;
+		}
 	}	//	end function __construct
 
 
