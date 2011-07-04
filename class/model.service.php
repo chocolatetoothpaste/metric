@@ -197,7 +197,7 @@ abstract class Model
 		$db = \mysql::instance( $config->db[DB_MAIN] );
 		$db->quote($q->query);
 		$stmt = $db->execute( $q->query, $q->params );
-		//error_log($q->query);
+		error_log($q->query . print_r($q->params, true));
 
 		/*// left here for debugging
 		return array(

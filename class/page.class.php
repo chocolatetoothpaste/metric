@@ -146,6 +146,8 @@ error_log(print_r($this->params, true));
 			} //end foreach
 			//*/
 		}
+		if( !file_exists( $this->file ) )
+			$this->file = PAGE_404;
 
 		// check for a view for the page
 		$path = pathinfo( $this->file );
