@@ -2,7 +2,7 @@
 $page->template = false;
 $page->content_type = $_SERVER['HTTP_ACCEPT'];
 $response = array( 'success' => 'false', 'status' => HTTP_UNAUTHORIZED );
-
+/*
 // Authorization header is hidden from PHP's
 // $_SERVER super global, so grab it from apache
 $auth = apache_request_headers();
@@ -32,7 +32,7 @@ $query = "
 
 $db->execute( $query, array( 'username' => $username ) );
 $key = $db->result->fetchColumn();
-
+*/
 if( $_SERVER['REQUEST_METHOD'] === 'GET' )
 {
 	$data =& $_GET;
@@ -53,6 +53,7 @@ $length = strlen( $input );
 // This will change how a message is hashed, so any changes to this composition
 // could potentially break code. see also request.class.php; changes to this
 // composition must also be reflected in that class!!!
+/*
 $doc = <<<EODOC
 {$_SERVER['REQUEST_METHOD']} {$page->request} {$_SERVER['SERVER_PROTOCOL']}
 Date: {$_SERVER['HTTP_DATE']}
@@ -69,7 +70,7 @@ if( $hash !== $signature )
 	header( $__http_status[$response['status']] );
 	die(json_encode($response));
 }
-
+*/
 $page->params = $page->params + array(
 	'method'	=>	$_SERVER['REQUEST_METHOD'],
 	'data'		=>	$data
