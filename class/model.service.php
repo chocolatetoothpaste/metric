@@ -216,14 +216,17 @@ abstract class Model
 				$options = static::tokenize( $_SERVER['HTTP_PRAGMA'] );
 				if( !empty( $options['group'] ) && !empty( $options['index'] ) )
 				{
-					while( $row = $stmt->fetch( \PDO::FETCH_ASSOC, \PDO::FETCH_ORI_NEXT ) )
+					while( $row = $stmt->fetch( \PDO::FETCH_ASSOC,
+						\PDO::FETCH_ORI_NEXT ) )
 					{
-						$data[$row[$options['group']]][$row[$options['index']]] = $row;
+						$data[$row[$options['group']]][$row[$options['index']]]
+							= $row;
 					}
 				}
 				elseif( !empty( $options['index'] ) )
 				{
-					while( $row = $stmt->fetch( \PDO::FETCH_ASSOC, \PDO::FETCH_ORI_NEXT ) )
+					while( $row = $stmt->fetch( \PDO::FETCH_ASSOC,
+						\PDO::FETCH_ORI_NEXT ) )
 					{
 						$data[$row[$options['index']]] = $row;
 					}
