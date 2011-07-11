@@ -6,7 +6,7 @@
 
 class query
 {
-	public	$params = array(), $criteria = array(), $query, $table, $where;
+	public	$params = array(), $criteria = array(), $query, $table, $where, $order;
 
 	final function __construct()
 	{
@@ -52,15 +52,18 @@ class query
 				$this->params[$f] = $v;
 				$criteria[] = "$k = :$f";
 			}
-			$this->where = ' WHERE ' . implode( ' AND ', $criteria );
+			$this->where = 'WHERE ' . implode( ' AND ', $criteria );
 		}
 		elseif( $this->where )
 		{
-			$this->where = " WHERE {$this->where}";
+			$this->where = "WHERE {$this->where}";
 		}
+		
+		if( $this->order )
+			$this->order = "ORDER BY {$this->order}";
 
 		$columns = implode( ', ', $columns );
-		$this->query = "SELECT $columns FROM $table {$this->where}";
+		$this->query = "SELECT $columns FROM $table {$this->where} {$this->order}";
 
 		return $this->query;
 	}
