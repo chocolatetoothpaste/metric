@@ -177,8 +177,13 @@ abstract class Model
 		{
 			// this is some pretty crappy hack checking, first run
 			$order = explode(',', $options['order']);
-			$order = array_intersect( $fields, $order );
-			$q->order = implode(', ', $order);
+			if( !array_diff( $order, $fields ) )
+				$q->order = implode(', ', $order);
+			else
+				return array(
+					'status' => HTTP_NOT_ACCEPTABLE,
+					'message' => 'field not acceptable for ordering'
+				);
 		}
 
 
@@ -213,11 +218,13 @@ abstract class Model
 
 		if( $stmt )
 		{
+			$data = array();
 			if( !empty( $options['group'] ) || !empty( $options['index'] ) )
 			{
-				$data = array();
+				/*//
+				/*/
 
-				// check to see if a custom indexing scheme was requested
+				//check to see if a custom indexing scheme was requested		
 				if( !empty( $options['group'] ) && !empty( $options['index'] ) )
 				{
 					while( $row = $stmt->fetch( \PDO::FETCH_ASSOC,
@@ -234,7 +241,7 @@ abstract class Model
 					{
 						$data[$row[$options['index']]] = $row;
 					}
-				}
+				}//*/
 			}
 			else
 			{
