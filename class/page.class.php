@@ -192,7 +192,7 @@ error_log(print_r($this->params, true));
 						ob_get_contents(), LOCK_EX );
 			}
 
-			// the page is displayed whether it's cached or not, so flush the buffer
+			// display page, even if it doesn't get cached
 			ob_end_flush();
 		}
 	}	// end method render

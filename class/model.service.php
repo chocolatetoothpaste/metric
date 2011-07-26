@@ -219,29 +219,17 @@ abstract class Model
 		if( $stmt )
 		{
 			$data = array();
-			if( !empty( $options['group'] ) || !empty( $options['index'] ) )
+			if( !empty( $options['group'] ) )
 			{
-				/*//
-				/*/
-
-				//check to see if a custom indexing scheme was requested		
-				if( !empty( $options['group'] ) && !empty( $options['index'] ) )
+				$group = explode( ',', $options['group'] );
+				while( $row = $stmt->fetch( \PDO::FETCH_ASSOC, \PDO::FETCH_ORI_NEXT ) )
 				{
-					while( $row = $stmt->fetch( \PDO::FETCH_ASSOC,
-						\PDO::FETCH_ORI_NEXT ) )
-					{
-						$data[$row[$options['group']]][$row[$options['index']]]
-							= $row;
-					}
+					if( !empty( $group[1] ) )
+						$d =& $data[$row[$group[0]]][$row[$group[1]]][];
+					else
+						$d =& $data[$row[$group[0]]][];
+					$d = $row;
 				}
-				elseif( !empty( $options['index'] ) )
-				{
-					while( $row = $stmt->fetch( \PDO::FETCH_ASSOC,
-						\PDO::FETCH_ORI_NEXT ) )
-					{
-						$data[$row[$options['index']]] = $row;
-					}
-				}//*/
 			}
 			else
 			{

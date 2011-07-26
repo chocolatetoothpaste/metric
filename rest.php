@@ -2,10 +2,12 @@
 $page->template = false;
 $page->content_type = $_SERVER['HTTP_ACCEPT'];
 $response = array( 'success' => 'false', 'status' => HTTP_UNAUTHORIZED );
-/*
+
 // Authorization header is hidden from PHP's
 // $_SERVER super global, so grab it from apache
 $auth = apache_request_headers();
+
+//error_log(print_r($_SERVER, true));
 
 // Make sure credentials were passed, otherwise
 // there's no point in going any further
@@ -21,6 +23,8 @@ if( empty( $auth['Authorization'] ) )
 $auth = base64_decode( $auth['Authorization'] );
 list( $username, $signature ) = explode( ':', $auth );
 
+error_log($signature);
+
 $db = mysql::instance( $config->db[DB_MAIN] );
 $query = "
 	SELECT
@@ -32,7 +36,7 @@ $query = "
 
 $db->execute( $query, array( 'username' => $username ) );
 $key = $db->result->fetchColumn();
-*/
+
 if( $_SERVER['REQUEST_METHOD'] === 'GET' )
 {
 	$data =& $_GET;
@@ -53,10 +57,12 @@ $length = strlen( $input );
 // This will change how a message is hashed, so any changes to this composition
 // could potentially break code. see also request.class.php; changes to this
 // composition must also be reflected in that class!!!
-/*
+
+$rdate = ( empty( $_SERVER['HTTP_DATE'] ) ? $_SERVER['HTTP_X_DATE'] : $_SERVER['HTTP_DATE'] );
+
 $doc = <<<EODOC
 {$_SERVER['REQUEST_METHOD']} {$page->request} {$_SERVER['SERVER_PROTOCOL']}
-Date: {$_SERVER['HTTP_DATE']}
+Date: {$rdate}
 Content-Length: {$length}
 
 $input
@@ -64,24 +70,25 @@ EODOC;
 
 $hash = hash_hmac( 'sha1', utf8_encode( $doc ), $key );
 
+error_log("Hash: $hash\nMessage: $doc");
+
 if( $hash !== $signature )
 {
 	$response['response'] = $hash;
 	header( $__http_status[$response['status']] );
 	die(json_encode($response));
 }
-*/
-$page->params = $page->params + array(
-	'method'	=>	$_SERVER['REQUEST_METHOD'],
+
+$params = array(
+	'method'	=>	$_SERVER['REQUEST_METHOD']) + $page->params + array(
 	'data'		=>	$data
 );
 
 //error_log(print_r($page->callback,true));
-$response = call_user_func_array( $page->callback, $page->params );
+$response = call_user_func_array( $page->callback, $params );
 
 //error_log(print_r($page->params,true));
 //error_log(print_r($response,true));
-
 // determine reponse format and set up response
 if( $page->content_type === 'application/json' )
 {
