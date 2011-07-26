@@ -24,7 +24,7 @@ header( "Cache-Control: public, must-revalidate, max-age=0" );
 
 ob_start();
 
-// grab the page and, if there is one, the view
+// grab the page and view (if there is one)
 
 /*// get all declared class names to compare after including file
 $classes = get_declared_classes();
