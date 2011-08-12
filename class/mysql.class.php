@@ -59,12 +59,15 @@ class mysql extends database
 		// otherwise die with honor
 		try
 		{
-			if( !empty( $info['host'] ) )
-				$host = "host={$info['host']};";
-			if( !empty( $info['port'] ) )
-				$host .= "port={$info['port']};";
 			if( !empty( $info['socket'] ) )
 				$host = "unix_socket={$info['socket']};";
+			else
+			{
+				if( !empty( $info['host'] ) )
+					$host = "host={$info['host']};";
+				if( !empty( $info['port'] ) )
+					$host .= "port={$info['port']};";
+			}
 
 			$dsn = "mysql:{$host}dbname={$info['dbname']};";
 			parent::__construct( $dsn, $info['username'], $info['password'],
@@ -135,7 +138,7 @@ class mysql extends database
 
 
 	/**
-	 * Executes an SQL statement using passed params and returns a statement obj
+	 * Executes a query using passed params and returns a statement obj
 	 */
 
 	public function execute( $query, array $params = array() )
