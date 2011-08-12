@@ -123,7 +123,9 @@ abstract class Model
 			: $query->insert( $table, $columns ) );
 
 		$db->execute( $sql, $query->params );
+		error_log($db->result->errorCode());
 
+		// 00000 means no errors
 		if( $db->result->errorCode() === '00000' )
 		{
 			if( !$update )
@@ -133,6 +135,8 @@ abstract class Model
 		}
 		else
 		{
+			error_log( 'Domain error::' . get_class($this)
+				. ' - ' . $db->result->errorCode() );
 			return false;
 		}
 	}
@@ -166,7 +170,7 @@ abstract class Model
 
 
 	/**
-	 * gets the keys for the table (domain object), utilizes late static binding
+	 * gets the keys for the table (domain object) via late static binding
 	 * @return array
 	 */
 

@@ -1,7 +1,11 @@
 <?php
 $page->template = false;
 $page->content_type = $_SERVER['HTTP_ACCEPT'];
-$response = array( 'success' => 'false', 'status' => HTTP_UNAUTHORIZED );
+$response = array(
+	'success' => 'false',
+	'status' => HTTP_UNAUTHORIZED,
+	'message' => 'You do not have permission to access the resource at '
+		. $page->request );
 
 // Authorization header is hidden from PHP's
 // $_SERVER super global, so grab it from apache
@@ -58,7 +62,9 @@ $length = strlen( $input );
 // could potentially break code. see also request.class.php; changes to this
 // composition must also be reflected in that class!!!
 
-$rdate = ( empty( $_SERVER['HTTP_DATE'] ) ? $_SERVER['HTTP_X_DATE'] : $_SERVER['HTTP_DATE'] );
+$rdate = ( empty( $_SERVER['HTTP_DATE'] )
+	? $_SERVER['HTTP_X_DATE']
+	: $_SERVER['HTTP_DATE'] );
 
 $doc = <<<EODOC
 {$_SERVER['REQUEST_METHOD']} {$page->request} {$_SERVER['SERVER_PROTOCOL']}
@@ -80,8 +86,8 @@ if( $hash !== $signature )
 }
 
 $params = array(
-	'method'	=>	$_SERVER['REQUEST_METHOD']) + $page->params + array(
-	'data'		=>	$data
+	'method'	=>	$_SERVER['REQUEST_METHOD'],
+	'data'		=>	$page->params + $data
 );
 
 //error_log(print_r($page->callback,true));
@@ -96,16 +102,12 @@ if( $page->content_type === 'application/json' )
 }
 elseif( $page->content_type === 'application/xml' )
 {
-	/*$xml = new SimpleXMLElement( '<response/>' );
-	array_walk_recursive( $response, function( $v, $k ) use ( $xml )
-	{
-		$xml->addChild( $k, $v );
-	});
-	$page->body = $xml->asXML();*/
 }
 else
 {
 	$response['status'] = HTTP_NOT_ACCEPTABLE;
+	$response['message'] = 'The server was unable to understand your request,'
+		. ' please check your request parameters.';
 	$page->body = 'Invalid format';
 }
 

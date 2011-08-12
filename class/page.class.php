@@ -22,12 +22,12 @@ class page
 	public $mtime = 0;
 	public $request;
 	public $callback;
-	public $cache = false;
 	public $content_type = 'text/html; charset=utf-8';
 	public $body;
 	public $hash;
 	public $https;
 
+	private $cache = false;
 
 	function __construct()
 	{
@@ -313,24 +313,20 @@ error_log(print_r($this->params, true));
 
 	/**
 	 * Loads a predefined tag
-	 * @param	string	$tag_name
+	 * @param	string	$clip_name
 	 */
 
-	public function loadTag( $tag, $return = false )
+	public function loadClip( $clip, $return = false )
 	{
-		$tag = PATH_TAG . "/{$tag}.php";
-		if( file_exists( $tag ) )
+		$clip = PATH_CLIP . "/{$clip}.php";
+		if( file_exists( $clip ) )
 		{
 			if( $return )
-			{
-				return include( $tag );
-			}
+				return include( $clip );
 			else
-			{
-				include( $tag );
-			}
+				include( $clip );
 		}
-	} // end function loadTag
+	}
 
 }	// end class page
 
