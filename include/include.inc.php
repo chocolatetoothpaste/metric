@@ -3,12 +3,8 @@
  * @author ross paskett <rpaskett@gmail.com>
  */
 
-/*function exception_error_handler( $errno, $errstr, $errfile, $errline ) {
-    throw new ErrorException ($errstr, 0, $errno, $errfile, $errline );
-}*/
-
 // this passes script errors to the exception handler
-set_error_handler(function( $errno, $errstr, $errfile, $errline )
+set_error_handler( function( $errno, $errstr, $errfile, $errline )
 {
 	throw new ErrorException( $errstr, 0, $errno, $errfile, $errline );
 });
@@ -17,7 +13,6 @@ date_default_timezone_set( 'America/Denver' );
 
 class config{}
 $config = new config;
-
 
 // these files are required, they include some
 // essential constants and some setup functions
@@ -31,9 +26,7 @@ include( 'functions.inc.php' );
 // it throws an exception and halts execution
 function __autoload( $file )
 {
-	$part = explode( '\\', $file );
 	global $config;
-	$sub = ( empty( $part[1] ) ? 'class' : $part[0] );
 	$file = trim( $file, '\\' );
 	try
 	{

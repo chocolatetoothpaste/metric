@@ -85,17 +85,19 @@ if( $hash !== $signature )
 	die(json_encode($response));
 }
 
-$params = array(
+//error_log(print_r($page->callback,true));
+
+/**
+ * @see	\Service\Model::init()
+ */
+$response = call_user_func_array( $page->callback, array(
 	'method'	=>	$_SERVER['REQUEST_METHOD'],
 	'data'		=>	$page->params + $data
-);
-
-//error_log(print_r($page->callback,true));
-$response = call_user_func_array( $page->callback, $params );
+) );
 
 //error_log(print_r($page->params,true));
 //error_log(print_r($response,true));
-// determine reponse format and set up response
+// determine response type and pass response through to the page handler
 if( $page->content_type === 'application/json' )
 {
 	$page->body = json_encode( $response );

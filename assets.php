@@ -11,6 +11,7 @@ elseif( $files = get('css') ):
 	$type = 'css';
 endif;
 
+$user =& $_SESSION['user'];
 $files = explode( ',', $files );
 foreach( $files as &$file )
 	$file = "$dir/$file.$type";

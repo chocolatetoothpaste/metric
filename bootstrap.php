@@ -17,7 +17,6 @@ $page->template = PAGE_TEMPLATE;
 
 // grab the most recent mtime of a file/files, create a hash
 $page->mtime();
-
 //$visibility = 'public';
 //header( "Cache-Control: $visibility, must-revalidate, max-age=0" );
 header( "Cache-Control: public, must-revalidate, max-age=0" );
