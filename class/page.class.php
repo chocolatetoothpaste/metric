@@ -36,7 +36,6 @@ class page
 			: true );
 	}
 
-
 	/**
 	 * Parses $request and tries to find a matching page/script. Looks
 	 * at public files as well as files protected below site root.
@@ -51,6 +50,7 @@ class page
 
 		// check if the page is in the public dir, protected pages dir, or if
 		// a "view" exists. finally, check if request is defined in config file
+		// as a service or alias to a file
 		if( is_file( PATH_HTDOCS . $this->request ) )
 			$this->file = PATH_HTDOCS . $this->request;
 		elseif( file_exists( PATH_CONTROLLER . $this->request . '.php' ) )
@@ -65,11 +65,13 @@ class page
 			// otherwise it defaults to error page (which is a good thing)
 			$this->file = PAGE_404;
 
-			///
-			// grab all the services registered and combine them into a single
-			// string so the URL matching is only executed once. Do regex
-			// substitutions for extracting named params and the service name.
-			// The (?J) modifier allows duplicate named params
+			/**
+			 * grab all the services registered and combine them into a single
+			 * string so the URL matching is only executed once. Do regex
+			 * substitutions for extracting named params and the service name.
+			 * The (?J) modifier allows duplicate named params, since multiple
+			 * routes will have "id" or other fields that are the same
+			 */
 			$string = '(?J)^' . implode( '$|^', $config->services ) . '$';
 			$match		= array( '#/:([\w]+)#',
 				'#/@(\w+)#', '#/%(\w+)#' );
@@ -86,12 +88,14 @@ class page
 				// flatten the array
 				$matches = $matches[0];
 
-				// strip out numeric keys, the server only wants named params
+				// this is a REALLY shitty way to do this, must be a better way
+				/*// strip out numeric keys, the server only wants named params
 				array_walk( $matches, function( $v, $k ) use( &$matches )
 				{
 					if( !$v || is_numeric( $k ) )
 						unset($matches[$k]);
 				});
+				//*/
 
 				$this->file = PAGE_REST_SERVER;
 				$service = 'Service\\' . ucwords($matches['service']);
@@ -103,49 +107,9 @@ class page
 					$this->callback = array($service, 'init');
 
 			endif;
-			/*/
-			// loop through defined urls (aliases) and find any that match
-			// the page request, return filename and set page params
-			foreach( $config->urls as $url => $action )
-			{
-				// matches:			 required,		optional
-				$match		= array( '#/@[\w]+#',	'#/%[\w]+#' );
-				$replace	= array( '/([^/]*)',	'/?([^/]*)' );
 
-				// TODO: figure out a way to cache the
-				// urls once params have been replaced
-				$pattern = preg_replace( $match, $replace, $url );
-				preg_match_all( "#^{$pattern}$#", $this->request,
-					$matches, PREG_SET_ORDER );
-
-				// if any urls in config match the page request, set the
-				// filename or method call and set any params passed in the url
-				if( $matches )
-				{
-					preg_match_all('/\/[@|%]([\w]+)/', $url, $params );
-					array_shift( $params );
-					array_shift( $matches[0] );
-
-					if( $params[0] && $matches[0] ):
-						$this->params =
-							array_combine( $params[0], $matches[0] );
-					endif;
-					unset($this->params['id']);
-
-					if( is_array( $action ) ):
-						$this->callback = $action;
-						$this->file = PAGE_REST_SERVER;
-					elseif( is_file( $action ) ):
-						$this->file = $action;
-					endif;
-error_log(print_r($this->params, true));
-					// a match was apparently found, so break the loop
-					break;
-				}	// end if $matches
-
-			} //end foreach
-			//*/
 		}
+
 		if( !file_exists( $this->file ) )
 			$this->file = PAGE_404;
 

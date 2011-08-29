@@ -22,9 +22,12 @@ abstract class Model
 		// determine http request method and call the proper static method.
 		// this method is only called by child classes, service model is never
 		// instantiated. see child service models for usage and implementation
-		if( $method == 'GET' && !empty( $data ) )
-			return static::read( $data );
-		elseif( $method == 'GET' )
+	  error_log(print_r($data, true));
+
+	  //this stupid thibg broke when the service model chanaged param nums
+	  //		if( $method == 'GET' && !empty( $data ) )
+	  //		return static::read( $data['id'] );
+		if( $method == 'GET' )
 			return static::collection($method, $data);
 		elseif( $method == 'POST' )
 			return static::create( $data );
