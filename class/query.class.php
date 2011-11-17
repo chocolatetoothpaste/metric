@@ -64,7 +64,7 @@ class query
 
 		$columns = implode( ', ', $columns );
 		$this->query = "SELECT $columns FROM $table {$this->where} {$this->order}";
-
+		error_log($this->query);
 		return $this->query;
 	}
 

@@ -17,10 +17,10 @@ foreach( $files as &$file )
 unset( $file );
 $page->mtime = array_map( 'filemtime', $files );
 $page->mtime = max( $page->mtime );
-$page->cache( $files );
+//$page->cache( $files );
 
 foreach( $files as &$file )
-	include( $file );
+	require( $file );
 unset( $file );
 
 ?>
