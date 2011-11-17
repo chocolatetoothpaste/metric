@@ -133,6 +133,11 @@ abstract class Model
 	public static function collection( $method, $get = array() )
 	{
 		global $config;
+		ob_start();
+		var_dump($get['account']);
+		$contents = ob_get_contents();
+		ob_end_clean();
+		error_log("GET: " . $contents);
 
 		// GET is the only method allowed for collections for now
 		if( $method != 'GET' )
@@ -187,6 +192,12 @@ abstract class Model
 					'status' => HTTP_NOT_ACCEPTABLE,
 					'message' => 'field not acceptable for ordering'
 				);
+		}
+
+		if( !empty($get['account']) )
+		{
+		    $q->where .= ' AND acct_id = ' . $get['account'];
+		    $q->params['account'] = $get['account'];
 		}
 
 
