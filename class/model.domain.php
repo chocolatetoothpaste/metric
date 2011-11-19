@@ -25,7 +25,7 @@ abstract class Model
 		global $config;
 		if( $params )
 		{
-			$db = \mysql::instance( $config->db[DB_MAIN] );
+			$db = \mysql::instance( $config->db[$config->DB_MAIN] );
 				if( !$db )
 					throw new Exception( 'Unable to connect to the database' );
 
@@ -80,7 +80,7 @@ abstract class Model
 	public function save()
 	{
 		global $config;
-		$db = \mysql::instance( $config->db[DB_MAIN] );
+		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
 		if( !$db )
 			throw new \Exception( 'No connection to database' );
 
@@ -122,8 +122,11 @@ abstract class Model
 			? $query->update( $table, $columns, $criteria )
 			: $query->insert( $table, $columns ) );
 
+		error_log($sql);
+		error_log(print_r($query->params, true));
+
 		$db->execute( $sql, $query->params );
-		error_log($db->result->errorCode());
+		//error_log($db->result->errorCode());
 
 		// 00000 means no errors
 		if( $db->result->errorCode() === '00000' )
@@ -136,7 +139,7 @@ abstract class Model
 		else
 		{
 			error_log( 'Domain error::' . get_class($this)
-				. ' - ' . $db->result->errorCode() );
+					   . ' - ' . $db->result->errorCode() . ' :: ' . print_r($db->result->errorInfo(), true ) );
 			return false;
 		}
 	}
@@ -145,7 +148,7 @@ abstract class Model
 	public function delete()
 	{
 		global $config;
-		$db = \mysql::instance( $config->db[DB_MAIN] );
+		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
 		$time = $db->dateTime();
 		$params = array(
 			'table_name' => $this->table,
@@ -264,7 +267,7 @@ abstract class Model
 		if( $refresh || !( $this->meta_obj instanceof \Domain\Meta ) )
 		{
 			global $config;
-			$db = \mysql::instance( $config->db[DB_MAIN] );
+			$db = \mysql::instance( $config->db[$config->DB_MAIN] );
 			$this->meta_obj = new Meta;
 			foreach( $this->meta_fields as $prop )
 			{
@@ -345,7 +348,7 @@ abstract class Model
 		global $config;
 		$q = new \query;
 		$q->select( static::getFields(), static::$table, $params );
-		$db = \mysql::instance( $config->db[DB_MAIN] );
+		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
 		$db->execute( $q->query, $q->params );
 
 		if( $db->result )

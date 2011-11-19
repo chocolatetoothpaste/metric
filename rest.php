@@ -3,7 +3,7 @@ $page->template = false;
 $page->content_type = $_SERVER['HTTP_ACCEPT'];
 $response = array(
 	'success' => 'false',
-	'status' => HTTP_UNAUTHORIZED,
+	'status' => $config->HTTP_UNAUTHORIZED,
 	'message' => 'You do not have permission to access the resource at '
 		. $page->request );
 
@@ -29,7 +29,7 @@ list( $username, $signature ) = explode( ':', $auth );
 
 error_log($signature);
 
-$db = mysql::instance( $config->db[DB_MAIN] );
+$db = mysql::instance( $config->db[$config->DB_MAIN] );
 $query = "
 	SELECT
 		api_key
@@ -107,7 +107,7 @@ elseif( $page->content_type === 'application/xml' )
 }
 else
 {
-	$response['status'] = HTTP_NOT_ACCEPTABLE;
+	$response['status'] = $config->HTTP_NOT_ACCEPTABLE;
 	$response['message'] = 'The server was unable to understand your request,'
 		. ' please check your request parameters.';
 	$page->body = 'Invalid format';
@@ -116,7 +116,7 @@ else
 header( $__http_status[$response['status']] );
 header( 'Date: ' . gmdate( DATE_RFC1123 ) );
 
-if(	DEV )
+if(	$config->DEV )
 {
 	$_finish__ = microtime( true );
 	header( 'X-Execute-Time: ' .  $_finish__ - $_start__ );

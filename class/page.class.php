@@ -31,7 +31,8 @@ class page
 
 	function __construct()
 	{
-		$this->https = ( FORCE_SSL
+		global $config;
+		$this->https = ( $config->FORCE_SSL
 			? !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on'
 			: true );
 	}
@@ -51,19 +52,19 @@ class page
 		// check if the page is in the public dir, protected pages dir, or if
 		// a "view" exists. finally, check if request is defined in config file
 		// as a service or alias to a file
-		if( is_file( PATH_HTDOCS . $this->request ) )
-			$this->file = PATH_HTDOCS . $this->request;
-		elseif( file_exists( PATH_CONTROLLER . $this->request . '.php' ) )
-			$this->file = PATH_CONTROLLER . $this->request . '.php';
-		elseif( file_exists( PATH_VIEW . $this->request . '.phtml' ) )
-			$this->file = PATH_VIEW . $this->request . '.phtml';
+		if( is_file( $config->PATH_HTDOCS . $this->request ) )
+			$this->file = $config->PATH_HTDOCS . $this->request;
+		elseif( file_exists( $config->PATH_CONTROLLER . $this->request . '.php' ) )
+			$this->file = $config->PATH_CONTROLLER . $this->request . '.php';
+		elseif( file_exists( $config->PATH_VIEW . $this->request . '.phtml' ) )
+			$this->file = $config->PATH_VIEW . $this->request . '.phtml';
 		elseif( !empty( $config->redirect[$this->request] ) )
 			$this->file = $config->redirect[$this->request];
 		else
 		{
 			// set this to start with, if a match is found this will be changed
 			// otherwise it defaults to error page (which is a good thing)
-			$this->file = PAGE_404;
+			$this->file = $config->PAGE_404;
 
 			/**
 			 * grab all the services registered and combine them into a single
@@ -97,7 +98,7 @@ class page
 				});
 				//*/
 
-				$this->file = PAGE_REST_SERVER;
+				$this->file = $config->PAGE_REST_SERVER;
 				$service = 'Service\\' . ucwords($matches['service']);
 
 				unset($matches['service']);
@@ -111,12 +112,12 @@ class page
 		}
 
 		if( !file_exists( $this->file ) )
-			$this->file = PAGE_404;
+			$this->file = $config->PAGE_404;
 
 		// check for a view for the page
 		$path = pathinfo( $this->file );
 		$path['dirname'] =
-			str_replace( PATH_CONTROLLER, PATH_VIEW, $path['dirname'] );
+			str_replace( $config->PATH_CONTROLLER, $config->PATH_VIEW, $path['dirname'] );
 		$this->view = "$path[dirname]/$path[filename].phtml";
 
 		if( !file_exists( $this->view ) || $this->view === $this->file )
@@ -133,6 +134,7 @@ class page
 
 	public function render()
 	{
+		global $config;
 		header( "Content-Type: {$this->content_type}" );
 		
 		if( !$this->template )
@@ -141,7 +143,7 @@ class page
 		}
 		else
 		{
-			require( PATH_TEMPLATE . "/$this->template" );
+			require( $config->PATH_TEMPLATE . "/$this->template" );
 
 			// cache the page if the stars are aligned (no errors),
 			// because caching an errored page would be stupid
@@ -151,8 +153,8 @@ class page
 				$date = gmdate( DATE_RFC1123, $date );
 				header( "Expires: {$date}" );
 
-				if( is_writable( PATH_CACHE ) )
-					file_put_contents( PATH_CACHE . "/{$this->hash}",
+				if( is_writable( $config->PATH_CACHE ) )
+					file_put_contents( $config->PATH_CACHE . "/{$this->hash}",
 						ob_get_contents(), LOCK_EX );
 			}
 
@@ -168,9 +170,10 @@ class page
 
 	public function cache( $request = null, $unique_id = 0 )
 	{
+		global $config;
 		$request = iif( !$request, $this->request );
 		$this->hash = md5( $request ) . "-{$unique_id}-{$this->mtime}";
-		$cache_file = PATH_CACHE . "/{$this->hash}";
+		$cache_file = $config->PATH_CACHE . "/{$this->hash}";
 		header( "Etag: {$this->hash}" );
 		header( 'Pragma: cache' );
 
@@ -181,7 +184,7 @@ class page
 			&& $_SERVER['HTTP_IF_NONE_MATCH'] === "$this->hash" )
 		{
 			global $__http_status;
-			header( $__http_status[HTTP_NOT_MODIFIED] );
+			header( $__http_status[$config->HTTP_NOT_MODIFIED] );
 			die;
 		}
 		elseif( file_exists( $cache_file ) && filesize( $cache_file ) > 0 )
@@ -226,12 +229,13 @@ class page
 
 	public function authenticate( $bit = 0, $permission = '' )
 	{
+		global $config;
 		//if( $this->https && keyAndValue( $_SESSION, 'user' ) instanceof User )
 		if( keyAndValue( $_SESSION, 'user' ) instanceof \Domain\User )
 		{
 			if( !$_SESSION['user']->authenticate( $bit, $permission ) )
 			{
-				$this->file = PAGE_PERMISSION_DENIED;
+				$this->file = $config->PAGE_PERMISSION_DENIED;
 				die($this->render());
 			}
 			else
@@ -252,10 +256,11 @@ class page
 
 	public static function redirect( $url )
 	{
+		global $config;
 		// make ABSOLUTELY sure that the session is written to the disk!
 		session_write_close();
 
-		if( DIE_BEFORE_REDIRECT )
+		if( $config->DIE_BEFORE_REDIRECT )
 			die( 'Dying before redirect, <a href="' . $url
 				. '">click here</a> to continue.' );
 
@@ -282,7 +287,8 @@ class page
 
 	public function loadClip( $clip, $return = false )
 	{
-		$clip = PATH_CLIP . "/{$clip}.php";
+		global $config;
+		$clip = $config->PATH_CLIP . "/{$clip}.php";
 		if( file_exists( $clip ) )
 		{
 			if( $return )
