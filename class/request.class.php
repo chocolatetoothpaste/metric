@@ -9,10 +9,11 @@ class request
 
 	public function __construct( $url, $method = 'GET' )
 	{
+		global $config;
 		$this->url = $url;
 		$this->method = $method;
 		// @see config.inc.php
-		$this->host = URL_API;
+		$this->host = $config->URL_API;
 		$this->_headers['Connection'] = 'close';
 		$this->_headers['Content-Type'] = 'application/x-www-form-urlencoded';
 	}

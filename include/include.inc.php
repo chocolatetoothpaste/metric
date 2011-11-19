@@ -9,13 +9,13 @@ set_error_handler( function( $errno, $errstr, $errfile, $errline )
 	throw new ErrorException( $errstr, 0, $errno, $errfile, $errline );
 });
 //*/
-date_default_timezone_set( 'America/Denver' );
-
-class config{}
-$config = new config;
+//date_default_timezone_set( 'America/Denver' );
 
 // these files are required, they include some
 // essential constants and some setup functions
+require( 'config.class.php' );
+$config = new config;
+
 require( '../config.inc.php' );
 require( 'config.inc.php' );
 include( 'http_status.inc.php' );

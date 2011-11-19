@@ -19,10 +19,11 @@ abstract class Model
 	
 	public static function init( $method = 'GET', $data = array() )
 	{
+		global $config;
 		// determine http request method and call the proper static method.
 		// this method is only called by child classes, service model is never
 		// instantiated. see child service models for usage and implementation
-	  error_log(print_r($data, true));
+		error_log(print_r($data, true));
 
 	  //this stupid thibg broke when the service model chanaged param nums
 	  //		if( $method == 'GET' && !empty( $data ) )
@@ -38,7 +39,7 @@ abstract class Model
 		else
 			return array(
 				'success' => 'false',
-				'status' => HTTP_METHOD_NOT_ALLOWED
+				'status' => $config->HTTP_METHOD_NOT_ALLOWED
 			);
 	} // end method init
 
@@ -133,24 +134,19 @@ abstract class Model
 	public static function collection( $method, $get = array() )
 	{
 		global $config;
-		ob_start();
-		var_dump($get['account']);
-		$contents = ob_get_contents();
-		ob_end_clean();
-		error_log("GET: " . $contents);
 
 		// GET is the only method allowed for collections for now
 		if( $method != 'GET' )
 			return array(
 				'success' => 'false',
-				'status' => HTTP_METHOD_NOT_ALLOWED
+				'status' => $config->HTTP_METHOD_NOT_ALLOWED
 			);
 
 		// static::$domain is defined in individual services
 		$domain = static::$domain;
 		$fields = $domain::getFields();
 		$q = new \query;
-		$true_status = HTTP_OK; // default status
+		$true_status = $config->HTTP_OK; // default status
 
 		// check for ranges and custom options
 		if( !empty( $_SERVER['HTTP_RANGE'] ) )
@@ -162,7 +158,7 @@ abstract class Model
 		
 		/*// left here for debugging
 		return array(
-			'status'	=>	HTTP_OK,
+			'status'	=>	$config->HTTP_OK,
 			'message'	=>	'must be a range issue',
 			'data'		=>	$ranges
 		);//*/
@@ -172,12 +168,12 @@ abstract class Model
 			$ranges = static::getRanges( $ranges );
 			/*// left here for debugging
 			return array(
-				'status'	=>	HTTP_OK,
+				'status'	=>	$config->HTTP_OK,
 				'message'	=>	'range parsing issue',
 				'data'		=>	$ranges
 			);//*/
 
-			$true_status = HTTP_PARTIAL_CONTENT;
+			$true_status = $config->HTTP_PARTIAL_CONTENT;
 			$q->where = implode(' AND ', $ranges );
 		}
 
@@ -189,7 +185,7 @@ abstract class Model
 				$q->order = implode(', ', $order);
 			else
 				return array(
-					'status' => HTTP_NOT_ACCEPTABLE,
+					'status' => $config->HTTP_NOT_ACCEPTABLE,
 					'message' => 'field not acceptable for ordering'
 				);
 		}
@@ -203,7 +199,7 @@ abstract class Model
 
 		/*// left here for debugging
 		return array(
-			'status'	=>	HTTP_OK,
+			'status'	=>	$config->HTTP_OK,
 			'message'	=>	'query object',
 			'data'		=>	$q,
 			'extra'		=>	$ranges
@@ -213,19 +209,19 @@ abstract class Model
 
 		/*// left here for debugging
 		return array(
-			'status' => HTTP_OK,
+			'status' => $config->HTTP_OK,
 			'message' => 'query object',
 			'data' => $q
 		);//*/
 
-		$db = \mysql::instance( $config->db[DB_MAIN] );
+		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
 		$db->quote($q->query);
 		$stmt = $db->execute( $q->query, $q->params );
 		//error_log($q->query . print_r($q->params, true));
 
 		/*// left here for debugging
 		return array(
-			'status'	=>	HTTP_OK,
+			'status'	=>	$config->HTTP_OK,
 			'message'	=>	'statement',
 			'data'		=>	$stmt->fetchAll( \PDO::FETCH_ASSOC )
 		);//*/
@@ -259,7 +255,7 @@ abstract class Model
 		else
 			$message = array(
 				'success'	=>	'false',
-				'status'	=>	HTTP_BAD_REQUEST
+				'status'	=>	$config->HTTP_BAD_REQUEST
 			);
 
 		return $message;

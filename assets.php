@@ -3,11 +3,11 @@ $page->template = false;
 
 if( $files = get('js') ):
 	$page->content_type = 'text/javascript';
-	$dir = PATH_JS;
+	$dir = $config->PATH_JS;
 	$type = 'js';
 elseif( $files = get('css') ):
 	$page->content_type = 'text/css';
-	$dir = PATH_CSS;
+	$dir = $config->PATH_CSS;
 	$type = 'css';
 endif;
 

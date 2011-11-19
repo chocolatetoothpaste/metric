@@ -13,7 +13,7 @@ session_start();
 $page = new page();
 $page->uid = get( 'uid', '0' );
 $page->parseURL( getenv( 'REQUEST_URI' ) );
-$page->template = PAGE_TEMPLATE;
+$page->template = $config->PAGE_TEMPLATE;
 
 // grab the most recent mtime of a file/files, create a hash
 $page->mtime();
