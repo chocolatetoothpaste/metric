@@ -190,13 +190,6 @@ abstract class Model
 				);
 		}
 
-		if( !empty($get['account']) )
-		{
-		    $q->where .= ' AND acct_id = ' . $get['account'];
-		    $q->params['account'] = $get['account'];
-		}
-
-
 		/*// left here for debugging
 		return array(
 			'status'	=>	$config->HTTP_OK,
