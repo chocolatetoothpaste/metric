@@ -116,7 +116,7 @@ class page
 			str_replace( $config->PATH_CONTROLLER, $config->PATH_VIEW, $path['dirname'] );
 		$this->view = "$path[dirname]/$path[filename].phtml";
 
-		if( !file_exists( $this->view ) || $this->view === $this->file )
+		if( !file_exists( $this->view ) )
 			$this->view = null;
 
 	}	// end method parseURL
