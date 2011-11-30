@@ -52,12 +52,8 @@ class page
 		// check if the page is in the public dir, protected pages dir, or if
 		// a "view" exists. finally, check if request is defined in config file
 		// as a service or alias to a file
-		if( is_file( $config->PATH_HTDOCS . $this->request ) )
-			$this->file = $config->PATH_HTDOCS . $this->request;
-		elseif( file_exists( $config->PATH_CONTROLLER . $this->request . '.php' ) )
+		if( file_exists( $config->PATH_CONTROLLER . $this->request . '.php' ) )
 			$this->file = $config->PATH_CONTROLLER . $this->request . '.php';
-		elseif( file_exists( $config->PATH_VIEW . $this->request . '.phtml' ) )
-			$this->file = $config->PATH_VIEW . $this->request . '.phtml';
 		elseif( !empty( $config->redirect[$this->request] ) )
 			$this->file = $config->redirect[$this->request];
 		else
@@ -81,7 +77,7 @@ class page
 
 			$pattern = preg_replace( $match, $replace, $string );
 			$pattern = "#{$pattern}#";
-	
+
 			preg_match_all( $pattern, $this->request,
 				$matches, PREG_SET_ORDER );
 
@@ -134,15 +130,15 @@ class page
 
 	public function render()
 	{
-		global $config;
 		header( "Content-Type: {$this->content_type}" );
-		
+
 		if( !$this->template )
 		{
 			echo $this->body;
 		}
 		else
 		{
+			global $config;
 			require( $config->PATH_TEMPLATE . "/$this->template" );
 
 			// cache the page if the stars are aligned (no errors),
