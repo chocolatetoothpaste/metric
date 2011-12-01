@@ -50,7 +50,7 @@ class timer
 		}
 		else
 		{
-			$this->stop[$name][$this->count[$name]] = $this->microtime();
+			$this->stop[$name][$this->count[$name]] = microtime(true);
 			$this->count[$name]--;
 		}
 	}
@@ -137,17 +137,6 @@ class timer
 			?></table><?php
 		}
 	} // end function showTimes
-
-
-	/**
-	 * Returns millisecond time
-	 */
-
-	private function microtime()
-	{
-		$exp = explode(' ', microtime());
-		return ( (float)$exp[1] + (float)$exp[0] );
-	}
 
 } // end class timer
 
