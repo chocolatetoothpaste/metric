@@ -23,7 +23,7 @@ header( "Cache-Control: must-revalidate, max-age=0" );
 ob_start();
 
 // it is likely page controllers will be classes in the future, so this section
-// and the section below are let as comments to enable it
+// and the section below are left as comments to enable it
 /*// get all declared class names to compare after including file
 $classes = get_declared_classes();
 //*/
