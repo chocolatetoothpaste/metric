@@ -4,7 +4,7 @@
  * @see /page/controller and /page/view for actual pages
  */
 
-// starting a timer to time how long it takes to process a page request.
+// begin timing page execution
 $_start__ = microtime( true );
 
 include( 'include/include.inc.php' );
@@ -15,19 +15,20 @@ $page->uid = get( 'uid', '0' );
 $page->parseURL( getenv( 'REQUEST_URI' ) );
 $page->template = $config->PAGE_TEMPLATE;
 
-// grab the most recent mtime of a file/files, create a hash
-$page->mtime();
-//$visibility = 'public';
-//header( "Cache-Control: $visibility, must-revalidate, max-age=0" );
-header( "Cache-Control: public, must-revalidate, max-age=0" );
+// make sure the page doesn't get cached unless told to
+header( "Cache-Control: must-revalidate, max-age=0" );
 
+// start an output buffer to begin building page. this allows headers to be set
+// in the script before anything is output
 ob_start();
 
-// grab the page and view (if there is one)
-
+// it is likely page controllers will be classes in the future, so this section
+// and the section below are let as comments to enable it
 /*// get all declared class names to compare after including file
 $classes = get_declared_classes();
 //*/
+
+// grab the page and view (if there is one)
 require_once( $page->file );
 if( $page->view )
 	require_once( $page->view );
@@ -49,10 +50,8 @@ $page->render();
 
 //while( @ob_end_flush() );
 
-// stop the timer and calculate execution
-// time, displays as comment after </html>
-$_finish__ = microtime( true );
+// end timing page execution and display it as a comment after </html>
 if( $page->template )
-	printf( '<!-- %f hash: %s-->', ( $_finish__ - $_start__ ), $page->hash );
+	printf( '<!-- %f hash: %s-->', ( microtime( true ) - $_start__ ), $page->hash );
 
 ?>
