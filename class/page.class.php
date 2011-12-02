@@ -26,6 +26,7 @@ class page
 	public $body;
 	public $hash;
 	public $https;
+	public $private = false;
 
 	private $cache = false;
 
@@ -70,9 +71,9 @@ class page
 			 * routes will have "id" or other fields that are the same
 			 */
 			$string = '(?J)^' . implode( '$|^', $config->services ) . '$';
-			$match		= array( '#/:([\w]+)#',
+			$match = array(	'#/:([\w]+)#',
 				'#/@(\w+)#', '#/%(\w+)#' );
-			$replace	= array( '/(?P<service>${1})',
+			$replace = array( '/(?P<service>${1})',
 				'/(?P<${1}>[@\w]+)', '/?(?P<${1}>[%\w]+)*' );
 
 			$pattern = preg_replace( $match, $replace, $string );
@@ -86,7 +87,7 @@ class page
 				$matches = $matches[0];
 
 				// this is a REALLY shitty way to do this, must be a better way
-				/*// strip out numeric keys, the server only wants named params
+				/// strip out numeric keys, the server only wants named params
 				array_walk( $matches, function( $v, $k ) use( &$matches )
 				{
 					if( !$v || is_numeric( $k ) )
@@ -168,8 +169,11 @@ class page
 	{
 		global $config;
 		$request = iif( !$request, $this->request );
+		// grab the most recent mtime of a file/files, create a hash
+		$page->mtime();
 		$this->hash = md5( $request ) . "-{$unique_id}-{$this->mtime}";
 		$cache_file = $config->PATH_CACHE . "/{$this->hash}";
+		header( 'Cache-Control: ' . ( $this->private ? 'private' : 'public' ), false );
 		header( "Etag: {$this->hash}" );
 		header( 'Pragma: cache' );
 
@@ -235,11 +239,11 @@ class page
 				die($this->render());
 			}
 			else
-				return true;
+				$this->private = true;
 		}
 		else
 		{
-			self::redirect( 'http://' . getenv('SERVER_NAME') . '/login' );
+			self::redirect( '/login' );
 		}
 	}
 
