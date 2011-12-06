@@ -170,9 +170,10 @@ class page
 		global $config;
 		$request = iif( !$request, $this->request );
 		// grab the most recent mtime of a file/files, create a hash
-		$page->mtime();
-		$this->hash = md5( $request ) . "-{$unique_id}-{$this->mtime}";
+		$mtime = max( filemtime( $this->file ), filemtime( $this->view ) );
+		$this->hash = md5( $request ) . "-{$unique_id}-{$mtime}";
 		$cache_file = $config->PATH_CACHE . "/{$this->hash}";
+
 		header( 'Cache-Control: ' . ( $this->private ? 'private' : 'public' ), false );
 		header( "Etag: {$this->hash}" );
 		header( 'Pragma: cache' );
@@ -198,26 +199,6 @@ class page
 			$this->cache = true;
 			ob_start();
 		}
-	}
-
-
-	/**
-	 * Get the timestamp of the most recently modified
-	 * file (either script or view) and return it
-	 * @return int the timestamp
-	 */
-
-	public function mtime()
-	{
-		if( is_array( $this->file ) ):
-			$this->mtime = array_map( 'filemtime', $this->file );
-			$this->mtime = max( $this->mtime );
-		else:
-			$this->mtime =
-				max( filemtime( $this->view ), filemtime( $this->file ) );
-		endif;
-
-		return $this->mtime;
 	}
 
 
