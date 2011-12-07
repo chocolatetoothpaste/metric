@@ -63,7 +63,7 @@ abstract class database extends PDO
 			$return[] = "{$k} = :{$k}";
 
 		return $return;
-	}
+	} // end function prepareFields
 
 
 	/**
@@ -86,47 +86,5 @@ abstract class database extends PDO
 		return parent::quote( $string );
 	}	//	end function sanitize()
 
-
-	/**
-	 * Automagically paginates a query and returns a condensed set of results
-	 * @param string $query
-	 * @param int $page
-	 * @param int $results
-	 */
-
-	public function paginate( query $query, $page = 1, $results = 10, $calc_rows = true )
-	{
-		$offset = ( $page - 1 ) * $results;
-		$sql = "$query->query LIMIT $offset, $results";
-		$stmt = $this->execute( $sql, $query->params );
-		$return = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-		if( $return )
-		{
-			$this->low_result = ( $page - 1 ) * $results + 1;
-			$num = $page * $results;
-
-			/*
-			 * Would be nice to cache the row count so it isn't calculated with each page load
-			 *
-			 * if( keyAndValue( $_SESSION, array( 'db', 'found_rows' ) ) )
-				$this->found_rows = $_SESSION['db']['found_rows'];
-			else*/
-				$this->found_rows = $this->execute( 'SELECT count(*) FROM ' . $query->table )->fetchColumn();
-
-			$this->total_pages = ceil( $this->found_rows / $results );
-
-			$this->high_result = ( $this->found_rows < $num
-				? $this->found_rows : $num );
-
-			$this->prev_page = ( $page <= 1 ? false : $page - 1 );
-			$this->next_page = ( $page == $this->total_pages ? false : $page + 1 );
-		}
-
-		unset( $results, $page, $min, $sql, $result, $row, $num );
-		return $return;
-	}	//	end function paginate()
-
-}
-
+} // end abstract class database
 ?>
