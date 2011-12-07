@@ -2,50 +2,12 @@
 /**
  * a wicked awesome extension to PDO.
  * @author ross paskett - rpaskett@gmail.com
- * @copyright 2010 ross paskett
  * @package framework
  */
 
 class mysql extends database
 {
-
-	/**
-	 * $results_low - the lower result number returned by $this->paginate()
-	 * @var int
-	 */
-	public $low_result;
-
-	/**
-	 * $results_low - the upper result number returned by $this->paginate()
-	 * @var int
-	 */
-	public $high_result;
-
-	/**
-	 * $found_rows - total rows found when paginating
-	 * @var int
-	 */
-	public $found_rows;
-
-	/**
-	 * $prev_page - the previous page in the result set
-	 * @var int
-	 */
-	public $prev_page;
-
-	/**
-	 * $next_page - the next page in the result set
-	 * @var int
-	 */
-	public $next_page;
-
-	/**
-	 * $total_pages - total pages found when calculating pagination
-	 * @var int
-	 */
-	public $total_pages;
-
-	public $result, $fetch_mode, $option;
+	public $err_code, $err_info, $result, $fetch_mode, $option;
 
 
 	/**
@@ -144,11 +106,10 @@ class mysql extends database
 	public function execute( $query, array $params = array() )
 	{
 		$this->result = parent::prepare( $query );
-		if( $this->result )
-			$this->result->execute( $params );
+		$this->result->execute( $params );
+
 		return $this->result;
 	}
 
 }	//	end class db
-
 ?>
