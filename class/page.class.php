@@ -171,9 +171,9 @@ class page
 		$request = iif( !$request, $this->request );
 		// grab the most recent mtime of a file/files, create a hash
 		$mtime = max( filemtime( $this->file ), filemtime( $this->view ) );
+
 		$this->hash = md5( $request ) . "-{$unique_id}-{$mtime}";
 		$cache_file = $config->PATH_CACHE . "/{$this->hash}";
-
 		header( 'Cache-Control: ' . ( $this->private ? 'private' : 'public' ), false );
 		header( "Etag: {$this->hash}" );
 		header( 'Pragma: cache' );

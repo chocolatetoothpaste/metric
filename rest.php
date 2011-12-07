@@ -90,11 +90,11 @@ if( $hash !== $signature )
 /**
  * @see	\Service\Model::init()
  */
+
 $response = call_user_func_array( $page->callback, array(
 	'method'	=>	$_SERVER['REQUEST_METHOD'],
 	'data'		=>	$page->params + $data
 ) );
-
 //error_log(print_r($page->params,true));
 //error_log(print_r($response,true));
 // determine response type and pass response through to the page handler
