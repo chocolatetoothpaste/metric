@@ -25,10 +25,10 @@ abstract class Model
 		// instantiated. see child service models for usage and implementation
 		//~ error_log(print_r($data, true));
 
-		if( $method == 'GET' && !empty( $params ) )
-	  		return static::read( $params );
-		elseif( $method == 'GET' )
+		if( $method == 'GET' && empty( $params ) )
 			return static::collection($method, $data);
+		elseif( $method == 'GET' )
+	  		return static::read( $params );
 		elseif( $method == 'POST' )
 			return static::create( $data );
 		elseif( $method == 'PUT' )
