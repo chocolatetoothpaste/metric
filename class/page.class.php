@@ -121,8 +121,8 @@ class page
 
 		// check for a view for the page
 		$path = pathinfo( $this->file );
-		$path['dirname'] =
-			str_replace( $config->PATH_CONTROLLER, $config->PATH_VIEW, $path['dirname'] );
+		$path['dirname'] = str_replace( $config->PATH_CONTROLLER,
+			$config->PATH_VIEW, $path['dirname'] );
 		$this->view = "$path[dirname]/$path[filename].phtml";
 
 		if( !file_exists( $this->view ) )
@@ -182,7 +182,8 @@ class page
 
 		$this->hash = md5( $request ) . "-{$unique_id}-{$mtime}";
 		$cache_file = $config->PATH_CACHE . "/{$this->hash}";
-		header( 'Cache-Control: ' . ( $this->private ? 'private' : 'public' ), false );
+		$visibility = ( $this->private ? 'private' : 'public' );
+		header( "Cache-Control: {$visibility}", false );
 		header( "Etag: {$this->hash}" );
 		header( 'Pragma: cache' );
 
@@ -220,7 +221,7 @@ class page
 	{
 		global $config;
 		//if( $this->https && keyAndValue( $_SESSION, 'user' ) instanceof User )
-		if( keyAndValue( $_SESSION, 'user' ) instanceof \Domain\User )
+		if( !empty( $_SESSION['user'] ) )
 		{
 			if( !$_SESSION['user']->authenticate( $bit, $permission ) )
 			{
