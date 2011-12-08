@@ -58,14 +58,13 @@ else
 // the lenghts will match and the signature will match
 $length = strlen( $input );
 
-// This will change how a message is hashed, so any changes to this composition
-// could potentially break code. see also request.class.php; changes to this
-// composition must also be reflected in that class!!!
-
 $rdate = ( empty( $_SERVER['HTTP_DATE'] )
 	? $_SERVER['HTTP_X_DATE']
 	: $_SERVER['HTTP_DATE'] );
 
+// This will change how a message is hashed, so any changes to this composition
+// could potentially break code. see also request.class.php; changes to this
+// composition must also be reflected in that class!!!
 $doc = <<<EODOC
 {$_SERVER['REQUEST_METHOD']} {$page->request} {$_SERVER['SERVER_PROTOCOL']}
 Date: {$rdate}
@@ -93,7 +92,8 @@ if( $hash !== $signature )
 
 $response = call_user_func_array( $page->callback, array(
 	'method'	=>	$_SERVER['REQUEST_METHOD'],
-	'data'		=>	$page->params + $data
+	'params'	=>	$page->params,
+	'data'		=>	$data
 ) );
 //error_log(print_r($page->params,true));
 //error_log(print_r($response,true));

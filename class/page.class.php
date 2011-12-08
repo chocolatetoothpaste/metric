@@ -71,10 +71,17 @@ class page
 			 * routes will have "id" or other fields that are the same
 			 */
 			$string = '(?J)^' . implode( '$|^', $config->services ) . '$';
-			$match = array(	'#/:([\w]+)#',
-				'#/@(\w+)#', '#/%(\w+)#' );
-			$replace = array( '/(?P<service>${1})',
-				'/(?P<${1}>[@\w]+)', '/?(?P<${1}>[%\w]+)*' );
+			$match = array(
+				'#/:([\w]+)#',
+				'#/@(\w+)#',
+				'#/%(\w+)#'
+			);
+
+			$replace = array(
+				'/(?<service>${1})',
+				'/(?<${1}>[@\w]+)',
+				'/?(?<${1}>[%\w]+)*'
+			);
 
 			$pattern = preg_replace( $match, $replace, $string );
 			$pattern = "#{$pattern}#";
@@ -86,8 +93,9 @@ class page
 				// flatten the array
 				$matches = $matches[0];
 
-				// this is a REALLY shitty way to do this, must be a better way
-				/// strip out numeric keys, the server only wants named params
+				// this is a REALLY shitty way to do this, but at the time of
+				// writing, there is no alternative. hopefully a flag or
+				// modifier will be introduced in the future
 				array_walk( $matches, function( $v, $k ) use( &$matches )
 				{
 					if( !$v || is_numeric( $k ) )
