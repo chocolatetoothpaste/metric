@@ -70,7 +70,7 @@ class page
 			 * The (?J) modifier allows duplicate named params, since multiple
 			 * routes will have "id" or other fields that are the same
 			 */
-			$string = '(?J)^' . implode( '$|^', $config->services ) . '$';
+			$string = '(?J)^' . implode( '$|^', $config->routes ) . '$';
 			$match = array(
 				'#/:([\w]+)#',
 				'#/@(\w+)#',

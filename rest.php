@@ -27,7 +27,7 @@ if( empty( $auth['Authorization'] ) )
 $auth = base64_decode( $auth['Authorization'] );
 list( $username, $signature ) = explode( ':', $auth );
 
-error_log($signature);
+//~ error_log($signature);
 
 $db = mysql::instance( $config->db[$config->DB_MAIN] );
 $query = "
@@ -75,7 +75,7 @@ EODOC;
 
 $hash = hash_hmac( 'sha1', utf8_encode( $doc ), $key );
 
-error_log("Hash: $hash\nMessage: $doc");
+//~ error_log("Hash: $hash\nMessage: $doc");
 
 if( $hash !== $signature )
 {
@@ -89,7 +89,6 @@ if( $hash !== $signature )
 /**
  * @see	\Service\Model::init()
  */
-
 $response = call_user_func_array( $page->callback, array(
 	'method'	=>	$_SERVER['REQUEST_METHOD'],
 	'params'	=>	$page->params,
