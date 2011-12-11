@@ -122,9 +122,6 @@ abstract class Model
 			? $query->update( $table, $columns, $criteria )
 			: $query->insert( $table, $columns ) );
 
-		error_log($sql);
-		error_log(print_r($query->params, true));
-
 		$db->execute( $sql, $query->params );
 		//error_log($db->result->errorCode());
 

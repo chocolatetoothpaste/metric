@@ -43,6 +43,31 @@ abstract class Model
 
 
 	/**
+	 * A generic read method
+	 *
+
+	protected static function read( $id )
+	{
+		global $config;
+		$domain = static::$domain;
+		$obj = new $domain( $id );
+		$message = array(
+			'success'	=>	'false',
+			'status'	=>	$config->HTTP_NOT_FOUND
+		);
+
+		if( $obj instanceof $domain && $obj->id )
+			$message = array(
+				'success'	=>	'true',
+				'response'	=>	$obj,
+				'status'	=>	$config->HTTP_OK
+			);
+
+		return $message;
+	}*/
+
+
+	/**
 	 * Loop through an array and look for strings that can be parsed into
 	 * ranges and build a query of the appropriate type
 	 * @param	array	$ranges
