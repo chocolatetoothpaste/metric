@@ -94,8 +94,7 @@ $response = call_user_func_array( $page->callback, array(
 	'params'	=>	$page->params,
 	'data'		=>	$data
 ) );
-//error_log(print_r($page->params,true));
-//error_log(print_r($response,true));
+
 // determine response type and pass response through to the page handler
 if( $page->content_type === 'application/json' )
 {
