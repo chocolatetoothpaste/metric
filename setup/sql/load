@@ -1,0 +1,1 @@
+cat schema.sql data.sql | mysql -uroot -p

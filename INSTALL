@@ -1,0 +1,4 @@
+1. Copy the contents of the framework to your project root directory (or use svn:externals
+2. Copy the contents of the htdocs folder to your domain's document root (including .htaccess)
+3. Copy the include dir to your project root directory
+4. Modify configuration to meet your sites specs
