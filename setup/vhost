@@ -1,0 +1,19 @@
+<VirtualHost *:80>
+        ServerName      host.tld
+        ServerAlias     alias.host.tld
+        DocumentRoot    /var/www/host/htdocs
+        CustomLog       ${APACHE_LOG_DIR}/host_access.log common
+        ErrorLog        ${APACHE_LOG_DIR}/host_error.log
+</VirtualHost>
+
+<VirtualHost *:443>
+        ServerName      host.tld
+        ServerAlias     alias.host.tld
+        <IfModule mod_ssl.c>
+                SSLEngine       on
+                SSLOptions      +StrictRequire
+                SSLCertificateFile      /etc/ssl/certs/ssl-cert-snakeoil.pem
+                SSLCertificateKeyFile   /etc/ssl/private/ssl-cert-snakeoil.key
+        </IfModule>
+</VirtualHost>
+
