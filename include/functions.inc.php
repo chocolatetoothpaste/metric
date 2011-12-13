@@ -77,18 +77,6 @@ function br( $text = '' )
 
 
 /**
- * Checks if a secure connection is present, redirects if not
- */
-
-function https()
-{
-		return ( FORCE_SSL
-			? !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] == 'on'
-			: true );
-}
-
-
-/**
  * Return the value in the array. If $default
  * provided and the key is not set, it is returned.
  * @param  array  &$array  the array
@@ -482,14 +470,14 @@ function parseRange( $values )
  * @param	array	$array	the array to search
  */
 
-function array_pluck( $key, &$array )
+function array_pluck( $key, $array )
 {
 	$array = (array)$array;
 	$return = array();
 	array_walk_recursive($array, function( &$val, $k ) use( $key, &$return )
 	{
 		if( $k === $key )
-			$return[$val] = 1;
+			$return[$val] = $val;
 	});
 	return $return;
 }
