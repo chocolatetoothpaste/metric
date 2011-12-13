@@ -6,16 +6,12 @@
 
 abstract class database extends PDO
 {
-	abstract public
-		function fetchIntoObject( &$obj, $query, array $params = array() );
-	abstract public
-		function fetchClass( $class, $query, array $params = array() );
-	abstract public
-		function next();
-	abstract public
-		function execute( $query, array $params = array() );
+	abstract public function fetchIntoObject( &$obj, $query, array $params = array() );
+	abstract public function fetchClass( $class, $query, array $params = array() );
+	abstract public function next();
+	abstract public function execute( $query, array $params = array() );
 
-	private static $instance = array();
+	protected static $instance = array();
 
 
 	/**
@@ -29,12 +25,11 @@ abstract class database extends PDO
 	{
 		// convert connection info into a string and create a unique hash
 		$name = md5( implode( '', $db_info ) );
-		$class = get_called_class();
-		if( empty( self::$instance[$class][$name] ) )
-			self::$instance[$class][$name] = new $class( $db_info );
+		if( empty( static::$instance[$name] ) )
+			static::$instance[$name] = new static( $db_info );
 
-		return self::$instance[$class][$name];
-    }
+		return static::$instance[$name];
+	}
 
 
 	/**

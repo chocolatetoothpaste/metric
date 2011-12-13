@@ -18,27 +18,23 @@ class mysql extends database
 	public function __construct( &$info )
 	{
 		// build the connection string and try to establish a connection,
-		// otherwise die with honor
+		// otherwise die with honor. this should probably just go to global handler
 		try
 		{
-			if( !empty( $info['socket'] ) )
-				$host = "unix_socket={$info['socket']};";
-			else
-			{
-				if( !empty( $info['host'] ) )
-					$host = "host={$info['host']};";
-				if( !empty( $info['port'] ) )
-					$host .= "port={$info['port']};";
-			}
+			$user = $info['username'];
+			$pass = $info['password'];
+			unset( $info['username'], $info['password'] );
 
-			$dsn = "mysql:{$host}dbname={$info['dbname']};";
-			parent::__construct( $dsn, $info['username'], $info['password'],
-				array( PDO::ATTR_PERSISTENT => true ) );
+			array_walk( $info, function(&$v, $k) {
+				$v = "$k=$v";
+			});
+
+			$info = "mysql:{$host}dbname={$info['dbname']};";
+			parent::__construct( $info, $user, $pass, array( PDO::ATTR_PERSISTENT => true ) );
 		}
 		catch( PDOException $e )
 		{
-			echo 'Error connecting to the database: ', $e->getMessage();
-			die;
+			die( 'Error connecting to the database: ', $e->getMessage() );
 		}
 	}	//	end function __construct
 
