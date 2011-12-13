@@ -6,11 +6,6 @@
 
 class page
 {
-	/**
-	 * If set to false, sends raw content. If set to string, encapsulates
-	 * content in a template loaded from the string provided.
-	 * @var mixed $template
-	 */
 
 	public $template = false;
 	public $js = array();
