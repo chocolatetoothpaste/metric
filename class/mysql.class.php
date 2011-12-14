@@ -29,12 +29,12 @@ class mysql extends database
 				$v = "$k=$v";
 			});
 
-			$info = "mysql:{$host}dbname={$info['dbname']};";
+			$info = 'mysql:' . implode(';', $info);
 			parent::__construct( $info, $user, $pass, array( PDO::ATTR_PERSISTENT => true ) );
 		}
 		catch( PDOException $e )
 		{
-			die( 'Error connecting to the database: ', $e->getMessage() );
+			die( 'Error connecting to the database: ' . $e->getMessage() );
 		}
 	}	//	end function __construct
 
