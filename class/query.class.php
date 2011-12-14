@@ -6,7 +6,8 @@
 
 class query
 {
-	public	$params = array(), $criteria = array(), $query, $table, $where, $order;
+	public $params = array(), $criteria = array(),
+		$query, $table, $where, $order;
 
 	final function __construct()
 	{
@@ -58,7 +59,7 @@ class query
 		{
 			$this->where = "WHERE {$this->where}";
 		}
-		
+
 		if( $this->order )
 			$this->order = "ORDER BY {$this->order}";
 
