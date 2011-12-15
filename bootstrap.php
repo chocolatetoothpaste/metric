@@ -3,6 +3,7 @@
  * @author ross paskett <rpaskett@gmail.com>
  * @see /page/controller and /page/view for actual pages
  */
+namespace metric;
 
 // begin timing page execution
 $_start__ = microtime( true );
@@ -10,9 +11,8 @@ $_start__ = microtime( true );
 include( 'include/include.inc.php' );
 session_start();
 
-$page = new page();
-$page->uid = get( 'uid', '0' );
-$page->parseURL( getenv( 'REQUEST_URI' ) );
+$page = new $config->template();
+$page->parseURL( strtok( $_SERVER['REQUEST_URI'], '?' ) );
 $page->template = $config->PAGE_TEMPLATE;
 
 // make sure the page doesn't get cached unless told to

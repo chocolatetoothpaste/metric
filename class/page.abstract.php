@@ -3,8 +3,9 @@
 /**
  * @package page_controller
  */
+namespace metric\page;
 
-class page
+abstract class page
 {
 
 	public $template = false;
@@ -42,16 +43,15 @@ class page
 	public function parseURL( $request )
 	{
 		global $config;
-		// trim query string from the request
-		$this->request = strtok( $request, '?' );
+		$this->request = $request;
 
 		// check if the page is in the public dir, protected pages dir, or if
 		// a "view" exists. finally, check if request is defined in config file
 		// as a service or alias to a file
 		if( file_exists( $config->PATH_CONTROLLER . $this->request . '.php' ) )
 			$this->file = $config->PATH_CONTROLLER . $this->request . '.php';
-		elseif( !empty( $config->redirect[$this->request] ) )
-			$this->file = $config->redirect[$this->request];
+		elseif( !empty( $config->alias[$this->request] ) )
+			$this->file = $config->alias[$this->request];
 		else
 		{
 			// set this to start with, if a match is found this will be changed
@@ -114,14 +114,13 @@ class page
 		if( !file_exists( $this->file ) )
 			$this->file = $config->PAGE_404;
 
-		// check for a view for the page
+		// check if there is a view associated with the page
 		$path = pathinfo( $this->file );
 		$path['dirname'] = str_replace( $config->PATH_CONTROLLER,
 			$config->PATH_VIEW, $path['dirname'] );
-		$this->view = "$path[dirname]/$path[filename].phtml";
-
-		if( !file_exists( $this->view ) )
-			$this->view = null;
+		$path = "$path[dirname]/$path[filename].phtml";
+		$this->view = ( file_exists( $path ) ? $path : null );
+		unset($path);
 
 	}	// end method parseURL
 
@@ -202,33 +201,6 @@ class page
 		{
 			$this->cache = true;
 			ob_start();
-		}
-	}
-
-
-	/**
-	 * checks if the user has permission to view the page requested
-	 * @global object $auth
-	 * @param string $code
-	 */
-
-	public function authenticate( $bit = 0, $permission = '' )
-	{
-		global $config;
-		//if( $this->https && keyAndValue( $_SESSION, 'user' ) instanceof User )
-		if( !empty( $_SESSION['user'] ) )
-		{
-			if( !$_SESSION['user']->authenticate( $bit, $permission ) )
-			{
-				$this->file = $config->PAGE_PERMISSION_DENIED;
-				die($this->render());
-			}
-			else
-				$this->private = true;
-		}
-		else
-		{
-			self::redirect( '/login' );
 		}
 	}
 
