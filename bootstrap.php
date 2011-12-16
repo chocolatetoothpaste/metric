@@ -13,7 +13,7 @@ session_start();
 
 $page = new $config->template();
 $page->parseURL( strtok( $_SERVER['REQUEST_URI'], '?' ) );
-$page->template = $config->PAGE_TEMPLATE;
+$page->template = $config->TEMPLATE;
 
 // make sure the page doesn't get cached unless told to
 header( "Cache-Control: must-revalidate, max-age=0" );
