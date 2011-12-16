@@ -89,13 +89,11 @@ abstract class Model
 		$criteria = array();
 		$table = $this->getTable();
 		$keys = $this->getKeys();
-		//$columns = array_intersect_key( get_object_vars($this), $this->getFields( true ) );
-		$columns = $this->getFields( true );
+		$columns = $this->getFields( true, $this );
 
-		if( !empty( $keys['unique'] ) )
-			$keys = array_merge((array)$keys['primary'], (array)$keys['unique']);
-		else
-			$keys = (array)$keys['primary'];
+		$keys = ( !empty( $keys['unique'] )
+			? array_merge($keys['primary'], $keys['unique'])
+			: $keys['primary'] );
 
 		foreach( $keys as $type => $k ):
 			// if a primary key has a value in the
@@ -231,13 +229,13 @@ abstract class Model
 	 * @return	array	the array of vars
 	 */
 
-	final public static function getFields( $values = false )
+	final public static function getFields( $values = false, $obj = null )
 	{
-		$class = get_called_class();
-		$vars = call_user_func('get_class_vars', $class );
-		return ( $values
-			? array_intersect_key( get_object_vars($this), $vars );
-			: array_keys( $vars ) );
+			$class = get_called_class();
+			$vars = call_user_func('get_class_vars', $class );
+			return ( $values
+				? array_intersect_key( get_object_vars($obj), $vars )
+				: array_keys( $vars ) );
 	}
 
 

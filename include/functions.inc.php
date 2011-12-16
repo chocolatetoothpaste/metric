@@ -54,13 +54,14 @@ function setAndValue( &$var, $value = '', $strict = true )
 * Return something based on the condition
 * Shortcut for "($condition ? 'here is a string' : '')"
 * @param	boolean	$condition
-* @param	mixed	$return
+* @param	mixed	$passed
+* @param	mixed	$failed
 * @return	string
 */
 
-function iif( $condition, $return )
+function iif( $condition, $passed, $failed = '' )
 {
-	return ( $condition ? $return : '' );
+	return ( $condition ? $passed : $failed );
 }
 
 
