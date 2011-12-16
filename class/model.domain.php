@@ -86,15 +86,16 @@ abstract class Model
 
 		$query = new \query;
 		$update = false;
-		$columns = array_intersect_key( get_object_vars($this), $this->getProperties() );
 		$criteria = array();
+		$table = $this->getTable();
 		$keys = $this->getKeys();
+		//$columns = array_intersect_key( get_object_vars($this), $this->getFields( true ) );
+		$columns = $this->getFields( true );
 
 		if( !empty( $keys['unique'] ) )
 			$keys = array_merge((array)$keys['primary'], (array)$keys['unique']);
 		else
 			$keys = (array)$keys['primary'];
-		$table = $this->getTable();
 
 		foreach( $keys as $type => $k ):
 			// if a primary key has a value in the
@@ -227,28 +228,16 @@ abstract class Model
 
 	/**
 	 * returns an array of public vars for the called class
-	 * @return array the array of vars
+	 * @return	array	the array of vars
 	 */
 
-	final public static function getFields()
+	final public static function getFields( $values = false )
 	{
 		$class = get_called_class();
-		return array_keys( call_user_func('get_class_vars', $class ) );
-	}
-
-
-	/**
-	 * Returns an associateive array of the public
-	 * properties and their values in the called class
-	 * @return array array of properties => values
-	 */
-
-	final public function getProperties()
-	{
-		$vars = get_object_vars($this);
-		$class = get_called_class();
-		return array_intersect_key( $vars,
-			call_user_func('get_class_vars', $class ) );
+		$vars = call_user_func('get_class_vars', $class );
+		return ( $values
+			? array_intersect_key( get_object_vars($this), $vars );
+			: array_keys( $vars ) );
 	}
 
 

@@ -1,21 +1,13 @@
 <?php
-
-/**
- * @package page_controller
- */
 namespace metric\page;
 
 abstract class page
 {
 
 	public $template = false;
-	public $js = array();
-	public $css = array();
 	public $file;
 	public $view;
-	public $title;
 	public $params = array();
-	public $mtime = 0;
 	public $request;
 	public $callback;
 	public $content_type = 'text/html; charset=utf-8';
@@ -25,6 +17,7 @@ abstract class page
 	public $private = false;
 
 	private $cache = false;
+	private $cache_file;
 
 	function __construct()
 	{
@@ -33,6 +26,7 @@ abstract class page
 			? !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on'
 			: true );
 	}
+
 
 	/**
 	 * Parses $request and tries to find a matching page/script. Looks
@@ -54,16 +48,12 @@ abstract class page
 			$this->file = $config->alias[$this->request];
 		else
 		{
-			// set this to start with, if a match is found this will be changed
-			// otherwise it defaults to error page (which is a good thing)
-			$this->file = $config->PAGE_404;
-
 			/**
-			 * grab all the services registered and combine them into a single
-			 * string so the URL matching is only executed once. Do regex
+			 * grab all routes and combine them into a single pattern
+			 * so the URL matching is only executed once. Do regex
 			 * substitutions for extracting named params and the service name.
 			 * The (?J) modifier allows duplicate named params, since multiple
-			 * routes will have "id" or other fields that are the same
+			 * routes will accept params with overlapping names
 			 */
 			$string = '(?J)^' . implode( '$|^', $config->routes ) . '$';
 			$match = array(
@@ -85,10 +75,10 @@ abstract class page
 				$matches, PREG_SET_ORDER );
 
 			if( $matches ):
-				// flatten the array
+				// shift a useless index
 				$matches = $matches[0];
 
-				// this is a REALLY shitty way to do this, but at the time of
+				/// this is a REALLY shitty way to do this, but at the time of
 				// writing, there is no alternative. hopefully a flag or
 				// modifier will be introduced in the future
 				array_walk( $matches, function( $v, $k ) use( &$matches )
@@ -133,6 +123,9 @@ abstract class page
 
 	public function render()
 	{
+		// in the past, there have been a couple (minor) issues with the
+		// browser trying to download the page rather than redner it. a header
+		// should fix this.
 		header( "Content-Type: {$this->content_type}" );
 
 		if( !$this->template )
@@ -142,7 +135,7 @@ abstract class page
 		else
 		{
 			global $config;
-			require( $config->PATH_TEMPLATE . "/$this->template" );
+			require( $this->template );
 
 			// cache the page if the stars are aligned (no errors),
 			// because caching an errored page would be stupid
@@ -152,8 +145,8 @@ abstract class page
 				$date = gmdate( DATE_RFC1123, $date );
 				header( "Expires: {$date}" );
 
-				if( is_writable( $config->PATH_CACHE ) )
-					file_put_contents( $config->PATH_CACHE . "/{$this->hash}",
+				if( is_writable( $this->cache_file ) )
+					file_put_contents( $this->cache_file,
 						ob_get_contents(), LOCK_EX );
 			}
 
@@ -175,7 +168,7 @@ abstract class page
 		$mtime = max( filemtime( $this->file ), filemtime( $this->view ) );
 
 		$this->hash = md5( $request ) . "-{$unique_id}-{$mtime}";
-		$cache_file = $config->PATH_CACHE . "/{$this->hash}";
+		$this->cache_file = $config->PATH_CACHE . "/{$this->hash}";
 		$visibility = ( $this->private ? 'private' : 'public' );
 		header( "Cache-Control: {$visibility}", false );
 		header( "Etag: {$this->hash}" );
@@ -191,10 +184,10 @@ abstract class page
 			header( $__http_status[$config->HTTP_NOT_MODIFIED] );
 			die;
 		}
-		elseif( file_exists( $cache_file ) && filesize( $cache_file ) > 0 )
+		elseif( file_exists( $this->cache_file ) && filesize( $this->cache_file ) > 0 )
 		{
 			header( "X-Cache-Retrieved: {$this->hash}" );
-			echo file_get_contents( $cache_file );
+			echo file_get_contents( $this->cache_file );
 			die;
 		}
 		else
