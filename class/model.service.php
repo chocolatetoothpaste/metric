@@ -42,9 +42,27 @@ abstract class Model
 	} // end method init
 
 
-	/**
-	 * A generic read method
-	 *
+	protected static function create( $post )
+	{
+		global $config;
+		$domain = static::$domain;
+		$obj = new $domain();
+		$obj->capture( $post, $domain::getKeys() );
+		$message = array(
+			'success'	=>	'false',
+			'message'	=>	'Unable to create resource',
+			'status'	=>	$config->HTTP_NOT_ACCEPTABLE
+		);
+
+		if( $obj->save() )
+			$message = array(
+				'success'	=>	'true',
+				'response'	=>	$obj,
+				'status'	=>	$config->HTTP_CREATED
+			);
+
+		return $message;
+	}
 
 	protected static function read( $id )
 	{
@@ -53,6 +71,7 @@ abstract class Model
 		$obj = new $domain( $id );
 		$message = array(
 			'success'	=>	'false',
+			'message'	=>	'Unable to read resource',
 			'status'	=>	$config->HTTP_NOT_FOUND
 		);
 
@@ -64,7 +83,29 @@ abstract class Model
 			);
 
 		return $message;
-	}*/
+	}
+
+	protected static function update( $put, $params = array() )
+	{
+		global $config;
+		$domain = static::$domain;
+		$obj = new $domain( $params['id'] );
+		$obj->capture( $put, $domain::getKeys() );
+		$message = array(
+			'success'	=>	'false',
+			'message'	=>	'Unable to update resource',
+			'status'	=>	$config->HTTP_INTERNAL_SERVER_ERROR
+		);
+
+		if( $obj->save() )
+			$message = array(
+				'success'	=>	'true',
+				'response'	=>	$obj,
+				'status'	=>	$config->HTTP_OK
+			);
+
+		return $message;
+	}
 
 
 	/**
