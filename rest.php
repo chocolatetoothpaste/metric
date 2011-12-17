@@ -58,16 +58,12 @@ else
 // the lenghts will match and the signature will match
 $length = strlen( $input );
 
-$rdate = ( empty( $_SERVER['HTTP_DATE'] )
-	? $_SERVER['HTTP_X_DATE']
-	: $_SERVER['HTTP_DATE'] );
-
 // This will change how a message is hashed, so any changes to this composition
 // could potentially break code. see also request.class.php; changes to this
 // composition must also be reflected in that class!!!
 $doc = <<<EODOC
 {$_SERVER['REQUEST_METHOD']} {$page->request} {$_SERVER['SERVER_PROTOCOL']}
-Date: {$rdate}
+Date: {$_SERVER['HTTP_DATE']}
 Content-Length: {$length}
 
 $input
@@ -75,7 +71,10 @@ EODOC;
 
 $hash = hash_hmac( 'sha1', utf8_encode( $doc ), $key );
 
-//~ error_log("Hash: $hash\nMessage: $doc");
+error_log("Hash: $hash
+Expected: $signature
+Message: $doc
+Input: $input");
 
 if( $hash !== $signature )
 {
@@ -83,8 +82,6 @@ if( $hash !== $signature )
 	header( $__http_status[$response['status']] );
 	die(json_encode($response));
 }
-
-//error_log(print_r($page->callback,true));
 
 /**
  * @see	\Service\Model::init()

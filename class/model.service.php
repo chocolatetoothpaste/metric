@@ -24,6 +24,7 @@ abstract class Model
 		// this method is only called by child classes, service model is never
 		// instantiated. see child service models for usage and implementation
 
+
 		if( $method == 'GET' && empty( $params ) )
 			return static::collection($method, $data);
 		elseif( $method == 'GET' )
@@ -85,12 +86,13 @@ abstract class Model
 		return $message;
 	}
 
-	protected static function update( $put, $params = array() )
+	protected static function update( $put, $params )
 	{
 		global $config;
 		$domain = static::$domain;
-		$obj = new $domain( $params['id'] );
+		$obj = new $domain( $params );
 		$obj->capture( $put, $domain::getKeys() );
+
 		$message = array(
 			'success'	=>	'false',
 			'message'	=>	'Unable to update resource',
