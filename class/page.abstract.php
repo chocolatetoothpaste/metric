@@ -7,6 +7,7 @@ abstract class page
 	public $template = false;
 	public $file;
 	public $view;
+	public $js = array(), $css = array();
 	public $params = array();
 	public $request;
 	public $callback;
@@ -134,7 +135,6 @@ abstract class page
 		}
 		else
 		{
-			global $config;
 			require( $this->template );
 
 			// cache the page if the stars are aligned (no errors),
@@ -145,7 +145,9 @@ abstract class page
 				$date = gmdate( DATE_RFC1123, $date );
 				header( "Expires: {$date}" );
 
-				if( is_writable( $this->cache_file ) )
+				// check if the cache directory is writable
+				// and attempt to cache page output
+				if( is_writable( dirname( $this->cache_file ) ) )
 					file_put_contents( $this->cache_file,
 						ob_get_contents(), LOCK_EX );
 			}
@@ -157,10 +159,30 @@ abstract class page
 
 
 	/**
+	 *
+	 */
+
+	public function js()
+	{
+		$this->js = array_merge( $this->js, func_get_args() );
+	}
+
+
+	/**
+	 *
+	 */
+
+	public function css()
+	{
+		$this->css = array_merge( $this->css, func_get_args() );
+	}
+
+
+	/**
 	 * Caches the output of a page
 	 */
 
-	public function cache( $request = null, $unique_id = 0 )
+	public function cache( $request = null )
 	{
 		global $config;
 		$request = iif( !$request, $this->request );
