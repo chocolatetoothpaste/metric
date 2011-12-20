@@ -64,9 +64,9 @@ abstract class page
 			);
 
 			$replace = array(
-				'/(?<service>${1})',
-				'/(?<${1}>[@\w]+)',
-				'/?(?<${1}>[%\w]+)*'
+				'/(?P<service>${1})',
+				'/(?P<${1}>[@\w]+)',
+				'/?(?P<${1}>[%\w]+)*'
 			);
 
 			$pattern = preg_replace( $match, $replace, $string );
