@@ -62,7 +62,7 @@ $length = strlen( $input );
 // could potentially break code. see also request.class.php; changes to this
 // composition must also be reflected in that class!!!
 $doc = <<<EODOC
-{$_SERVER['REQUEST_METHOD']} {$page->request} {$_SERVER['SERVER_PROTOCOL']}
+{$_SERVER['REQUEST_METHOD']} {$_SERVER['REQUEST_URI']} {$_SERVER['SERVER_PROTOCOL']}
 Date: {$_SERVER['HTTP_DATE']}
 Content-Length: {$length}
 
@@ -71,10 +71,10 @@ EODOC;
 
 $hash = hash_hmac( 'sha1', utf8_encode( $doc ), $key );
 
-error_log("Hash: $hash
-Expected: $signature
-Message: $doc
-Input: $input");
+//~ error_log("Hash: $hash
+//~ Expected: $signature
+//~ Message: $doc
+//~ Input: $input");
 
 if( $hash !== $signature )
 {
