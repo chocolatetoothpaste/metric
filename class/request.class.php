@@ -37,8 +37,8 @@ class request
 			else
 			{
 				$options[CURLOPT_POSTFIELDS] = $this->content;
-				$this->length = strlen( $this->content );
 			}
+			$this->length = strlen( $this->content );
 		}
 		$this->_headers['Content-Length'] = $this->length;
 

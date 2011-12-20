@@ -135,6 +135,9 @@ abstract class page
 		}
 		else
 		{
+			// a lot of pages/templates will use config vars,
+			// so $config should be pulled into scope
+			global $config;
 			require( $this->template );
 
 			// cache the page if the stars are aligned (no errors),
@@ -164,7 +167,9 @@ abstract class page
 
 	public function js()
 	{
-		$this->js = array_merge( $this->js, func_get_args() );
+		// if the order of args doesn't make sense, it seems the JS for a page
+		// gets loaded before the template
+		$this->js = array_merge( func_get_args(), $this->js );
 	}
 
 
@@ -174,7 +179,8 @@ abstract class page
 
 	public function css()
 	{
-		$this->css = array_merge( $this->css, func_get_args() );
+		// @see this->js above for explanation of arg order
+		$this->css = array_merge( func_get_args(), $this->css );
 	}
 
 

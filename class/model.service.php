@@ -28,7 +28,7 @@ abstract class Model
 		if( $method == 'GET' && empty( $params ) )
 			return static::collection($method, $data);
 		elseif( $method == 'GET' )
-	  		return static::read( $params );
+	  		return static::read( $params, $data );
 		elseif( $method == 'POST' )
 			return static::create( $data );
 		elseif( $method == 'PUT' )
