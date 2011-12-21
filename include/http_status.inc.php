@@ -51,17 +51,17 @@ $config->define('HTTP_GATEWAY_TIMEOUT', 504);
 $config->define('HTTP_HTTP_VERSION_NOT_SUPPORT', 505);
 
 
-$__http_status = array(
-	$config->HTTP_OK						=>	'HTTP/1.1 200 Ok',
+$config->http_status = array(
+	$config->HTTP_OK					=>	'HTTP/1.1 200 Ok',
 	$config->HTTP_CREATED				=>	'HTTP/1.1 201 Created',
 	$config->HTTP_ACCEPTED				=>	'HTTP/1.1 202 Accepted',
 	$config->HTTP_PARTIAL_CONTENT		=>	'HTTP/1.1 206 Partial Content',
 	$config->HTTP_NOT_MODIFIED			=>	'HTTP/1.1 304 Not Modified',
 	$config->HTTP_UNAUTHORIZED			=>	'HTTP/1.1 401 Unauthorized',
 	$config->HTTP_NOT_FOUND				=>	'HTTP/1.1 404 Not Found',
-	$config->HTTP_METHOD_NOT_ALLOWED		=>	'HTTP/1.1 405 Method Not Allowed',
-	$config->HTTP_NOT_ACCEPTABLE			=>	'HTTP/1.1 406 Not Acceptable',
-	$config->HTTP_EXPECTATION_FAILED		=>	'HTTP/1.1 417 Expectation Failed',
+	$config->HTTP_METHOD_NOT_ALLOWED	=>	'HTTP/1.1 405 Method Not Allowed',
+	$config->HTTP_NOT_ACCEPTABLE		=>	'HTTP/1.1 406 Not Acceptable',
+	$config->HTTP_EXPECTATION_FAILED	=>	'HTTP/1.1 417 Expectation Failed',
 	$config->HTTP_INTERNAL_SERVER_ERROR	=>	'HTTP/1.1 500 Internal Server Error',
 	$config->HTTP_NOT_IMPLEMENTED		=>	'HTTP/1.1 501 Not Implemented'
 );
