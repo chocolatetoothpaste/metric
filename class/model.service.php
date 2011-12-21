@@ -43,7 +43,7 @@ abstract class Model
 	} // end method init
 
 
-	protected static function create( $post )
+	public static function create( $post )
 	{
 		global $config;
 		$domain = static::$domain;
@@ -65,7 +65,7 @@ abstract class Model
 		return $message;
 	}
 
-	protected static function read( $id )
+	public static function read( $id )
 	{
 		global $config;
 		$domain = static::$domain;
@@ -86,7 +86,7 @@ abstract class Model
 		return $message;
 	}
 
-	protected static function update( $put, $params )
+	public static function update( $put, $params )
 	{
 		global $config;
 		$domain = static::$domain;

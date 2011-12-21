@@ -20,6 +20,8 @@ abstract class page
 	private $cache = false;
 	private $cache_file;
 
+	abstract public function authorize();
+
 	function __construct()
 	{
 		global $config;
