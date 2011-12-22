@@ -3,7 +3,7 @@ class request
 {
 	public $method, $headers = array(), $content,
 		$auth, $length, $response, $format = 'application/json',
-		$username, $password, $host;
+		$username, $password, $host, $range = array(), $options = array();
 
 	private $_headers = array();
 
@@ -22,8 +22,9 @@ class request
 	{
 		$this->_headers['Accept'] = $this->format;
 		$this->length = 0;
+		$range = $options = '';
 
-		$options = array(
+		$curlopt = array(
 			CURLOPT_RETURNTRANSFER	=>	1,
 			CURLOPT_CUSTOMREQUEST	=>	$this->method,
 			CURL_HTTP_VERSION_1_1
@@ -36,11 +37,25 @@ class request
 				$this->url .= "?{$this->content}";
 			else
 			{
-				$options[CURLOPT_POSTFIELDS] = $this->content;
+				$curlopt[CURLOPT_POSTFIELDS] = $this->content;
 			}
 			$this->length = strlen( $this->content );
 		}
 		$this->_headers['Content-Length'] = $this->length;
+
+		if( $this->range )
+		{
+			foreach( $this->range as $token => $value )
+				$range .= "$token=$value; ";
+			$this->_headers['Content-Range'] = $range;
+		}
+
+		if( $this->options )
+		{
+			foreach( $this->options as $token => $value )
+				$options .= "$token=$value; ";
+			$this->_headers['Pragma'] = $options;
+		}
 
 		$this->hash();
 		$headers = array_merge( $this->headers, $this->_headers );
@@ -48,11 +63,11 @@ class request
 		foreach( $headers as $k => &$v )
 			$v = "$k: $v";
 
-		$options[CURLOPT_HTTPHEADER] = $headers;
-		$options[CURLOPT_URL] = $this->host . $this->url;
+		$curlopt[CURLOPT_HTTPHEADER] = $headers;
+		$curlopt[CURLOPT_URL] = $this->host . $this->url;
 
 		$ch = curl_init();
-		curl_setopt_array($ch, $options);
+		curl_setopt_array($ch, $curlopt);
 		$this->response = curl_exec($ch);
 		curl_close($ch);
 	}

@@ -26,13 +26,13 @@ abstract class Model
 
 
 		if( $method == 'GET' && empty( $params ) )
-			return static::collection($method, $data);
+			return static::collection($method, $_SERVER['HTTP_RANGE'], $_SERVER['HTTP_PRAGMA']);
 		elseif( $method == 'GET' )
 	  		return static::read( $params, $data );
 		elseif( $method == 'POST' )
 			return static::create( $data );
 		elseif( $method == 'PUT' )
-			return static::update( $data, $params );
+			return static::update( $params, $data );
 		elseif( $method == 'DELETE' )
 			return static::delete( $data );
 		else
@@ -65,7 +65,7 @@ abstract class Model
 		return $message;
 	}
 
-	public static function read( $id )
+	public static function read( $id, $get )
 	{
 		global $config;
 		$domain = static::$domain;
@@ -86,7 +86,7 @@ abstract class Model
 		return $message;
 	}
 
-	public static function update( $put, $params )
+	public static function update( $params, $put )
 	{
 		global $config;
 		$domain = static::$domain;
@@ -192,12 +192,13 @@ abstract class Model
 
 	/**
 	 * Returns a collection of objects in response to a REST request
-	 * @param	string	$method	the HTTP request method
-	 * @param	array	$get	the HTTP query
+	 * @param	string	$method		the HTTP request method
+	 * @param	string	$ranges		string of units/ranges to fetch
+	 * @param	string	$options	string of options to parse
 	 * @return	array
 	 */
 
-	public static function collection( $method, $get = array() )
+	public static function collection( $method, $ranges = '', $options = '' )
 	{
 		global $config;
 
@@ -214,11 +215,42 @@ abstract class Model
 		$q = new \query;
 		$true_status = $config->HTTP_OK; // default status
 
-		// check for ranges and custom options
-		if( !empty( $_SERVER['HTTP_RANGE'] ) )
-			$ranges = static::tokenize( $_SERVER['HTTP_RANGE'] );
-		if( !empty( $_SERVER['HTTP_PRAGMA'] ) )
-			$options = static::tokenize( $_SERVER['HTTP_PRAGMA'] );
+		// check for ranges
+		if( $range )
+		{
+			$ranges = static::tokenize( $range );
+			//~ if( !empty( $ranges ) )
+			//~ {
+				$ranges = static::getRanges( $ranges );
+				/*// left here for debugging
+				return array(
+					'status'	=>	$config->HTTP_OK,
+					'message'	=>	'range parsing issue',
+					'data'		=>	$ranges
+				);//*/
+
+				$true_status = $config->HTTP_PARTIAL_CONTENT;
+				$q->where = implode(' AND ', $ranges );
+			//~ }
+		}
+
+		// check for custom options
+		if( $options )
+		{
+			$options = static::tokenize( $options );
+			if( !empty( $options['order'] ) )
+			{
+				// this is some pretty crappy hack checking, first run
+				$order = explode(',', $options['order']);
+				if( !array_diff( $order, $fields ) )
+					$q->order = implode(', ', $order);
+				else
+					return array(
+						'status' => $config->HTTP_NOT_ACCEPTABLE,
+						'message' => 'field not acceptable for ordering'
+					);
+			}
+		}
 
 	//	error_log($_SERVER['HTTP_PRAGMA']);
 
@@ -228,33 +260,6 @@ abstract class Model
 			'message'	=>	'must be a range issue',
 			'data'		=>	$ranges
 		);//*/
-
-		if( !empty( $ranges ) )
-		{
-			$ranges = static::getRanges( $ranges );
-			/*// left here for debugging
-			return array(
-				'status'	=>	$config->HTTP_OK,
-				'message'	=>	'range parsing issue',
-				'data'		=>	$ranges
-			);//*/
-
-			$true_status = $config->HTTP_PARTIAL_CONTENT;
-			$q->where = implode(' AND ', $ranges );
-		}
-
-		if( !empty( $options['order'] ) )
-		{
-			// this is some pretty crappy hack checking, first run
-			$order = explode(',', $options['order']);
-			if( !array_diff( $order, $fields ) )
-				$q->order = implode(', ', $order);
-			else
-				return array(
-					'status' => $config->HTTP_NOT_ACCEPTABLE,
-					'message' => 'field not acceptable for ordering'
-				);
-		}
 
 		/*// left here for debugging
 		return array(
