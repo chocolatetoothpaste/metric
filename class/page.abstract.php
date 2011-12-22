@@ -210,8 +210,7 @@ abstract class page
 		if( !empty( $_SERVER['HTTP_IF_NONE_MATCH'] )
 			&& $_SERVER['HTTP_IF_NONE_MATCH'] === "$this->hash" )
 		{
-			global $__http_status;
-			header( $__http_status[$config->HTTP_NOT_MODIFIED] );
+			header( $config->http_status[$config->HTTP_NOT_MODIFIED] );
 			die;
 		}
 		elseif( file_exists( $this->cache_file ) && filesize( $this->cache_file ) > 0 )

@@ -48,8 +48,7 @@ header( 'Date: ' . gmdate( DATE_RFC1123 ) );
 
 if(	$config->DEV )
 {
-	$_finish__ = microtime( true );
-	header( 'X-Execute-Time: ' .  $_finish__ - $_start__ );
+	header( 'X-Execute-Time: ' .  microtime( true ) - $_start__ );
 }
 
 $page->render();
