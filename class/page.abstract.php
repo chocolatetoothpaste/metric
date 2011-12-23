@@ -197,7 +197,7 @@ abstract class page
 		// grab the most recent mtime of a file/files, create a hash
 		$mtime = max( filemtime( $this->file ), filemtime( $this->view ) );
 
-		$this->hash = md5( $request ) . "-{$unique_id}-{$mtime}";
+		$this->hash = md5( $request ) . "-{$mtime}";
 		$this->cache_file = $config->PATH_CACHE . "/{$this->hash}";
 		$visibility = ( $this->private ? 'private' : 'public' );
 		header( "Cache-Control: {$visibility}", false );
