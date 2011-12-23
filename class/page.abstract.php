@@ -20,7 +20,7 @@ abstract class page
 	private $cache = false;
 	private $cache_file;
 
-	abstract public function authorize();
+	abstract public function authorize($input);
 
 	function __construct()
 	{
