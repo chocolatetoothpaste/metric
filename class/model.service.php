@@ -23,10 +23,17 @@ abstract class Model
 		// determine http request method and call the proper static method.
 		// this method is only called by child classes, service model is never
 		// instantiated. see child service models for usage and implementation
+		if( !empty( $_SERVER['HTTP_CONTENT_RANGE'] ) )
+			$ranges = $_SERVER['HTTP_CONTENT_RANGE'];
+		elseif( !empty( $_SERVER['HTTP_RANGE'] ) )
+			$ranges = $_SERVER['HTTP_RANGE'];
+		else
+			$ranges = null;
 
+		$options = ( empty( $_SERVER['HTTP_PRAGMA'] ) ? null : $_SERVER['HTTP_PRAGMA'] );
 
 		if( $method == 'GET' && empty( $params ) )
-			return static::collection($method, $_SERVER['HTTP_RANGE'], $_SERVER['HTTP_PRAGMA']);
+			return static::collection( $method, $ranges, $options );
 		elseif( $method == 'GET' )
 	  		return static::read( $params, $data );
 		elseif( $method == 'POST' )
@@ -216,9 +223,9 @@ abstract class Model
 		$true_status = $config->HTTP_OK; // default status
 
 		// check for ranges
-		if( $range )
+		if( $ranges )
 		{
-			$ranges = static::tokenize( $range );
+			$ranges = static::tokenize( $ranges );
 			//~ if( !empty( $ranges ) )
 			//~ {
 				$ranges = static::getRanges( $ranges );

@@ -5,7 +5,6 @@ $page->response = array(
 	'status' => $config->HTTP_UNAUTHORIZED,
 	'message' => 'You do not have permission to access the resource at '
 		. $page->request );
-$page->authorize();
 $page->content_type = $_SERVER['HTTP_ACCEPT'];
 
 if( $_SERVER['REQUEST_METHOD'] === 'GET' )
@@ -18,6 +17,8 @@ else
 	$input = file_get_contents( 'php://input' );
 	parse_str( $input, $data );
 }
+
+$page->authorize($input);
 
 /**
  * @see	\Service\Model::init()
