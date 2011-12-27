@@ -41,7 +41,7 @@ abstract class Model
 		elseif( $method == 'PUT' )
 			return static::update( $params, $data );
 		elseif( $method == 'DELETE' )
-			return static::delete( $data );
+			return static::delete( $params );
 		else
 			return array(
 				'success' => 'false',
@@ -107,6 +107,28 @@ abstract class Model
 		);
 
 		if( $obj->save() )
+			$message = array(
+				'success'	=>	'true',
+				'response'	=>	$obj,
+				'status'	=>	$config->HTTP_OK
+			);
+
+		return $message;
+	}
+
+	public static function delete( $params )
+	{
+		global $config;
+		$domain = static::$domain;
+		$obj = new $domain( $params );
+
+		$message = array(
+			'success'	=>	'false',
+			'message'	=>	'Unable to update resource',
+			'status'	=>	$config->HTTP_INTERNAL_SERVER_ERROR
+		);
+
+		if( $obj->delete() )
 			$message = array(
 				'success'	=>	'true',
 				'response'	=>	$obj,
