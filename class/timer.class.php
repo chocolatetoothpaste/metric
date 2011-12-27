@@ -75,13 +75,13 @@ class timer
 	 * @param	string	$timers	limit to a specific timer name [optional, default '']
 	 */
 
-	public function show( $format = false, $timers = '', $strip = false )
+	public function show( $format = false, $timer = 'timer', $strip = false )
 	{
-		$timers = ( $timers ? $this->start[$only] : $this->start );
+		$timer = ( $timer ? $this->start[$timer] : $this->start );
 		if( $strip )
 		{
 			echo "Name\t\tStart\t\tStop\t\tTime\n";
-			foreach( $timers as $name => $times )
+			foreach( $timer as $name => $times )
 			{
 				ksort($times);
 				foreach( $times as $k => $v )
@@ -111,7 +111,7 @@ class timer
 				<td><strong>Time</strong></td>
 			</tr>
 			<?php
-			foreach( $timers as $name => $times )
+			foreach( $timer as $name => $times )
 			{
 				ksort($times);
 				foreach( $times as $k => $v )

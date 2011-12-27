@@ -145,26 +145,13 @@ abstract class Model
 	{
 		global $config;
 		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
-		$time = $db->dateTime();
-		$params = array(
-			'table_name' => $this->table,
-			'primary_key' => $this->keys['primary'],
-			'key_value' => $this->id,
-			'added' => $time
-		);
-		$query = new query;
+		$table = $this->getTable();
+		$keys = $this->getKeys();
+		$key = $keys['primary'][0];
+		$q = "DELETE FROM $table WHERE $key = ? LIMIT 1";
+		$db->execute($q, array($this->{$key}));
 
-		$query->insert( 'dumpster', $params );
-		$db->execute( $query->query, $query->params );
-
-		if( $db->result->errorCode() === '00000' )
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return ( $db->result->errorCode() === '00000' ? true : false );
 	}
 
 
