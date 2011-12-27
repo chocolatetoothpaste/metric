@@ -34,14 +34,16 @@ class request
 		if( $this->content )
 		{
  			if( $this->method === 'GET' )
+ 			{
 				$this->url .= "?{$this->content}";
+			}
 			else
 			{
 				$curlopt[CURLOPT_POSTFIELDS] = $this->content;
 			}
 			$this->length = strlen( $this->content );
 		}
-		$this->_headers['Content-Length'] = $this->length;
+		$this->_headers['X-Content-Length'] = $this->length;
 
 		if( $this->range )
 		{
