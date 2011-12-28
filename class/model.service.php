@@ -173,7 +173,7 @@ abstract class Model
 				}
 				else
 				{
-					$range = "{$field}={$range}";
+					$range = "{$field}='{$range}'";
 				}
 			}
 		}
@@ -281,8 +281,6 @@ abstract class Model
 			}
 		}
 
-	//	error_log($_SERVER['HTTP_PRAGMA']);
-
 		/*// left here for debugging
 		return array(
 			'status'	=>	$config->HTTP_OK,
@@ -299,7 +297,6 @@ abstract class Model
 		);//*/
 
 		$q->select( $fields, $domain::getTable() );
-
 		/*// left here for debugging
 		return array(
 			'status' => $config->HTTP_OK,
@@ -310,7 +307,6 @@ abstract class Model
 		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
 		$db->quote($q->query);
 		$stmt = $db->execute( $q->query, $q->params );
-		//error_log($q->query . print_r($q->params, true));
 
 		/*// left here for debugging
 		return array(
