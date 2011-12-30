@@ -30,7 +30,7 @@ class mysql extends database
 			});
 
 			$info = 'mysql:' . implode(';', $info);
-			parent::__construct( $info, $user, $pass, array( PDO::ATTR_PERSISTENT => true ) );
+			parent::__construct( $info, $user, $pass );//, array( PDO::ATTR_PERSISTENT => true ) );
 		}
 		catch( PDOException $e )
 		{
