@@ -74,12 +74,15 @@ abstract class Model
 
 	public static function read( $id, $get )
 	{
-		global $config;
+		global $config, $page;
 		$domain = static::$domain;
 		$obj = new $domain( $id );
+		$class = explode( '\\', get_called_class() );
 		$message = array(
 			'success'	=>	'false',
-			'message'	=>	'Unable to read resource',
+			'message'	=>	'Unable to locate the service '
+				. end( $class )
+				. ' at ' . $page->request,
 			'status'	=>	$config->HTTP_NOT_FOUND
 		);
 
