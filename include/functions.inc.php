@@ -428,9 +428,19 @@ function preg_grep_keys( $pattern, $input, $flags = 0 )
 	$keys = preg_grep( $pattern, array_keys( $input ), $flags );
 	$vals = array();
 	foreach( $keys as $key )
-	{
 		$vals[$key] = $input[$key];
-	}
+
+	return $vals;
+}
+
+function preg_filter_keys( $pattern, $replace, $input, $limit = -1 , &$count = null )
+{
+	$keys = array_keys($input);
+	$matches = preg_filter( $pattern, $replace, $keys, $limit, $count );
+	$vals = array();
+	foreach( $matches as $key => $match )
+		$vals[$match] = $input[$keys[$key]];
+
 	return $vals;
 }
 
