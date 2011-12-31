@@ -38,7 +38,7 @@ abstract class database extends PDO
 	 * @return string
 	 */
 
-	public function dateTime( $time = -1 )
+	public static function dateTime( $time = -1 )
 	{
 		return date('Y-m-d H:i:s', ( $time === -1 ? time() : $time ) );
 	}
