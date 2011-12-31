@@ -335,11 +335,16 @@ abstract class Model
 				$data = $stmt->fetchAll( \PDO::FETCH_ASSOC );
 			}
 
+
 			$message = array(
 				'success'	=>	'true',
 				'response'	=>	$data,
 				'status'	=>	$true_status
 			);
+
+			if( count($data) == 0 )
+				$message['success'] = 'false';
+
 		}
 		else
 			$message = array(
