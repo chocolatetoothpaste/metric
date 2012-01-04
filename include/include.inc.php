@@ -13,7 +13,7 @@ set_error_handler( function( $errno, $errstr, $errfile, $errline )
 
 // these files are required, they include some
 // essential constants and some setup functions
-require( 'config.class.php' );
+require( '../class/config.class.php' );
 $config = new config;
 
 require( '../config.inc.php' );
