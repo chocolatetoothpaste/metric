@@ -1,6 +1,8 @@
 <?php
-class config {
+class config
+{
 	private $constants = array();
+	public $classes = array(), $alias = array(), $routes = array();
 
 	public function define( $constant, $value )
 	{
@@ -15,7 +17,7 @@ class config {
 		if( isset( $this->constants[$constant] ) )
 			return $this->constants[$constant];
 		else
-			throw new Exception('Property not found');
+			throw new Exception("Property '$constant' not found");
 	}
 
 	public function __set( $var, $value )

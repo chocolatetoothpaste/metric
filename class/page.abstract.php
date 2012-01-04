@@ -1,7 +1,7 @@
 <?php
 namespace metric\page;
 
-abstract class page
+class page
 {
 
 	public $template = false;
@@ -20,14 +20,12 @@ abstract class page
 	private $cache = false;
 	private $cache_file;
 
-	abstract public function authorize($input);
-
 	function __construct()
 	{
 		global $config;
-		$this->https = ( $config->FORCE_SSL
-			? !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on'
-			: true );
+		//~ $this->https = ( $config->FORCE_SSL
+			//~ ? !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on'
+			//~ : true );
 	}
 
 
@@ -105,16 +103,27 @@ abstract class page
 		}
 
 		if( !file_exists( $this->file ) )
-			$this->file = $config->PAGE_404;
-
-		// check if there is a view associated with the page
-		$path = pathinfo( $this->file );
-		$path['dirname'] = str_replace( $config->PATH_CONTROLLER,
-			$config->PATH_VIEW, $path['dirname'] );
-		$path = "$path[dirname]/$path[filename].phtml";
-		$this->view = ( file_exists( $path ) ? $path : null );
-		unset($path);
-
+		{
+			if( !empty( $config->PAGE_404 ) )
+				$this->file = $config->PAGE_404;
+			else
+			{
+				header('HTTP/1.0 404 Not Found');
+				echo '<h1>404 Not Found</h1>',
+					'The page ', $this->request, ' could not be found.';
+				die;
+			}
+		}
+		else
+		{
+			// check if there is a view associated with the page
+			$path = pathinfo( $this->file );
+			$path['dirname'] = str_replace( $config->PATH_CONTROLLER,
+				$config->PATH_VIEW, $path['dirname'] );
+			$path = "$path[dirname]/$path[filename].phtml";
+			$this->view = ( file_exists( $path ) ? $path : null );
+			unset($path);
+		}
 	}	// end method parseURL
 
 
@@ -127,8 +136,8 @@ abstract class page
 	public function render()
 	{
 		// in the past, there have been a couple (minor) issues with the
-		// browser trying to download the page rather than redner it. a header
-		// should fix this.
+		// browser trying to download the page rather than render it,
+		// this header should fix this.
 		header( "Content-Type: {$this->content_type}" );
 
 		if( !$this->template )

@@ -38,6 +38,7 @@ define('', 1073741824);
 // core paths
 $config->define( 'PATH_LIB_CLASS',		$config->PATH_LIB . '/class' );
 $config->define( 'PATH_LIB_INCLUDE',	$config->PATH_LIB . '/include' );
+$config->template = 'metric\page\page';
 
 $config->classes = array_merge( array(
 	'message'		=>	$config->PATH_LIB_CLASS . '/message.class.php',
