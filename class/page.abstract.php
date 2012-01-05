@@ -99,6 +99,7 @@ class page
 					$this->callback = array($service, 'init');
 
 			endif;
+			return;
 
 		}
 

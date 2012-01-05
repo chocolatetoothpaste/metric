@@ -2,18 +2,18 @@
 /**
  * @author ross paskett <rpaskett@gmail.com>
  */
-/*//
+///
 // this passes script errors to the exception handler
 set_error_handler( function( $errno, $errstr, $errfile, $errline )
 {
 	throw new ErrorException( $errstr, 0, $errno, $errfile, $errline );
 });
 //*/
-//date_default_timezone_set( 'America/Denver' );
+date_default_timezone_set( 'America/Denver' );
 
 // these files are required, they include some
 // essential constants and some setup functions
-require( '../class/config.class.php' );
+require( '../lib/class/config.class.php' );
 $config = new config;
 
 require( '../config.inc.php' );
@@ -31,7 +31,9 @@ function __autoload( $file )
 	try
 	{
 		if( !is_file( $config->classes[$file] ) )
-			throw new Exception( "Unable to load class: $file" );
+		{
+			throw new Exception( "Unable to load class: {$config->classes[$file]}" );
+		}
 
 		require_once( $config->classes[$file] );
 	}

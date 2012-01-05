@@ -241,11 +241,17 @@ abstract class Model
 				'status' => $config->HTTP_METHOD_NOT_ALLOWED
 			);
 
+		$message = array(
+			'success'	=>	'false',
+			'status'	=>	$config->HTTP_BAD_REQUEST
+		);
+
 		// static::$domain is defined in individual services
 		$domain = static::$domain;
 		$fields = $domain::getFields();
+
 		$q = new \query;
-		$true_status = $config->HTTP_OK; // default status
+		$status = $config->HTTP_OK; // default status
 
 		// check for ranges
 		if( $ranges )
@@ -261,7 +267,7 @@ abstract class Model
 					'data'		=>	$ranges
 				);//*/
 
-				$true_status = $config->HTTP_PARTIAL_CONTENT;
+				$status = $config->HTTP_PARTIAL_CONTENT;
 				$q->where = implode(' AND ', $ranges );
 			//~ }
 		}
@@ -338,24 +344,13 @@ abstract class Model
 				$data = $stmt->fetchAll( \PDO::FETCH_ASSOC );
 			}
 
-
-			$message = array(
-				'success'	=>	'true',
-				'response'	=>	$data,
-				'status'	=>	$true_status
-			);
-
-			if( count($data) == 0 )
-				$message['success'] = 'false';
-
+			if( count( $data ) > 0 )
+				$message = array(
+					'success'	=>	'true',
+					'response'	=>	$data,
+					'status'	=>	$status
+				);
 		}
-		else
-			$message = array(
-				'success'	=>	'false',
-				'status'	=>	$config->HTTP_BAD_REQUEST
-			);
-
-		return $message;
 	} // end method collection
 
 }

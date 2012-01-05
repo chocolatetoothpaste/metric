@@ -18,7 +18,7 @@ else
 	parse_str( $input, $data );
 }
 
-$page->authorize($input);
+//$page->authorize($input);
 
 /**
  * @see	\Service\Model::init()
