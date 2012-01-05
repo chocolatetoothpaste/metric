@@ -39,7 +39,6 @@ define('', 1073741824);
 $config->define( 'PATH_LIB_CLASS',		$config->PATH_LIB . '/class' );
 $config->define( 'PATH_LIB_INCLUDE',	$config->PATH_LIB . '/include' );
 $config->define('PAGE_REST_SERVER', $config->PATH_LIB . '/rest.php');
-$config->template = 'metric\page\page';
 
 $config->classes = array_merge( array(
 	'message'		=>	$config->PATH_LIB_CLASS . '/message.class.php',
