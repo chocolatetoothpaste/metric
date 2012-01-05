@@ -1,31 +1,52 @@
 <?php
 class config
 {
-	private $constants = array();
-	public $classes = array(), $alias = array(), $routes = array();
+	private $const_ = array();
+	private	$var_ = array(
+		'classes' => array(), 'alias' => array(), 'routes' => array()
+	);
 
-	public function define( $constant, $value )
+	public function define( $const, $val )
 	{
-		if( empty( $this->constants[$constant] ) )
-			$this->constants[$constant] = $value;
+		if( isset( $this->const_[$const] ) )
+			throw new Exception("Configuration constant $const already defined");
 		else
-			throw new Exception("Configuration constant $constant already defined");
+			$this->const_[$const] = $val;
 	}
 
-	public function __get( $constant )
+	public function __get( $var )
 	{
-		if( isset( $this->constants[$constant] ) )
-			return $this->constants[$constant];
+		if( isset( $this->const_[$var] ) )
+			return $this->const_[$var];
+		elseif( isset( $this->var_[$var] ) )
+			return $this->var_[$var];
 		else
-			throw new Exception("Property '$constant' not found");
+			throw new Exception("Property '$var' not found");
 	}
 
-	public function __set( $var, $value )
+	public function __set( $var, $val )
 	{
-		if( isset( $this->constants[$var] ) )
+		if( isset( $this->const_[$var] ) )
 			throw new Exception("Configuration constant '$var' already defined");
+		elseif( $var == 'const_' || $var == 'prop_' )
+			throw new Exception("Unable to override internal container '$var'");
 		else
-			$this->$var = $value;
+			$this->var_[$var] = $val;
 	}
+
+    public function __isset($var)
+    {
+        return isset($this->const_[$var]) || isset($this->var_[$var]);
+    }
+
+    public function __unset($var)
+    {
+        if( isset( $this->const_[$var] ) )
+			throw new Exception("Unable to unset configuration constant $var");
+		elseif( isset( $this->var_[$var] ) )
+			unset( $this->var_[$var] );
+		else
+			throw new Exception("Illegal double free on '$var'");
+    }
 }
 ?>
