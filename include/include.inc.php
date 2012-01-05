@@ -30,10 +30,8 @@ function __autoload( $file )
 	$file = trim( $file, '\\' );
 	try
 	{
-		if( !is_file( $config->classes[$file] ) )
-		{
-			throw new Exception( "Unable to load class: {$config->classes[$file]}" );
-		}
+		if( !isset( $config->classes[$file] ) || !is_file( $config->classes[$file] ) )
+			throw new Exception( "Unable to load class: $file" );
 
 		require_once( $config->classes[$file] );
 	}
