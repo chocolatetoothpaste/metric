@@ -279,7 +279,7 @@ abstract class Model
 		{
 			$this->meta_obj = $this->getMeta();
 		}
-		return ( !empty( $this->meta_obj->$key )
+		return ( isset( $this->meta_obj->$key )
 			? $this->meta_obj->$key
 			: false );
 	} // end method meta
