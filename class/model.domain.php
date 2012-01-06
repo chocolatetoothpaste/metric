@@ -26,8 +26,6 @@ abstract class Model
 		if( $params )
 		{
 			$db = \mysql::instance( $config->db[$config->DB_MAIN] );
-				if( !$db )
-					throw new Exception( 'Unable to connect to the database' );
 
 			$keys = $this->getKeys();
 			$fields = static::getFields();
@@ -81,8 +79,6 @@ abstract class Model
 	{
 		global $config;
 		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
-		if( !$db )
-			throw new \Exception( 'No connection to database' );
 
 		$query = new \query;
 		$update = false;
@@ -301,6 +297,12 @@ abstract class Model
 		elseif( $meta instanceof Meta )
 		{
 			$this->meta_obj = $meta;
+		}
+		else
+		{
+			$message = '\Domain\Model::setMeta() expects parameter 1 to be '
+				. 'array or object, ' . gettype( $meta ) . ' given';
+			throw new Exception( $message );
 		}
 	} // end method setMeta
 
