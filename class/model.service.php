@@ -137,6 +137,35 @@ abstract class Model
 
 
 	/**
+	 *
+	 */
+
+	public static function parseRange( $values )
+	{
+		$ranges = explode(',', $values);
+		$ret = array();
+		foreach( $ranges as $key => $range )
+		{
+			if( strpos($range, '-') !== false )
+			{
+				$range = explode('-', $range);
+				if(empty($range[0]))
+					$range[0] = '1';
+
+				$range = range($range[0], $range[1]);
+				$ret = array_merge($ret,$range);
+			}
+			else
+			{
+				$ret[] = intval($range);
+			}
+		}
+		unset( $ranges, $values, $key, $range);
+		return $ret;
+	}
+
+
+	/**
 	 * Loop through an array and look for strings that can be parsed into
 	 * ranges and build a query of the appropriate type
 	 * @param	array	$ranges
@@ -156,7 +185,7 @@ abstract class Model
 				if( 0 !== preg_match( '#^(\d*[,-][^/]?\d*-?)*$#', $range ) )
 				{
 					//error_log("$range");
-					$range = parseRange($range);
+					$range = static::parseRange($range);
 					$range = implode( ',', $range );
 					$range = "$field IN ({$range})";
 					//error_log("$return[$field]");

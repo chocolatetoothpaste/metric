@@ -1,10 +1,13 @@
 <?php
+include( $config->PATH_LIB_INCLUDE . '/http_status.inc.php' );
+
 $page->template = false;
 $page->response = array(
 	'success' => 'false',
 	'status' => $config->HTTP_UNAUTHORIZED,
 	'message' => 'You do not have permission to access the resource at '
 		. $page->request );
+
 $page->content_type = $_SERVER['HTTP_ACCEPT'];
 
 if( $_SERVER['REQUEST_METHOD'] === 'GET' )
