@@ -57,6 +57,7 @@ $config->http_status = array(
 	$config->HTTP_ACCEPTED				=>	'HTTP/1.1 202 Accepted',
 	$config->HTTP_PARTIAL_CONTENT		=>	'HTTP/1.1 206 Partial Content',
 	$config->HTTP_NOT_MODIFIED			=>	'HTTP/1.1 304 Not Modified',
+	$config->HTTP_BAD_REQUEST			=>	'HTTP/1.1 400 Bad Request',
 	$config->HTTP_UNAUTHORIZED			=>	'HTTP/1.1 401 Unauthorized',
 	$config->HTTP_NOT_FOUND				=>	'HTTP/1.1 404 Not Found',
 	$config->HTTP_METHOD_NOT_ALLOWED	=>	'HTTP/1.1 405 Method Not Allowed',
