@@ -203,20 +203,6 @@ abstract class Model
 
 
 	/**
-	 * Restricts the fields that can be queried, usually based on fields in the
-	 * corresponding domain object
-	 * @param	array	$options
-	 * @param	array	$filter
-	 * @return	array
-	 */
-
-	protected static function filterOptions( array $options, array $filter )
-	{
-		return array_intersect_key( $options, $filter );
-	} // end method filterOptions
-
-
-	/**
 	 * Returns a collection of objects in response to a REST request
 	 * @param	string	$method		the HTTP request method
 	 * @param	string	$ranges		string of units/ranges to fetch
