@@ -338,6 +338,7 @@ function asprintf( $pattern, array $array )
 	return $return;
 }
 
+
 if( !function_exists( 'mime_content_type' ) )
 {
 	function mime_content_type( $filename )
@@ -423,6 +424,7 @@ if( !function_exists( 'mime_content_type' ) )
 
 }
 
+
 function preg_grep_keys( $pattern, $input, $flags = 0 )
 {
 	$keys = preg_grep( $pattern, array_keys( $input ), $flags );
@@ -433,6 +435,7 @@ function preg_grep_keys( $pattern, $input, $flags = 0 )
 	return $vals;
 }
 
+
 function preg_filter_keys( $pattern, $replace, $input, $limit = -1 , &$count = null )
 {
 	$keys = array_keys($input);
@@ -442,36 +445,6 @@ function preg_filter_keys( $pattern, $replace, $input, $limit = -1 , &$count = n
 		$vals[$match] = $input[$keys[$key]];
 
 	return $vals;
-}
-
-function encrypt_password( $password )
-{
-	return substr( sha1( md5( $password ) ), 5, 32 );
-} //	end function __encryption_algorithm
-
-
-function parseRange( $values )
-{
-	$ranges = explode(',', $values);
-	$ret = array();
-	foreach( $ranges as $key => $range )
-	{
-		if( strpos($range, '-') !== false )
-		{
-			$range = explode('-', $range);
-			if(empty($range[0]))
-				$range[0] = '1';
-
-			$range = range($range[0], $range[1]);
-			$ret = array_merge($ret,$range);
-		}
-		else
-		{
-			$ret[] = intval($range);
-		}
-	}
-	unset( $ranges, $values, $key, $range);
-	return $ret;
 }
 
 
