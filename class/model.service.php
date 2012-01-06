@@ -1,7 +1,7 @@
 <?php
 namespace Service;
 
-class RestException extends \Exception { }
+class RESTException extends \Exception { }
 
 abstract class Model
 {
@@ -50,7 +50,7 @@ abstract class Model
 				throw new RESTException('Invalid method received: ' . $method,
 					$config->HTTP_METHOD_NOT_ALLOWED );
 		}
-		catch( RestException $e )
+		catch( RESTException $e )
 		{
 			return array(
 				'success'	=>	'false',
