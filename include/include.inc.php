@@ -28,16 +28,9 @@ function __autoload( $file )
 {
 	global $config;
 	$file = trim( $file, '\\' );
-	try
-	{
-		if( !isset( $config->classes[$file] ) || !is_file( $config->classes[$file] ) )
-			throw new Exception( "Unable to load class: $file" );
-
+	if( !isset( $config->classes[$file] ) || !is_file( $config->classes[$file] ) )
+		throw new Exception( "Unable to load class $file" );
+	else
 		require_once( $config->classes[$file] );
-	}
-	catch( Exception $e )
-	{
-		die( $e->getMessage() );
-	}
 }
 ?>
