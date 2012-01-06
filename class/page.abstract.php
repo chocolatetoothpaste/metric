@@ -47,7 +47,7 @@ class page
 			$this->file = $config->PATH_CONTROLLER . $this->request . '.php';
 		elseif( !empty( $config->alias[$this->request] ) )
 			$this->file = $config->alias[$this->request];
-		else
+		else//if( false !== strpos($request, $config->URL_REST, 0) )
 		{
 			/**
 			 * grab all routes and combine them into a single pattern
@@ -75,7 +75,8 @@ class page
 			preg_match_all( $pattern, $this->request,
 				$matches, PREG_SET_ORDER );
 
-			if( $matches ):
+			if( $matches )
+			{
 				// shift a useless index
 				$matches = $matches[0];
 
@@ -98,9 +99,8 @@ class page
 				if( !empty( $config->classes[$service] ) )
 					$this->callback = array($service, 'init');
 
-			endif;
-			return;
-
+				return;
+			}
 		}
 
 		if( !file_exists( $this->file ) )
@@ -142,9 +142,7 @@ class page
 		header( "Content-Type: {$this->content_type}" );
 
 		if( !$this->template )
-		{
 			echo $this->body;
-		}
 		else
 		{
 			// a lot of pages/templates will use config vars,
@@ -174,24 +172,21 @@ class page
 
 
 	/**
-	 *
+	 * Load page specific scripts passed as function args
 	 */
 
 	public function js()
 	{
-		// if the order of args doesn't make sense, it seems the JS for a page
-		// gets loaded before the template
 		$this->js = array_merge( func_get_args(), $this->js );
 	}
 
 
 	/**
-	 *
+	 * Load page specific styles passed as function args
 	 */
 
 	public function css()
 	{
-		// @see this->js above for explanation of arg order
 		$this->css = array_merge( func_get_args(), $this->css );
 	}
 
