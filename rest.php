@@ -5,7 +5,7 @@ $page->response = array(
 	'status' => $config->HTTP_UNAUTHORIZED,
 	'message' => 'You do not have permission to access the resource at '
 		. $page->request );
-$page->content_type = $_SERVER['HTTP_ACCEPT'];
+$page->content_type = 'application/json';//$_SERVER['HTTP_ACCEPT'];
 
 if( $_SERVER['REQUEST_METHOD'] === 'GET' )
 {
@@ -47,7 +47,7 @@ else
 header( $config->http_status[$page->response['status']] );
 header( 'Date: ' . gmdate( DATE_RFC1123 ) );
 
-if(	$config->DEV )
+if(	!empty($config->DEV) )
 {
 	header( 'X-Execute-Time: ' .  microtime( true ) - $_start__ );
 }

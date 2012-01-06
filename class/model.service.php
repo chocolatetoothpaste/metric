@@ -1,6 +1,8 @@
 <?php
 namespace Service;
 
+class RestException extends \Exception { }
+
 abstract class Model
 {
 	protected static $domain;
@@ -32,21 +34,30 @@ abstract class Model
 
 		$options = ( empty( $_SERVER['HTTP_PRAGMA'] ) ? null : $_SERVER['HTTP_PRAGMA'] );
 
-		if( $method == 'GET' && empty( $params ) )
-			return static::collection( $method, $ranges, $options );
-		elseif( $method == 'GET' )
-	  		return static::read( $params, $data );
-		elseif( $method == 'POST' )
-			return static::create( $data );
-		elseif( $method == 'PUT' )
-			return static::update( $params, $data );
-		elseif( $method == 'DELETE' )
-			return static::delete( $params );
-		else
+		try
+		{
+			if( $method == 'GET' && empty( $params ) )
+				return static::collection( $method, $ranges, $options );
+			elseif( $method == 'GET' )
+				return static::read( $params, $data );
+			elseif( $method == 'POST' )
+				return static::create( $data );
+			elseif( $method == 'PUT' )
+				return static::update( $params, $data );
+			elseif( $method == 'DELETE' )
+				return static::delete( $params );
+			else
+				throw new RESTException('Invalid method received: ' . $method,
+					$config->HTTP_METHOD_NOT_ALLOWED );
+		}
+		catch( RestException $e )
+		{
 			return array(
-				'success' => 'false',
-				'status' => $config->HTTP_METHOD_NOT_ALLOWED
+				'success'	=>	'false',
+				'status'	=>	$e->getCode(),
+				'message'	=>	$e->getMessage()
 			);
+		}
 	} // end method init
 
 
@@ -56,20 +67,16 @@ abstract class Model
 		$domain = static::$domain;
 		$obj = new $domain();
 		$obj->capture( $post, $domain::getKeys() );
-		$message = array(
-			'success'	=>	'false',
-			'message'	=>	'Unable to create resource',
-			'status'	=>	$config->HTTP_NOT_ACCEPTABLE
-		);
 
 		if( $obj->save() )
-			$message = array(
+			return array(
 				'success'	=>	'true',
 				'response'	=>	$obj,
 				'status'	=>	$config->HTTP_CREATED
 			);
-
-		return $message;
+		else
+			throw new RESTException( 'Unable to create resource',
+				$config->HTTP_NOT_ACCEPTABLE );
 	}
 
 	public static function read( $id, $get )
@@ -77,14 +84,6 @@ abstract class Model
 		global $config, $page;
 		$domain = static::$domain;
 		$obj = new $domain( $id );
-		$class = explode( '\\', get_called_class() );
-		$message = array(
-			'success'	=>	'false',
-			'message'	=>	'Unable to locate the service '
-				. end( $class )
-				. ' at ' . $page->request,
-			'status'	=>	$config->HTTP_NOT_FOUND
-		);
 
 		if( $obj instanceof $domain && $obj->id )
 			$message = array(
@@ -92,8 +91,13 @@ abstract class Model
 				'response'	=>	$obj,
 				'status'	=>	$config->HTTP_OK
 			);
-
-		return $message;
+		else
+		{
+			$class = explode( '\\', get_called_class() );
+			throw new RESTException( 'Unable to locate the service '
+				. end( $class ) . ' at ' . $page->request,
+				$config->HTTP_NOT_FOUND );
+		}
 	}
 
 	public static function update( $params, $put )
@@ -103,20 +107,15 @@ abstract class Model
 		$obj = new $domain( $params );
 		$obj->capture( $put, $domain::getKeys() );
 
-		$message = array(
-			'success'	=>	'false',
-			'message'	=>	'Unable to update resource',
-			'status'	=>	$config->HTTP_INTERNAL_SERVER_ERROR
-		);
-
 		if( $obj->save() )
 			$message = array(
 				'success'	=>	'true',
 				'response'	=>	$obj,
 				'status'	=>	$config->HTTP_OK
 			);
-
-		return $message;
+		else
+			throw new RESTException( 'Unable to update resource',
+				$config->HTTP_INTERNAL_SERVER_ERROR );
 	}
 
 	public static function delete( $params )
@@ -125,20 +124,15 @@ abstract class Model
 		$domain = static::$domain;
 		$obj = new $domain( $params );
 
-		$message = array(
-			'success'	=>	'false',
-			'message'	=>	'Unable to update resource',
-			'status'	=>	$config->HTTP_INTERNAL_SERVER_ERROR
-		);
-
 		if( $obj->delete() )
 			$message = array(
 				'success'	=>	'true',
 				'response'	=>	$obj,
 				'status'	=>	$config->HTTP_OK
 			);
-
-		return $message;
+		else
+			throw new RESTException( 'Unable to delete resource',
+				$config->HTTP_INTERNAL_SERVER_ERROR );
 	}
 
 
@@ -236,19 +230,27 @@ abstract class Model
 
 		// GET is the only method allowed for collections for now
 		if( $method != 'GET' )
-			return array(
-				'success' => 'false',
-				'status' => $config->HTTP_METHOD_NOT_ALLOWED
-			);
-
-		$message = array(
-			'success'	=>	'false',
-			'status'	=>	$config->HTTP_BAD_REQUEST
-		);
+			throw new RESTException('', $config->HTTP_METHOD_NOT_ALLOWED);
 
 		// static::$domain is defined in individual services
 		$domain = static::$domain;
-		$fields = $domain::getFields();
+
+		// if $domain is empty, there probably isn't a correpsonding domain
+		// object, there isn't a service object, static::$domain isn't defined
+		// yet, or all of the above
+		if( empty($domain) )
+			throw new RESTException('Interface to database not found',
+				$config->HTTP_INTERNAL_SERVER_ERROR );
+
+		try
+		{
+			$fields = $domain::getFields();
+		}
+		catch( \Exception $e )
+		{
+			throw new RESTException( 'Unable to load service interface',
+				$config->HTTP_INTERNAL_SERVER_ERROR );
+		}
 
 		$q = new \query;
 		$status = $config->HTTP_OK; // default status
@@ -283,10 +285,8 @@ abstract class Model
 				if( !array_diff( $order, $fields ) )
 					$q->order = implode(', ', $order);
 				else
-					return array(
-						'status' => $config->HTTP_NOT_ACCEPTABLE,
-						'message' => 'field not acceptable for ordering'
-					);
+					throw new RESTException( 'Field not acceptable for ordering',
+						$config->HTTP_NOT_ACCEPTABLE );
 			}
 		}
 
@@ -324,13 +324,14 @@ abstract class Model
 			'data'		=>	$stmt->fetchAll( \PDO::FETCH_ASSOC )
 		);//*/
 
-		if( $stmt )
+		if( $stmt && $stmt->errorCode() === '00000' )
 		{
 			$data = array();
 			if( !empty( $options['group'] ) )
 			{
 				$group = explode( ',', $options['group'] );
-				while( $row = $stmt->fetch( \PDO::FETCH_ASSOC, \PDO::FETCH_ORI_NEXT ) )
+				while( $row = $stmt->fetch( \PDO::FETCH_ASSOC,
+					\PDO::FETCH_ORI_NEXT ) )
 				{
 					if( !empty( $group[1] ) )
 						$d =& $data[$row[$group[0]]][$row[$group[1]]][];
@@ -344,13 +345,15 @@ abstract class Model
 				$data = $stmt->fetchAll( \PDO::FETCH_ASSOC );
 			}
 
-			if( count( $data ) > 0 )
-				$message = array(
-					'success'	=>	'true',
-					'response'	=>	$data,
-					'status'	=>	$status
-				);
+			return array(
+				'success'	=>	'true',
+				'response'	=>	$data,
+				'status'	=>	$status
+			);
 		}
+		else
+			throw new RESTException('Unable to retrieve data',
+				$config->HTTP_BAD_REQUEST);
 	} // end method collection
 
 }
