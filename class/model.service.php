@@ -36,7 +36,7 @@ abstract class Model
 
 		try
 		{
-			if( $method == 'GET' && empty( $params ) )
+			if( $method == 'GET' && empty( $params['id'] ) )
 				return static::collection( $method, $ranges, $options );
 			elseif( $method == 'GET' )
 				return static::read( $params, $data );
@@ -367,7 +367,7 @@ abstract class Model
 			);
 		}
 		else
-			throw new RESTException('Unable to retrieve data',
+			throw new RESTException('Unable to retrieve data' . $q->query . $stmt->errorInfo(),
 				$config->HTTP_BAD_REQUEST);
 	} // end method collection
 
