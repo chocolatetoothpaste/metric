@@ -23,9 +23,9 @@ class page
 	function __construct()
 	{
 		global $config;
-		//~ $this->https = ( $config->FORCE_SSL
-			//~ ? !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on'
-			//~ : true );
+		$this->https = ( $config->DEV
+			? true
+			: ( !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on' ) );
 	}
 
 

@@ -76,6 +76,13 @@ function br( $text = '' )
 	return "$text<br />";
 }
 
+function dump($var)
+{
+	echo '<pre>';
+	var_dump($var);
+	echo '</pre>';
+}
+
 
 /**
  * Return the value in the array. If $default
