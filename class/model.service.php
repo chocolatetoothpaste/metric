@@ -83,10 +83,10 @@ abstract class Model
 	{
 		global $config, $page;
 		$domain = static::$domain;
-		$obj = new $domain( $id );
+		$obj = new $domain( $id['id'] );
 
 		if( $obj instanceof $domain && $obj->id )
-			$message = array(
+			return array(
 				'success'	=>	'true',
 				'response'	=>	$obj,
 				'status'	=>	$config->HTTP_OK
@@ -104,11 +104,11 @@ abstract class Model
 	{
 		global $config;
 		$domain = static::$domain;
-		$obj = new $domain( $params );
+		$obj = new $domain( $params['id'] );
 		$obj->capture( $put, $domain::getKeys() );
 
 		if( $obj->save() )
-			$message = array(
+			return array(
 				'success'	=>	'true',
 				'response'	=>	$obj,
 				'status'	=>	$config->HTTP_OK
