@@ -1,8 +1,6 @@
 <?php
 namespace Service;
 
-class RESTException extends \Exception { }
-
 abstract class Model
 {
 	protected static $domain;
@@ -52,11 +50,22 @@ abstract class Model
 		}
 		catch( RESTException $e )
 		{
-			return array(
+			$return = array(
 				'success'	=>	'false',
 				'status'	=>	$e->getCode(),
 				'message'	=>	$e->getMessage()
 			);
+
+			if( $config->DEV )
+			{
+				if( $error = $e->getError() )
+					$return['error'] = $error;
+
+				if( $debug = $e->getDebug() )
+					$return['debug'] = $debug;
+			}
+
+			return $return;
 		}
 	} // end method init
 
@@ -248,23 +257,25 @@ abstract class Model
 			throw new RESTException('', $config->HTTP_METHOD_NOT_ALLOWED);
 
 		// static::$domain is defined in individual services
-		$domain = static::$domain;
+
 
 		// if $domain is empty, there probably isn't a correpsonding domain
 		// object, there isn't a service object, static::$domain isn't defined
 		// yet, or all of the above
-		if( empty($domain) )
-			throw new RESTException('Interface to database not found',
-				$config->HTTP_INTERNAL_SERVER_ERROR );
+		/**/
 
 		try
 		{
+			$domain = static::$domain;
+			// this shouldn't be necessary, but when tested it wasn't working right
+			if( empty($domain) )
+				throw new RESTException();
 			$fields = $domain::getFields();
 		}
 		catch( \Exception $e )
 		{
 			throw new RESTException( 'Unable to load service interface',
-				$config->HTTP_INTERNAL_SERVER_ERROR );
+				$config->HTTP_INTERNAL_SERVER_ERROR, 'error', 'debug' );
 		}
 
 		$q = new \query;

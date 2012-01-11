@@ -6,7 +6,7 @@
 // this passes script errors to the exception handler
 set_error_handler( function( $errno, $errstr, $errfile, $errline )
 {
-	throw new ErrorException( $errstr, 0, $errno, $errfile, $errline );
+	throw new \ErrorException( $errstr, 0, $errno, $errfile, $errline );
 });
 //*/
 date_default_timezone_set( 'America/Denver' );

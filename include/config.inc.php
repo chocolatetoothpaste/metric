@@ -54,5 +54,6 @@ $config->classes = array_merge( array(
 	'Domain\Model'	=>	$config->PATH_LIB_CLASS . '/model.domain.php',
 	'Domain\Meta'	=>	$config->PATH_LIB_CLASS . '/meta.domain.php',
 	'Service\Model'	=>	$config->PATH_LIB_CLASS . '/model.service.php',
+	'Service\RESTException'	=>	$config->PATH_LIB_CLASS . '/rest.exception.php'
 ), $config->classes );
 ?>
