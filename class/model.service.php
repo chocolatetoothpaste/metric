@@ -370,6 +370,5 @@ abstract class Model
 			throw new RESTException('Unable to retrieve data' . $q->query . $stmt->errorInfo(),
 				$config->HTTP_BAD_REQUEST);
 	} // end method collection
-
 }
 ?>
