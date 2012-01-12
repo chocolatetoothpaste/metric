@@ -15,10 +15,10 @@ class page
 	public $body;
 	public $hash;
 	public $https;
-	public $private = false;
+	public $visibility = 'public';
 
 	private $cache = false;
-	private $cache_file;
+	private $cached;
 
 	function __construct()
 	{
@@ -65,8 +65,8 @@ class page
 
 			$replace = array(
 				'/(?P<service>${1})',
-				'/(?P<${1}>[@\w]+)',
-				'/?(?P<${1}>[%\w]+)*'
+				'/(?P<${1}>[\w]+)',
+				'/?(?P<${1}>[\w]+)*'
 			);
 
 			$pattern = preg_replace( $match, $replace, $string );
@@ -129,6 +129,26 @@ class page
 
 
 	/**
+	 * Load page specific scripts passed as function args
+	 */
+
+	public function js()
+	{
+		$this->js = array_merge( func_get_args(), $this->js );
+	}
+
+
+	/**
+	 * Load page specific styles passed as function args
+	 */
+
+	public function css()
+	{
+		$this->css = array_merge( func_get_args(), $this->css );
+	}
+
+
+	/**
 	 * Sets up the page and displays it
 	 * @param string $contents
 	 * @global object $auth
@@ -160,8 +180,8 @@ class page
 
 				// check if the cache directory is writable
 				// and attempt to cache page output
-				if( is_writable( dirname( $this->cache_file ) ) )
-					file_put_contents( $this->cache_file,
+				if( is_writable( dirname( $this->cached ) ) )
+					file_put_contents( $this->cached,
 						ob_get_contents(), LOCK_EX );
 			}
 
@@ -169,26 +189,6 @@ class page
 			ob_end_flush();
 		}
 	}	// end method render
-
-
-	/**
-	 * Load page specific scripts passed as function args
-	 */
-
-	public function js()
-	{
-		$this->js = array_merge( func_get_args(), $this->js );
-	}
-
-
-	/**
-	 * Load page specific styles passed as function args
-	 */
-
-	public function css()
-	{
-		$this->css = array_merge( func_get_args(), $this->css );
-	}
 
 
 	/**
@@ -203,9 +203,8 @@ class page
 		$mtime = max( filemtime( $this->file ), filemtime( $this->view ) );
 
 		$this->hash = md5( $request ) . "-{$mtime}";
-		$this->cache_file = $config->PATH_CACHE . "/{$this->hash}";
-		$visibility = ( $this->private ? 'private' : 'public' );
-		header( "Cache-Control: {$visibility}", false );
+		$this->cached = $config->PATH_CACHE . "/{$this->hash}";
+		header( "Cache-Control: {$this->visibility}", false );
 		header( "Etag: {$this->hash}" );
 		header( 'Pragma: cache' );
 
@@ -218,10 +217,10 @@ class page
 			header( $config->http_status[$config->HTTP_NOT_MODIFIED] );
 			die;
 		}
-		elseif( file_exists( $this->cache_file ) && filesize( $this->cache_file ) > 0 )
+		elseif( file_exists( $this->cached ) && filesize( $this->cached ) > 0 )
 		{
 			header( "X-Cache-Retrieved: {$this->hash}" );
-			echo file_get_contents( $this->cache_file );
+			echo file_get_contents( $this->cached );
 			die;
 		}
 		else
