@@ -254,28 +254,22 @@ abstract class Model
 
 		// GET is the only method allowed for collections for now
 		if( $method != 'GET' )
-			throw new RESTException('', $config->HTTP_METHOD_NOT_ALLOWED);
+			throw new RESTException('Collections are read-only',
+				$config->HTTP_METHOD_NOT_ALLOWED);
 
-		// static::$domain is defined in individual services
-
-
-		// if $domain is empty, there probably isn't a correpsonding domain
-		// object, there isn't a service object, static::$domain isn't defined
-		// yet, or all of the above
-		/**/
 
 		try
 		{
+			// static::$domain is defined in individual services
 			$domain = static::$domain;
-			// this shouldn't be necessary, but when tested it wasn't working right
-			if( empty($domain) )
+			if( empty( $domain ) )
 				throw new RESTException();
 			$fields = $domain::getFields();
 		}
 		catch( \Exception $e )
 		{
 			throw new RESTException( 'Unable to load service interface',
-				$config->HTTP_INTERNAL_SERVER_ERROR, 'error', 'debug' );
+				$config->HTTP_INTERNAL_SERVER_ERROR );
 		}
 
 		$q = new \query;
@@ -285,19 +279,10 @@ abstract class Model
 		if( $ranges )
 		{
 			$ranges = static::tokenize( $ranges );
-			//~ if( !empty( $ranges ) )
-			//~ {
-				$ranges = static::getRanges( $ranges );
-				/*// left here for debugging
-				return array(
-					'status'	=>	$config->HTTP_OK,
-					'message'	=>	'range parsing issue',
-					'data'		=>	$ranges
-				);//*/
+			$ranges = static::getRanges( $ranges );
 
-				$status = $config->HTTP_PARTIAL_CONTENT;
-				$q->where = implode(' AND ', $ranges );
-			//~ }
+			$status = $config->HTTP_PARTIAL_CONTENT;
+			$q->where = implode(' AND ', $ranges );
 		}
 
 		// check for custom options
@@ -316,39 +301,11 @@ abstract class Model
 			}
 		}
 
-		/*// left here for debugging
-		return array(
-			'status'	=>	$config->HTTP_OK,
-			'message'	=>	'must be a range issue',
-			'data'		=>	$ranges
-		);//*/
-
-		/*// left here for debugging
-		return array(
-			'status'	=>	$config->HTTP_OK,
-			'message'	=>	'query object',
-			'data'		=>	$q,
-			'extra'		=>	$ranges
-		);//*/
-
 		$q->select( $fields, $domain::getTable() );
-		/*// left here for debugging
-		return array(
-			'status' => $config->HTTP_OK,
-			'message' => 'query object',
-			'data' => $q
-		);//*/
 
 		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
 		$db->quote($q->query);
 		$stmt = $db->execute( $q->query, $q->params );
-
-		/*// left here for debugging
-		return array(
-			'status'	=>	$config->HTTP_OK,
-			'message'	=>	'statement',
-			'data'		=>	$stmt->fetchAll( \PDO::FETCH_ASSOC )
-		);//*/
 
 		if( $stmt && $stmt->errorCode() === '00000' )
 		{
