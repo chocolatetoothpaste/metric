@@ -1,9 +1,8 @@
 <?php
-namespace metric\page;
+namespace Metric\Page;
 
-class page
+abstract class Page
 {
-
 	public $template = false;
 	public $file;
 	public $view;
@@ -240,26 +239,27 @@ class page
 	public static function redirect( $url )
 	{
 		global $config;
-		// make ABSOLUTELY sure that the session is written to the disk!
+		// write session to the disk
 		session_write_close();
 
+		// option to die before redirecting the page, useful when debugging
+		// @see config.inc.php
 		if( $config->DIE_BEFORE_REDIRECT )
 			die( 'Dying before redirect, <a href="' . $url
 				. '">click here</a> to continue.' );
 
 		if( !headers_sent() )
-		{
 			header( "Location: $url" );
-		}
 		else
 		{
 			echo '
 			<script type="text/javascript">
 				document.location.replace(', addslashes( $url ), ');
 			</script>';
-		} // else headers sent
+		}
+
 		die( 'Redirecting... <a href="' . $url
-			. '">click here</a> if redirect fails.');
+			. '">click here</a> if redirect fails.' );
 	}	// end function redirect
 
 

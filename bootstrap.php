@@ -3,7 +3,7 @@
  * @author ross paskett <rpaskett@gmail.com>
  * @see /page/controller and /page/view for actual pages
  */
-namespace metric;
+namespace Metric;
 
 // begin timing page execution
 $_start__ = microtime( true );
