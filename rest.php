@@ -15,8 +15,9 @@ else
 	parse_str( $input, $data );
 }
 
-$service = $page->callback[0];
-$service::authenticate($input);
+$page->authorize($input);
+//$service = $page->callback[0];
+//$service::authenticate($input);
 
 /**
  * @see	\Service\Model::init()
