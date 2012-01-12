@@ -88,8 +88,8 @@ abstract class Model
 		$columns = $this->getFields( true, $this );
 
 		$keys = ( !empty( $keys['unique'] )
-			? array_merge($keys['primary'], $keys['unique'])
-			: $keys['primary'] );
+			? array_merge((array)$keys['primary'], (array)$keys['unique'])
+			: (array)$keys['primary'] );
 
 		foreach( $keys as $type => $k ):
 			// if a primary key has a value in the
