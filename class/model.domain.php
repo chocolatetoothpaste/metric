@@ -143,7 +143,9 @@ abstract class Model
 		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
 		$table = $this->getTable();
 		$keys = $this->getKeys();
-		$key = $keys['primary'][0];
+		$key = ( is_array( $keys['primary'] )
+			? $keys['primary'][0]
+			: $keys['primary'] );
 		$q = "DELETE FROM $table WHERE $key = ? LIMIT 1";
 		$db->execute($q, array($this->{$key}));
 

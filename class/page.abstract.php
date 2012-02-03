@@ -1,7 +1,7 @@
 <?php
-namespace Metric\Page;
+namespace metric\page;
 
-abstract class Page
+abstract class page
 {
 	public $template = false;
 	public $file;
@@ -261,6 +261,29 @@ abstract class Page
 		die( 'Redirecting... <a href="' . $url
 			. '">click here</a> if redirect fails.' );
 	}	// end function redirect
+
+
+	/**
+	 * Detect if the page is using HTTPS protocol and return bool or redirect
+	 */
+
+	public static function https( $redirect = true )
+	{
+		global $config;
+		$https = false;
+		$https = ( $config->DEV && ! $config->FORCE_SSL
+			? true
+			: !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on' );
+
+		if( $redirect && !$https )
+		{
+			static::redirect( 'https://' . $_SERVER['HTTP_HOST']
+				. $_SERVER['REQUEST_URI'] );
+			die;
+		}
+		else
+			return $https;
+	}
 
 
 	/**

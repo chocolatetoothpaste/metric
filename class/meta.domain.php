@@ -15,7 +15,7 @@ class Meta extends Model
 		global $config;
 		if( $params )
 		{
-			$db = \mysql::instance( $config->DB_NAME_MAIN );
+			$db = \mysql::instance( $config->DB_MAIN );
 			$keys = $this->getKeys();
 			$fields = $this->getFields();
 			$pk = $keys['primary'];
@@ -71,7 +71,7 @@ class Meta extends Model
 	public function save()
 	{
 		global $config;
-		$db = \mysql::instance( $config->DB_NAME_MAIN );
+		$db = \mysql::instance( $config->DB_MAIN );
 		$query = new \query();
 		$columns = array();
 		$update = false;
