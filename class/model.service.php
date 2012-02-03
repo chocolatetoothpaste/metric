@@ -131,17 +131,18 @@ abstract class Model
 	{
 		global $config;
 		$domain = static::$domain;
-		$obj = new $domain( $params );
+		$obj = new $domain( $params['id'] );
 
 		if( $obj->delete() )
 			$message = array(
 				'success'	=>	'true',
-				'response'	=>	$obj,
 				'status'	=>	$config->HTTP_OK
 			);
 		else
 			throw new RESTException( 'Unable to delete resource',
 				$config->HTTP_INTERNAL_SERVER_ERROR );
+
+		return $message;
 	}
 
 
@@ -335,8 +336,10 @@ abstract class Model
 			);
 		}
 		else
-			throw new RESTException('Unable to retrieve data' . $q->query . $stmt->errorInfo(),
-				$config->HTTP_BAD_REQUEST);
+			throw new RESTException( 'Unable to retrieve data ',
+				$config->HTTP_BAD_REQUEST );
+			//~ throw new RESTException('Unable to retrieve data ' . $q->query . $stmt->errorInfo(),
+				//~ $config->HTTP_BAD_REQUEST);
 	} // end method collection
 }
 ?>

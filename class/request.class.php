@@ -27,6 +27,7 @@ class request
 		$curlopt = array(
 			CURLOPT_RETURNTRANSFER	=>	1,
 			CURLOPT_CUSTOMREQUEST	=>	$this->method,
+			CURLOPT_SSL_VERIFYPEER	=>	0,
 			CURL_HTTP_VERSION_1_1
 		);
 
