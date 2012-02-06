@@ -5,7 +5,7 @@ abstract class Model
 {
 	protected static $domain;
 	protected $get, $post, $put, $delete;
-	static public $method;
+	static public $method, $ranges, $options;
 
 
 	/**
@@ -23,19 +23,16 @@ abstract class Model
 		// determine http request method and call the proper static method.
 		// this method is only called by child classes, service model is never
 		// instantiated. see child service models for usage and implementation
-		if( !empty( $_SERVER['HTTP_CONTENT_RANGE'] ) )
-			$ranges = $_SERVER['HTTP_CONTENT_RANGE'];
-		elseif( !empty( $_SERVER['HTTP_RANGE'] ) )
-			$ranges = $_SERVER['HTTP_RANGE'];
-		else
-			$ranges = null;
+		if( !empty( $_SERVER['HTTP_RANGE'] ) )
+			static::$ranges = static::tokenize( $_SERVER['HTTP_RANGE'] );
 
-		$options = ( empty( $_SERVER['HTTP_PRAGMA'] ) ? null : $_SERVER['HTTP_PRAGMA'] );
+		if( !empty( $_SERVER['HTTP_PRAGMA'] ) )
+			static::$options = static::tokenize( $_SERVER['HTTP_PRAGMA'] );
 
 		try
 		{
 			if( $method == 'GET' && empty( $params['id'] ) )
-				return static::collection( $method, $ranges, $options );
+				return static::collection( $method );
 			elseif( $method == 'GET' )
 				return static::read( $params, $data );
 			elseif( $method == 'POST' )
@@ -45,7 +42,7 @@ abstract class Model
 			elseif( $method == 'DELETE' )
 				return static::delete( $params );
 			else
-				throw new RESTException('Invalid method received: ' . $method,
+				throw new RESTException('Method not allowed: ' . $method,
 					$config->HTTP_METHOD_NOT_ALLOWED );
 		}
 		catch( RESTException $e )
@@ -249,7 +246,7 @@ abstract class Model
 	 * @return	array
 	 */
 
-	public static function collection( $method, $ranges = '', $options = '' )
+	public static function collection( $method )
 	{
 		global $config;
 
@@ -277,19 +274,18 @@ abstract class Model
 		$status = $config->HTTP_OK; // default status
 
 		// check for ranges
-		if( $ranges )
+		if( static::$ranges )
 		{
-			$ranges = static::tokenize( $ranges );
-			$ranges = static::getRanges( $ranges );
+			$ranges = static::getRanges( static::$ranges );
 
 			$status = $config->HTTP_PARTIAL_CONTENT;
 			$q->where = implode(' AND ', $ranges );
 		}
 
 		// check for custom options
-		if( $options )
+		if( static::$options )
 		{
-			$options = static::tokenize( $options );
+			$options = static::$options;
 			if( !empty( $options['order'] ) )
 			{
 				// this is some pretty crappy hack checking, first run
