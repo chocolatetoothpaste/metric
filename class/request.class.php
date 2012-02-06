@@ -50,7 +50,7 @@ class request
 		{
 			foreach( $this->range as $token => $value )
 				$range .= "$token=$value; ";
-			$this->_headers['Content-Range'] = $range;
+			$this->_headers['Range'] = $range;
 		}
 
 		if( $this->options )
