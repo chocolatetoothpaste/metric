@@ -461,9 +461,8 @@ function preg_filter_keys( $pattern, $replace, $input, $limit = -1 , &$count = n
  * @param	array	$array	the array to search
  */
 
-function array_pluck( $key, $array )
+function array_pluck( $key, array $array )
 {
-	$array = (array)$array;
 	$return = array();
 	array_walk_recursive($array, function( &$val, $k ) use( $key, &$return )
 	{
