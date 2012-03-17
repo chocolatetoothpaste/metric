@@ -19,7 +19,7 @@ abstract class Model
 
 	public static function init( $method = 'GET', $params = array(), $data = array() )
 	{
-		global $config;
+		global $config, $page;
 		// determine http request method and call the proper static method.
 		// this method is only called by child classes, service model is never
 		// instantiated. see child service models for usage and implementation
@@ -28,6 +28,10 @@ abstract class Model
 
 		if( !empty( $_SERVER['HTTP_PRAGMA'] ) )
 			static::$options = static::tokenize( $_SERVER['HTTP_PRAGMA'] );
+
+		$data = array_merge($data, $params);
+
+		error_log($page->request . json_encode($data));
 
 		try
 		{
