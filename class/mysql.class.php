@@ -17,6 +17,7 @@ class mysql extends database
 
 	public function __construct( &$info )
 	{
+		global $config;
 		// build the connection string and try to establish a connection,
 		// otherwise die with honor. this should probably just go to global handler
 		try
@@ -34,7 +35,10 @@ class mysql extends database
 		}
 		catch( PDOException $e )
 		{
-			die( 'Error connecting to the database: ' . $e->getMessage() );
+			if( $config->DEV )
+				die( 'Error connecting to the database: ' . $e->getMessage() . print_r("<br> Connection string: $info", true) );
+			else
+				error_log('DB CONNECTION ERROR: ' . $e->getMessage() );
 		}
 	}	//	end function __construct
 
