@@ -287,20 +287,21 @@ abstract class page
 
 
 	/**
-	 * Loads a predefined tag
-	 * @param	string	$clip_name
+	 * Loads a HTML fragment
+	 * @param	string	$frag
+	 * @param	boolean	$return
 	 */
 
-	public function loadClip( $clip, $return = false )
+	public function loadFrag( $frag, $return = false )
 	{
 		global $config;
-		$clip = $config->PATH_CLIP . "/{$clip}.php";
-		if( file_exists( $clip ) )
+		$frag = $config->PATH_FRAG . "/{$frag}.php";
+		if( file_exists( $frag ) )
 		{
 			if( $return )
-				return include( $clip );
+				return include( $frag );
 			else
-				include( $clip );
+				include( $frag );
 		}
 	}
 
