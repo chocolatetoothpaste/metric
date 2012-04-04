@@ -31,8 +31,6 @@ abstract class Model
 
 		$data = array_merge($data, $params);
 
-		error_log($page->request . json_encode($data));
-
 		try
 		{
 			if( $method == 'GET' && empty( $params['id'] ) )
@@ -234,7 +232,8 @@ abstract class Model
 			if( $opt )
 			{
 				$opt = explode( '=', $opt );
-				$option[$opt[0]] = $opt[1];
+				if( count($opt) > 1 )
+					$option[$opt[0]] = $opt[1];
 			}
 		}
 		unset( $options, $opt );
