@@ -24,6 +24,7 @@ include( 'functions.inc.php' );
 // it throws an exception and halts execution
 function __autoload( $file )
 {
+	//var_dump($file);
 	global $config;
 	$file = trim( $file, '\\' );
 	if( !isset( $config->classes[$file] ) || !is_file( $config->classes[$file] ) )

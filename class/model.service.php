@@ -258,7 +258,6 @@ abstract class Model
 			throw new RESTException('Collections are read-only',
 				$config->HTTP_METHOD_NOT_ALLOWED);
 
-
 		try
 		{
 			// static::$domain is defined in individual services
