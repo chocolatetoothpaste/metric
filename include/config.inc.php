@@ -42,6 +42,10 @@ $config->define( 'PATH_LIB_INCLUDE',	$config->PATH_LIB . '/include' );
 if( !isset($config->PAGE_REST_SERVER) )
 	$config->define('PAGE_REST_SERVER', $config->PATH_LIB . '/rest.php');
 
+$config->alias = array_merge( array(
+	'/load'	=>	$config->PATH_LIB . '/load.php',
+), $config->alias );
+
 $config->classes = array_merge( array(
 	'message'		=>	$config->PATH_LIB_CLASS . '/message.class.php',
 	'timer'			=>	$config->PATH_LIB_CLASS . '/timer.class.php',
