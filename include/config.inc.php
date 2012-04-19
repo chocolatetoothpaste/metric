@@ -43,7 +43,7 @@ if( !isset($config->PAGE_REST_SERVER) )
 	$config->define('PAGE_REST_SERVER', $config->PATH_LIB . '/rest.php');
 
 $config->alias = array_merge( array(
-	'/load'	=>	$config->PATH_LIB . '/load.php',
+	'/load'	=>	$config->PATH_LIB . '/load.php'
 ), $config->alias );
 
 $config->classes = array_merge( array(

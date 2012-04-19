@@ -104,13 +104,13 @@ abstract class Page
 
 		if( !file_exists( $this->file ) )
 		{
-			if( !empty( $config->PAGE_404 ) )
+			if( !empty( $config->PAGE_404 ) && file_exists( $config->PAGE_404 ) )
 				$this->file = $config->PAGE_404;
 			else
 			{
 				header('HTTP/1.0 404 Not Found');
-				echo '<h1>404 Not Found</h1>',
-					'The page ', $this->request, ' could not be found.';
+				echo '<html><body><h1>404 Not Found</h1></body></html>',
+					'The page "', $this->request, '" could not be found.';
 				die;
 			}
 		}
