@@ -42,7 +42,7 @@ abstract class Page
 		// check if the page is in the public dir, protected pages dir, or if
 		// a "view" exists. finally, check if request is defined in config file
 		// as a service or alias to a file
-		if( file_exists( $config->PATH_CONTROLLER . $this->request . '.php' ) )
+		if( ! empty( $config->PATH_CONTROLLER ) && file_exists( $config->PATH_CONTROLLER . $this->request . '.php' ) )
 			$this->file = $config->PATH_CONTROLLER . $this->request . '.php';
 		elseif( !empty( $config->alias[$this->request] ) )
 			$this->file = $config->alias[$this->request];
