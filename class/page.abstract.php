@@ -42,7 +42,7 @@ abstract class Page
 		// check if the page is in the public dir, protected pages dir, or if
 		// a "view" exists. finally, check if request is defined in config file
 		// as a service or alias to a file
-		if( file_exists( $config->PATH_CONTROLLER . $this->request . '.php' ) )
+		if( ! empty( $config->PATH_CONTROLLER ) && file_exists( $config->PATH_CONTROLLER . $this->request . '.php' ) )
 			$this->file = $config->PATH_CONTROLLER . $this->request . '.php';
 		elseif( !empty( $config->alias[$this->request] ) )
 			$this->file = $config->alias[$this->request];
@@ -104,13 +104,13 @@ abstract class Page
 
 		if( !file_exists( $this->file ) )
 		{
-			if( !empty( $config->PAGE_404 ) )
+			if( !empty( $config->PAGE_404 ) && file_exists( $config->PAGE_404 ) )
 				$this->file = $config->PAGE_404;
 			else
 			{
 				header('HTTP/1.0 404 Not Found');
-				echo '<h1>404 Not Found</h1>',
-					'The page ', $this->request, ' could not be found.';
+				echo '<html><body><h1>404 Not Found</h1></body></html>',
+					'The page "', $this->request, '" could not be found.';
 				die;
 			}
 		}
