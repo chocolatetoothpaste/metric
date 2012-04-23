@@ -292,10 +292,10 @@ abstract class Page
 	 * @param	boolean	$return
 	 */
 
-	public function loadFrag( $frag, $return = false )
+	public function frag( $frag, $return = false )
 	{
 		global $config;
-		$frag = $config->PATH_FRAG . "/{$frag}.php";
+		$frag = $config->PATH_FRAG . "/{$frag}.phtml";
 		if( file_exists( $frag ) )
 		{
 			if( $return )
