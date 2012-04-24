@@ -270,12 +270,11 @@ abstract class Page
 	public static function https( $redirect = true )
 	{
 		global $config;
-		$https = false;
 		$https = ( $config->DEV && ! $config->FORCE_SSL
 			? true
 			: !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on' );
 
-		if( $redirect && !$https )
+		if( $redirect && ! $https )
 		{
 			static::redirect( 'https://' . $_SERVER['HTTP_HOST']
 				. $_SERVER['REQUEST_URI'] );
@@ -303,6 +302,8 @@ abstract class Page
 			else
 				include( $frag );
 		}
+		else
+			throw new \Exception( "Unable to load fragment $frag" );
 	}
 
 }	// end class page
