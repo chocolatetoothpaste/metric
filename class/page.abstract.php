@@ -94,10 +94,9 @@ class Page
 				header('HTTP/1.1 404 Not Found');
 				echo '<!doctype html><html>',
 					'<head><title>404 Not Found</title></head><body>',
-					'<h1>Not Found</h1>',
-					'<p>The requested URL ',
-					$this->request, ' was not found on this server.</p>',
-					'<p><em>Metric PHP Framework</em></p>',
+					'<h1>Page Not Found</h1>',
+					'<p>The request ', $this->request, ' was not found.</p>',
+					'<p><em>&#968; Metric</em></p>',
 					'</body></html>';
 				die;
 			}
