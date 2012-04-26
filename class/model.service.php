@@ -234,6 +234,8 @@ abstract class Model
 				$opt = explode( '=', $opt );
 				if( count($opt) > 1 )
 					$option[$opt[0]] = $opt[1];
+				else
+					$option[$opt[0]] = true;
 			}
 		}
 		unset( $options, $opt );
