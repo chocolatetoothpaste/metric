@@ -11,7 +11,7 @@ $_start__ = microtime( true );
 include( 'include/include.inc.php' );
 session_start();
 
-$page = new Page\Page();
+$page = new $config->template();
 $page->parseURL( strtok( $_SERVER['REQUEST_URI'], '?' ) );
 
 // make sure the page doesn't get cached unless told to
