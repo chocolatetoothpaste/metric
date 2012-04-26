@@ -1,5 +1,11 @@
 #!/bin/bash
 
+CONFIG="<?php
+
+\$config->define( 'PATH_ROOT',		dirname( \$_SERVER['DOCUMENT_ROOT'] ) );
+\$config->define( 'PATH_LIB',		\$config->PATH_ROOT . '/${PWD##*/}' );
+?>";
+
 HT="#RewriteEngine on
 #RewriteCond %{REQUEST_URI} !/maintenance.html$
 #RewriteCond %{REMOTE_HOST} !^67\.177\.16\.192
@@ -53,10 +59,13 @@ ErrorDocument 404 /404
 </IfModule>"
 
 cd ..
+
+echo $CONFIG > config.inc.php
+
 mkdir -p page/template
 mkdir page/controller
 mkdir page/view
 
 mkdir public
 echo "<?php include( '../lib/bootstrap.php' ); ?>" > public/index.php
-
+echo $HT > public/.htaccess
