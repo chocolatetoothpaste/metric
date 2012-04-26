@@ -91,9 +91,14 @@ class Page
 				$this->file = $config->PAGE_404;
 			else
 			{
-				header('HTTP/1.0 404 Not Found');
-				echo '<html><body><h1>404 Not Found</h1></body></html>',
-					'The page "', $this->request, '" could not be found.';
+				header('HTTP/1.1 404 Not Found');
+				echo '<!doctype html><html>',
+					'<head><title>404 Not Found</title></head><body>',
+					'<h1>Not Found</h1>',
+					'<p>The requested URL ',
+					$this->request, ' was not found on this server.</p>',
+					'<p><em>Metric PHP Framework</em></p>',
+					'</body></html>';
 				die;
 			}
 		}
