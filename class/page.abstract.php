@@ -3,29 +3,12 @@ namespace Metric\Page;
 
 abstract class Page
 {
+	public $file, $view, $cache, $body, $hash, $request, $https, $callback;
 	public $template = false;
-	public $file;
-	public $view;
 	public $js = array(), $css = array();
 	public $params = array();
-	public $request;
-	public $callback;
 	public $content_type = 'text/html; charset=utf-8';
-	public $body;
-	public $hash;
-	public $https;
 	public $visibility = 'public';
-
-	private $cache = false;
-	private $cached;
-
-	function __construct()
-	{
-		global $config;
-		$this->https = ( $config->DEV
-			? true
-			: ( !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on' ) );
-	}
 
 
 	/**
@@ -179,8 +162,8 @@ abstract class Page
 
 				// check if the cache directory is writable
 				// and attempt to cache page output
-				if( is_writable( dirname( $this->cached ) ) )
-					file_put_contents( $this->cached,
+				if( is_writable( dirname( $this->cache ) ) )
+					file_put_contents( $this->cache,
 						ob_get_contents(), LOCK_EX );
 			}
 
@@ -197,12 +180,12 @@ abstract class Page
 	public function cache( $request = null )
 	{
 		global $config;
-		$request = iif( !$request, $this->request );
+		$request = iif( ! $request, $this->request );
 		// grab the most recent mtime of a file/files, create a hash
 		$mtime = max( filemtime( $this->file ), filemtime( $this->view ) );
 
 		$this->hash = md5( $request ) . "-{$mtime}";
-		$this->cached = $config->PATH_CACHE . "/{$this->hash}";
+		$this->cache = $config->PATH_CACHE . "/{$this->hash}";
 		header( "Cache-Control: {$this->visibility}", false );
 		header( "Etag: {$this->hash}" );
 		header( 'Pragma: cache' );
@@ -216,15 +199,14 @@ abstract class Page
 			header( $config->http_status[$config->HTTP_NOT_MODIFIED] );
 			die;
 		}
-		elseif( file_exists( $this->cached ) && filesize( $this->cached ) > 0 )
+		elseif( file_exists( $this->cache ) && filesize( $this->cache ) > 0 )
 		{
 			header( "X-Cache-Retrieved: {$this->hash}" );
-			echo file_get_contents( $this->cached );
+			echo file_get_contents( $this->cache );
 			die;
 		}
 		else
 		{
-			$this->cache = true;
 			ob_start();
 		}
 	}
@@ -248,7 +230,7 @@ abstract class Page
 			die( 'Dying before redirect, <a href="' . $url
 				. '">click here</a> to continue.' );
 
-		if( !headers_sent() )
+		if( ! headers_sent() )
 			header( "Location: $url" );
 		else
 		{
@@ -295,17 +277,15 @@ abstract class Page
 	{
 		global $config;
 		$frag = $config->PATH_FRAG . "/{$frag}.phtml";
-		if( file_exists( $frag ) )
-		{
+		try {
 			if( $return )
 				return include( $frag );
 			else
 				include( $frag );
+		} catch( \Exception $e ) {
+			die( "Unable to load fragment $frag" );
 		}
-		else
-			throw new \Exception( "Unable to load fragment $frag" );
 	}
 
 }	// end class page
-
 ?>
