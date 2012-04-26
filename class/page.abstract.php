@@ -1,7 +1,7 @@
 <?php
 namespace Metric\Page;
 
- class Page
+class Page
 {
 	public $file, $view, $cache, $body, $hash, $request, $https, $callback;
 	public $template = false;
@@ -288,9 +288,4 @@ namespace Metric\Page;
 	}
 
 }	// end class page
-<<<<<<< HEAD
-
 ?>
-=======
-?>
->>>>>>> f127a7b7b4fc7563ca716059e912c8590a9001e4
