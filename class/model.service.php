@@ -334,12 +334,14 @@ abstract class Model
 				'response'	=>	$data,
 				'status'	=>	$status
 			);
-		}
-		else
-			throw new RESTException( 'Unable to retrieve data ',
-				$config->HTTP_BAD_REQUEST );
-			//~ throw new RESTException('Unable to retrieve data ' . $q->query . $stmt->errorInfo(),
-				//~ $config->HTTP_BAD_REQUEST);
+
+			if( $stmt->errorCode() == '42S02' )
+				$message = 'Schema does not exist for data model '. $domain;
+			else
+				$message = 'Unable to retrieve data';
+
+			throw new RESTException( $message, $config->HTTP_BAD_REQUEST );
+
 	} // end method collection
 }
 ?>
