@@ -1,26 +1,114 @@
 <?php
-class request
+class request extends \HttpRequest
 {
-	public $method, $headers = array(), $content,
-		$auth, $length, $response, $format = 'application/json',
-		$username, $password, $host, $range = array(), $options = array();
+	public $auth, $length, $response, $key, $host;
 
-	private $_headers = array();
-
-	public function __construct( $url, $method = 'GET' )
+	public function __construct( $url = '' )
 	{
-		global $config;
-		$this->url = $url;
-		$this->method = $method;
-		// @see config.inc.php
-		$this->host = $config->URL_API;
-		$this->_headers['Connection'] = 'close';
-		$this->_headers['Content-Type'] = 'application/x-www-form-urlencoded';
+		parent::__construct( 'http://api.candeo.dev' . $url );
+		$this->setHeaders( array(
+			'Connection' => 'close',
+			'Content-Type' => 'application/x-www-form-urlencoded',
+			'Accept' => 'application/json'
+		) );
 	}
 
+	public function git( $data = array() )
+	{
+		$this->prepare( \HttpRequest::METH_GET, $data );
+		$this->send();
+
+		return $this;
+	}
+
+	public function post( $data = array() )
+	{
+		$this->prepare( \HttpRequest::METH_POST, $data );
+		$this->send();
+
+		return $this;
+	}
+
+	public function put( $data = array() )
+	{
+		$this->prepare( \HttpRequest::METH_PUT, $data );
+		$this->send();
+
+		return $this;
+	}
+
+	public function delete( $data = array() )
+	{
+		$this->prepare( \HttpRequest::METH_DELETE, $data );
+		$this->send();
+
+		return $this;
+	}
+
+	public function prepare( $method, $data = array() )
+	{
+		$this->setMethod( $method );
+		$this->setPostFields( $data );
+		$this->length = ( $method == \HttpRequest::METH_GET ? 0 : strlen( $this->getPostData() ) );
+		$this->addHeaders( array( 'Content-Length' => $this->length ) );
+		$this->hash();
+	}
+
+	public function range( array $ranges )
+	{
+		$range = '';
+		foreach( $ranges as $token => $value )
+			$range .= "$token=$value; ";
+		$this->addHeaders( array( 'Range' => $range ) );
+
+		return $this;
+	}
+
+	public function options( array $options )
+	{
+		$option = '';
+		foreach( $options as $token => $value )
+			$option .= "$token=$value; ";
+		$this->addHeaders( array( 'Pragma' => $option ) );
+
+		return $this;
+	}
+
+	public function getPostData()
+	{
+		return http_build_query( $this->getPostFields() );
+	}
+
+	public function decode()
+	{
+		if( strtolower( $this->getResponseHeader( 'Content-Type' ) ) == 'application/json' )
+			return json_decode( $this->getResponseBody() );
+	}
+
+	private function hash()
+	{
+		$this->date = gmdate(DATE_RFC1123);
+
+		// create the hashable request document and run through hash function
+		$this->hash = $this->getMethod() . ' ' . $this->getUrl() . " HTTP/1.1\n"
+			. "Date: {$this->date}\n"
+			. "Content-Length: {$this->length}\n\n"
+			. $this->getQueryData();
+		$this->hash = hash_hmac( 'sha1', $this->hash, $this->key );
+
+		// make message hash transferrable
+		$this->auth = base64_encode( "asd:{$this->hash}" );
+
+		// set auth header
+		$this->addHeaders( array(
+			'Authorization' => $this->auth,
+			'Date'			=> $this->date
+		) );
+	}
+
+	/*
 	public function exec()
 	{
-		$this->_headers['Accept'] = $this->format;
 		$this->length = 0;
 		$range = $options = '';
 
@@ -74,25 +162,7 @@ class request
 		$this->response = curl_exec($ch);
 		curl_close($ch);
 	}
-
-	private function hash()
-	{
-		$this->date = gmdate(DATE_RFC1123);
-		$this->_headers['Date'] = $this->date;
-
-		// create the hashable request document and run through hash function
-		$this->hash = "{$this->method} {$this->url} HTTP/1.1\n"
-			. "Date: {$this->date}\n"
-			. "Content-Length: {$this->length}\n\n"
-			. "{$this->content}";
-		$this->hash = hash_hmac( 'sha1', $this->hash, $this->key );
-
-		// make message hash transferrable
-		$this->auth = base64_encode( "{$this->username}:{$this->hash}" );
-
-		// set auth header
-		$this->_headers['Authorization'] = $this->auth;
-	}
+	*/
 
 }
 ?>
