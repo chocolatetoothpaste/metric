@@ -29,19 +29,26 @@ abstract class Model
 		if( !empty( $_SERVER['HTTP_PRAGMA'] ) )
 			static::$options = static::tokenize( $_SERVER['HTTP_PRAGMA'] );
 
+		// merge data with params to make sure primary keys don't get changed by request vars
 		$data = array_merge($data, $params);
+
+		// grab the domain keys to check if request is a collection or a single entity
+		$domain = static::$domain;
+		$keys = $domain::getKeys();
 
 		try
 		{
-			if( $method == 'GET' && empty( $params['id'] ) )
+			if( !empty( $data['q'] ) )
+				return static::search( $data['q'] );
+			else if( $method == 'GET' && !! array_intersect( $params, (array)$keys['primary'] ) )
 				return static::collection( $method );
-			elseif( $method == 'GET' )
+			else if( $method == 'GET' )
 				return static::read( $params, $data );
-			elseif( $method == 'POST' )
+			else if( $method == 'POST' )
 				return static::create( $data );
-			elseif( $method == 'PUT' )
+			else if( $method == 'PUT' )
 				return static::update( $params, $data );
-			elseif( $method == 'DELETE' )
+			else if( $method == 'DELETE' )
 				return static::delete( $params );
 			else
 				throw new RESTException('Method not allowed: ' . $method,
@@ -73,18 +80,22 @@ abstract class Model
 	{
 		global $config;
 		$domain = static::$domain;
-		$obj = new $domain();
-		$obj->capture( $post, $domain::getKeys() );
 
-		if( $obj->save() )
+		try
+		{
+			$obj = new $domain();
+			$obj->capture( $post, $domain::getKeys() );
+			$obj->save();
 			return array(
 				'success'	=>	'true',
 				'response'	=>	$obj,
 				'status'	=>	$config->HTTP_CREATED
 			);
-		else
-			throw new RESTException( 'Unable to create resource',
-				$config->HTTP_NOT_ACCEPTABLE );
+		}
+		catch( \Exception $e )
+		{
+			throw new RESTException( $e->getMessage(), $e->getCode() );
+		}
 	}
 
 	public static function read( $id, $get )
@@ -334,14 +345,56 @@ abstract class Model
 				'response'	=>	$data,
 				'status'	=>	$status
 			);
+		}
 
-			if( $stmt->errorCode() == '42S02' )
-				$message = 'Schema does not exist for data model '. $domain;
-			else
-				$message = 'Unable to retrieve data';
+		if( $stmt->errorCode() == '42S02' )
+			$message = 'Schema does not exist for data model ' . $domain;
+		if( $stmt->errorCode() == '42S22' )
+			$message = 'Schema does not match data model';
+		else
+			$message = 'Unable to retrieve data';
 
-			throw new RESTException( $message, $config->HTTP_BAD_REQUEST );
+		throw new RESTException( $message, $config->HTTP_BAD_REQUEST );
 
 	} // end method collection
+
+	public static function search( $terms )
+	{
+		global $config;
+		$terms = explode( ' ', $terms );
+		$domain = static::$domain;
+		$fields = $domain::getSearch();
+		$table = $domain::getTable();
+		$q = new \query;
+		$like = array();
+		$params = array();
+
+		foreach( $fields as $field )
+		{
+			foreach( $terms as $k => $term )
+			{
+				$params["term_$k"] = "%$term%";
+				$like[] = "$field LIKE :term_$k";
+			}
+		}
+
+		$q->select( array( '*' ), $domain::getTable() );
+		$like = implode( ' OR ', $like );
+		$q->query .= " WHERE $like";
+
+		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
+		$db->quote($q->query);
+		$stmt = $db->execute( $q->query, $params );
+
+		if( $stmt && $stmt->errorCode() === '00000' )
+		{
+			return array(
+				'success'	=>	'true',
+				'response'	=>	$stmt->fetchAll( \PDO::FETCH_ASSOC ),
+				'status'	=>	$config->HTTP_PARTIAL_CONTENT
+			);
+		}
+
+	}
 }
 ?>

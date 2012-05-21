@@ -10,7 +10,7 @@ namespace Domain;
 
 abstract class Model
 {
-	protected static $keys, $table;
+	protected static $keys, $table, $search;
 	protected $meta_table, $meta_fields = array(), $meta_obj = array();
 
 
@@ -132,7 +132,25 @@ abstract class Model
 		{
 			error_log( 'Domain error::' . get_class($this)
 					   . ' - ' . $db->result->errorCode() . ' :: ' . print_r($db->result->errorInfo(), true ) );
-			return false;
+			$info = $db->result->errorInfo();
+
+			if( $db->result->errorCode() == '42S22' )
+			{
+				$message = 'Schema does not match data model ' . \get_called_class();
+				$code = $config->HTTP_INTERNAL_SERVER_ERROR;
+			}
+			else if( $config->DEV )
+			{
+				$message = json_encode( $info );
+				$code = $config->HTTP_INTERNAL_SERVER_ERROR;
+			}
+			else
+			{
+				$message = 'Unable to create resource';
+				$code = $config->HTTP_NOT_ACCEPTABLE;
+			}
+
+			throw new \Exception( $message, $code );
 		}
 	}
 
@@ -172,6 +190,12 @@ abstract class Model
 	final public static function getTable()
 	{
 		return static::$table;
+	}
+
+
+	final public static function getSearch()
+	{
+		return static::$search;
 	}
 
 
