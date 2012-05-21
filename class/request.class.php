@@ -5,7 +5,8 @@ class request extends \HttpRequest
 
 	public function __construct( $url = '' )
 	{
-		parent::__construct( 'http://api.candeo.dev' . $url );
+		global $config;
+		parent::__construct( $config->URL_API . $url );
 		$this->setHeaders( array(
 			'Connection' => 'close',
 			'Content-Type' => 'application/x-www-form-urlencoded',
@@ -49,9 +50,12 @@ class request extends \HttpRequest
 	{
 		$this->setMethod( $method );
 		$this->setPostFields( $data );
-		$this->length = ( $method == \HttpRequest::METH_GET ? 0 : strlen( $this->getPostData() ) );
-		$this->addHeaders( array( 'Content-Length' => $this->length ) );
-		$this->hash();
+		if( $method !== \HttpRequest::METH_GET )
+		{
+			$this->length = strlen( $this->getPostData() );
+			$this->addHeaders( array( 'Content-Length' => $this->length ) );
+		}
+		//$this->hash();
 	}
 
 	public function range( array $ranges )
@@ -79,21 +83,23 @@ class request extends \HttpRequest
 		return http_build_query( $this->getPostFields() );
 	}
 
-	public function decode()
+	public function decode( $assoc = false )
 	{
 		if( strtolower( $this->getResponseHeader( 'Content-Type' ) ) == 'application/json' )
-			return json_decode( $this->getResponseBody() );
+			return json_decode( $this->getResponseBody(), $assoc );
 	}
 
 	private function hash()
 	{
-		$this->date = gmdate(DATE_RFC1123);
+		$this->date = gmdate( DATE_RFC1123 );
 
 		// create the hashable request document and run through hash function
 		$this->hash = $this->getMethod() . ' ' . $this->getUrl() . " HTTP/1.1\n"
-			. "Date: {$this->date}\n"
-			. "Content-Length: {$this->length}\n\n"
-			. $this->getQueryData();
+			. "Date: {$this->date}\n";
+		if( $this->getMethod() == \HttpRequest::METH_GET )
+			$this->hash .= "Content-Length: {$this->length}\n\n"
+				. $this->getPostData();
+
 		$this->hash = hash_hmac( 'sha1', $this->hash, $this->key );
 
 		// make message hash transferrable
