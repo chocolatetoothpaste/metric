@@ -38,7 +38,7 @@ class query
 	 * @return string	the generated query string
 	 */
 
-	public function select( array $columns, $table, array $where = array() )
+	public function select( array $columns, $table, array $where = array(), $separator = ' AND ' )
 	{
 		$criteria = array();
 		$this->table = $table;
@@ -53,7 +53,7 @@ class query
 				$this->params[$f] = $v;
 				$criteria[] = "$k = :$f";
 			}
-			$this->where = 'WHERE ' . implode( ' AND ', $criteria );
+			$this->where = 'WHERE ' . implode( $separator, $criteria );
 		}
 		elseif( $this->where )
 		{
