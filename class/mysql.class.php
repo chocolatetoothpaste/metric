@@ -106,8 +106,15 @@ class mysql extends database
 	public function execute( $query, array $params = array() )
 	{
 		$this->result = parent::prepare( $query );
-		$this->result->execute( $params );
+		/*if( ! empty( $params['limit'] ) )
+		{
+			$limit = (int) $params['limit'];
+			$this->result->bindParam( ':limit', $limit, \PDO::PARAM_INT );
+			//unset( $params['limit'] );
+		}*/
 
+		$this->result->execute( $params );
+		//$this->result->execute();
 		return $this->result;
 	}
 
