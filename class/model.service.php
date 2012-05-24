@@ -38,6 +38,9 @@ abstract class Model
 
 		try
 		{
+			error_log($domain);
+			error_log($page->request);
+			error_log(print_r($_SERVER, true));
 			if( !empty( $data['q'] ) )
 				return static::search( $data['q'] );
 			else if( $method == 'GET' && ! array_intersect( $params, (array)$keys['primary'] ) )
@@ -53,6 +56,7 @@ abstract class Model
 			else
 				throw new RESTException('Method not allowed: ' . $method,
 					$config->HTTP_METHOD_NOT_ALLOWED );
+
 		}
 		catch( RESTException $e )
 		{
@@ -301,7 +305,7 @@ abstract class Model
 		if( static::$options )
 		{
 			$options = static::$options;
-			if( !empty( $options['order'] ) )
+			if( ! empty( $options['order'] ) )
 			{
 				// this is some pretty crappy hack checking, first run
 				$order = explode(',', $options['order']);
@@ -314,6 +318,9 @@ abstract class Model
 		}
 
 		$q->select( $fields, $domain::getTable() );
+
+		if( ! empty( $options['limit'] ) )
+			$q->limit( $options['limit'] );
 
 		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
 		$db->quote($q->query);

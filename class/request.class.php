@@ -55,6 +55,7 @@ class request extends \HttpRequest
 			$this->length = strlen( $this->getPostData() );
 			$this->addHeaders( array( 'Content-Length' => $this->length ) );
 		}
+
 		//$this->hash();
 	}
 
