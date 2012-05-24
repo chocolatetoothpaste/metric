@@ -38,7 +38,7 @@ class query
 	 * @return string	the generated query string
 	 */
 
-	public function select( array $columns, $table, array $where = array(), $separator = ' AND ' )
+	public function select( $columns, $table, array $where = array(), $separator = ' AND ' )
 	{
 		$criteria = array();
 		$this->table = $table;
@@ -63,9 +63,31 @@ class query
 		if( $this->order )
 			$this->order = "ORDER BY {$this->order}";
 
-		$columns = implode( ', ', $columns );
+		if( is_array( $columns ) )
+			$columns = implode( ', ', $columns );
+
 		$this->query = "SELECT $columns FROM $table {$this->where} {$this->order}";
+		return $this;
+	}
+
+	public function query()
+	{
+		$this->query = "SELECT $columns FROM $table";
+		if( ! empty( $this->where ) )
+			$this->query .= " WHERE {$this->where}";
+		if( ! empty( $this->where ) )
+			$this->query .= " ORDER BY {$this->order}";
+		if( !empty( $this->limit ) )
+			$this->query .= " LIMIT {$this->limit}";
 		return $this->query;
+	}
+
+	public function limit( $limit )
+	{
+		$this->query .= " LIMIT $limit";
+		$this->limit = $limit;
+		//$this->params['limit'] = (int)$limit;
+		return $this;
 	}
 
 
