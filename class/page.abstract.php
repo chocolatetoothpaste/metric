@@ -87,19 +87,7 @@ class Page
 
 		if( !file_exists( $this->file ) )
 		{
-			if( !empty( $config->PAGE_404 ) && file_exists( $config->PAGE_404 ) )
-				$this->file = $config->PAGE_404;
-			else
-			{
-				header('HTTP/1.1 404 Not Found');
-				echo '<!doctype html><html>',
-					'<head><title>404 Not Found</title></head><body>',
-					'<h1>Page Not Found</h1>',
-					'<p>The request ', $this->request, ' was not found.</p>',
-					'<p><em>&#968; Metric</em></p>',
-					'</body></html>';
-				die;
-			}
+			$this->notFound();
 		}
 		else
 		{
@@ -112,6 +100,23 @@ class Page
 			unset($path);
 		}
 	}	// end method parseURL
+
+
+	private function notFound()
+	{
+		if( !empty( $config->PAGE_404 ) && file_exists( $config->PAGE_404 ) )
+			$this->file = $config->PAGE_404;
+		else
+		{
+			header('HTTP/1.1 404 Not Found');
+			$this->body = '<!doctype html><html>'
+				. '<head><title>404 Not Found</title></head><body>'
+				. '<h1>Page Not Found</h1>'
+				. '<p>The request ' . $this->request . ' was not found.</p>'
+				.'<p><em>&#968; Metric</em></p>'
+				. '</body></html>';
+		}
+	}
 
 
 	/**
