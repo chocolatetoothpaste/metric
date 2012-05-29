@@ -43,13 +43,13 @@ class Meta extends Model
 			}
 			else
 			{
-				$params = $params;
+				//$params = $params;
 				foreach( $params as $k => $v )
 					$this->$k = $v;
 			}
 
-			$q->select( $fields, $this->getTable(), $params );
-			$result = $db->execute( $q->query, $q->params );
+			$q->select( $fields, $this->getTable() )->where( $params );
+			$result = $db->execute( $q->query(), $q->params );
 
 			if( $result )
 				foreach( $db->result->fetchAll(PDO::FETCH_ASSOC) as $value )

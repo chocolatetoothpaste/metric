@@ -23,10 +23,10 @@ abstract class Model
 		// determine http request method and call the proper static method.
 		// this method is only called by child classes, service model is never
 		// instantiated. see child service models for usage and implementation
-		if( !empty( $_SERVER['HTTP_RANGE'] ) )
+		if( ! empty( $_SERVER['HTTP_RANGE'] ) )
 			static::$ranges = static::tokenize( $_SERVER['HTTP_RANGE'] );
 
-		if( !empty( $_SERVER['HTTP_PRAGMA'] ) )
+		if( ! empty( $_SERVER['HTTP_PRAGMA'] ) )
 			static::$options = static::tokenize( $_SERVER['HTTP_PRAGMA'] );
 
 		// merge data with params to make sure primary keys don't get changed by request vars
@@ -34,17 +34,15 @@ abstract class Model
 
 		// grab the domain keys to check if request is a collection or a single entity
 		$domain = static::$domain;
-		$keys = $domain::getKeys();
+		$intersect = ( $domain ? (array) $domain::getKeys() : array() );
+		$intersect = array_flip( $intersect );
 
 		try
 		{
-			error_log($domain);
-			error_log($page->request);
-			error_log(print_r($_SERVER, true));
-			if( !empty( $data['q'] ) )
+			if( ! empty( $data['q'] ) )
 				return static::search( $data['q'] );
-			else if( $method == 'GET' && ! array_intersect( $params, (array)$keys['primary'] ) )
-				return static::collection( $method );
+			else if( $method == 'GET' && ! array_intersect_key( $params, $intersect ) )
+			 	return static::collection( $method );
 			else if( $method == 'GET' )
 				return static::read( $params, $data );
 			else if( $method == 'POST' )
@@ -54,7 +52,7 @@ abstract class Model
 			else if( $method == 'DELETE' )
 				return static::delete( $params );
 			else
-				throw new RESTException('Method not allowed: ' . $method,
+				throw new RESTException("Method $method not allowed",
 					$config->HTTP_METHOD_NOT_ALLOWED );
 
 		}
@@ -82,8 +80,12 @@ abstract class Model
 
 	public static function create( $post )
 	{
-		global $config;
+		global $config, $page;
 		$domain = static::$domain;
+
+		if( ! $domain )
+			throw new RESTException('Method not allowed at ' . $page->request,
+				$config->HTTP_METHOD_NOT_ALLOWED );
 
 		try
 		{
@@ -106,6 +108,11 @@ abstract class Model
 	{
 		global $config, $page;
 		$domain = static::$domain;
+
+		if( ! $domain )
+			throw new RESTException('Method not allowed at ' . $page->request,
+				$config->HTTP_METHOD_NOT_ALLOWED );
+
 		$obj = new $domain( $id['id'] );
 
 		if( $obj instanceof $domain && $obj->id )
@@ -125,8 +132,13 @@ abstract class Model
 
 	public static function update( $params, $put )
 	{
-		global $config;
+		global $config, $page;
 		$domain = static::$domain;
+
+		if( ! $domain )
+			throw new RESTException('Method not allowed at ' . $page->request,
+				$config->HTTP_METHOD_NOT_ALLOWED );
+
 		$obj = new $domain( $params['id'] );
 		$obj->capture( $put, $domain::getKeys() );
 
@@ -143,8 +155,13 @@ abstract class Model
 
 	public static function delete( $params )
 	{
-		global $config;
+		global $config, $page;
 		$domain = static::$domain;
+
+		if( ! $domain )
+			throw new RESTException('Method not allowed at ' . $page->request,
+				$config->HTTP_METHOD_NOT_ALLOWED );
+
 		$obj = new $domain( $params['id'] );
 
 		if( $obj->delete() )
@@ -275,24 +292,20 @@ abstract class Model
 			throw new RESTException('Collections are read-only',
 				$config->HTTP_METHOD_NOT_ALLOWED);
 
-		try
-		{
-			// static::$domain is defined in individual services
-			$domain = static::$domain;
-			if( empty( $domain ) )
-				throw new RESTException();
-			$fields = $domain::getFields();
-		}
-		catch( \Exception $e )
-		{
+		// static::$domain is defined by the domain model
+		$domain = static::$domain;
+
+		// if domain is empty it's probably an error or someone
+		// forgot to define it, so throw an error up the chain
+		if( empty( $domain ) )
 			throw new RESTException( 'Unable to load service interface',
 				$config->HTTP_INTERNAL_SERVER_ERROR );
-		}
+		$fields = $domain::getFields();
 
 		$q = new \query;
 		$status = $config->HTTP_OK; // default status
 
-		// check for ranges
+		// check for ranges and try to parse them
 		if( static::$ranges )
 		{
 			$ranges = static::getRanges( static::$ranges );
@@ -370,28 +383,23 @@ abstract class Model
 		global $config;
 		$terms = explode( ' ', $terms );
 		$domain = static::$domain;
-		$fields = $domain::getSearch();
+		$fields = $domain::getFields();
+		$search = $domain::getSearch();
 		$table = $domain::getTable();
 		$q = new \query;
 		$like = array();
 		$params = array();
 
-		foreach( $fields as $field )
-		{
+		foreach( $search as $field )
 			foreach( $terms as $k => $term )
-			{
-				$params["term_$k"] = "%$term%";
-				$like[] = "$field LIKE :term_$k";
-			}
-		}
+				$like[$field] = $term;
 
-		$q->select( array( '*' ), $domain::getTable() );
-		$like = implode( ' OR ', $like );
-		$q->query .= " WHERE $like";
+		$q->select( $fields, $domain::getTable() )->like( $like );
 
 		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
+		error_log($q->query());
 		$db->quote($q->query);
-		$stmt = $db->execute( $q->query, $params );
+		$stmt = $db->execute( $q->query, $q->params );
 
 		if( $stmt && $stmt->errorCode() === '00000' )
 		{
