@@ -51,8 +51,8 @@ abstract class Model
 
 			endif;
 
-			$q->select( $fields, $this->getTable(), $params );
-			$db->fetchIntoObject( $this, $q->query, $q->params );
+			$q->select( $fields, $this->getTable() )->where( $params );
+			$db->fetchIntoObject( $this, $q->query(), $q->params );
 		}
 
 	}

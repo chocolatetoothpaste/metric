@@ -7,7 +7,7 @@
 class query
 {
 	public $params = array(), $criteria = array(),
-		$query, $table, $where, $order;
+		$query, $table, $where, $order, $columns;
 
 	final function __construct()
 	{
@@ -66,16 +66,61 @@ class query
 		if( is_array( $columns ) )
 			$columns = implode( ', ', $columns );
 
-		$this->query = "SELECT $columns FROM $table {$this->where} {$this->order}";
+		$this->columns = $columns;
+
+		$this->query = "SELECT {$this->columns} FROM $table {$this->where} {$this->order}";
+		return $this;
+	}
+
+	public function where( $where, $separator = 'AND' )
+	{
+		if( is_array( $where ) )
+		{
+			foreach( $where as $k => $v )
+			{
+				// PDO doesn't like special chars as bound param names, so scrubbing
+				// them should reliably maintain unique param names
+				$clean = preg_replace('#[^a-zA-Z0-9]#', '', $k);
+				$this->params[$clean] = $v;
+				$criteria[] = "$k = :$clean";
+			}
+			// stringify the where statements
+			$where = implode( " $separator ", $criteria );
+		}
+
+		// check if a previous where statement has been set and glue it all together
+		$this->where = ( $this->where ? $this->where . " $separator $where" : $where );
+
+		return $this;
+	}
+
+	public function like( array $like, $separator = ' AND ' )
+	{
+		foreach( $like as $k => &$v )
+		{
+			$l = "__like_$k";
+			$this->params[$l] = "%$v%";
+			$like[$k] = "$k LIKE :$l";
+		}
+
+		unset($v);
+		$like = implode( ' OR ', $like );
+
+		return $this->where( $like, $separator );
+	}
+
+	public function order( $order )
+	{
+		$this->order = $order;
 		return $this;
 	}
 
 	public function query()
 	{
-		$this->query = "SELECT $columns FROM $table";
+		$this->query = "SELECT {$this->columns} FROM {$this->table}";
 		if( ! empty( $this->where ) )
 			$this->query .= " WHERE {$this->where}";
-		if( ! empty( $this->where ) )
+		if( ! empty( $this->order ) )
 			$this->query .= " ORDER BY {$this->order}";
 		if( !empty( $this->limit ) )
 			$this->query .= " LIMIT {$this->limit}";
