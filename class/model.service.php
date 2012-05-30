@@ -183,24 +183,27 @@ abstract class Model
 
 	public static function parseRange( $values )
 	{
-		$ranges = explode(',', $values);
+		$ranges = explode( ',', $values );
 		$ret = array();
 		foreach( $ranges as $key => $range )
 		{
+			// check if a large range exists (i.e., 1-100)
 			if( strpos($range, '-') !== false )
 			{
-				$range = explode('-', $range);
-				if(empty($range[0]))
-					$range[0] = '1';
-
-				$range = range($range[0], $range[1]);
-				$ret = array_merge($ret,$range);
+				$range = explode( '-', $range );
+				// don't need to check if $range[0] exists
+				// (if range is like "-40" which means zero through 40)
+				// if it's null it starts from zero
+				$range = range( $range[0], $range[1] );
+				$ret = array_merge( $ret, $range );
 			}
 			else
 			{
 				$ret[] = intval($range);
 			}
 		}
+
+		// gc
 		unset( $ranges, $values, $key, $range);
 		return $ret;
 	}
@@ -215,11 +218,9 @@ abstract class Model
 
 	public static function getRanges( array $ranges )
 	{
-		//$return = array();
-		//foreach( $ranges as $field => $range )
 		foreach( $ranges as $field => &$range )
 		{
-			if( !empty( $range ) || $range == 0 )
+			if( ! empty( $range ) || $range == 0 )
 			{
 				$date_regex = '\d{4}-\d{2}-\d{2} '
 					. '(([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9])';
@@ -311,7 +312,7 @@ abstract class Model
 			$ranges = static::getRanges( static::$ranges );
 
 			$status = $config->HTTP_PARTIAL_CONTENT;
-			$q->where = implode(' AND ', $ranges );
+			$q->where( $ranges, ' AND ' );
 		}
 
 		// check for custom options
@@ -321,9 +322,10 @@ abstract class Model
 			if( ! empty( $options['order'] ) )
 			{
 				// this is some pretty crappy hack checking, first run
-				$order = explode(',', $options['order']);
-				if( !array_diff( $order, $fields ) )
-					$q->order = implode(', ', $order);
+				$order = explode( ',', $options['order'] );
+				if( ! array_diff( $order, $fields ) )
+					$q->order( $order );
+					//$q->order = implode(', ', $order);
 				else
 					throw new RESTException( 'Field not acceptable for ordering',
 						$config->HTTP_NOT_ACCEPTABLE );
