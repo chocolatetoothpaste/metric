@@ -38,37 +38,14 @@ class query
 	 * @return string	the generated query string
 	 */
 
-	public function select( $columns, $table, array $where = array(), $separator = ' AND ' )
+	public function select( $columns, $table )
 	{
-		$criteria = array();
 		$this->table = $table;
 
-		if( !$this->where && $where )
-		{
-			foreach( $where as $k => $v )
-			{
-				// PDO doesn't like special chars as bound param names, so scrubbing
-				// them should reliably maintain unique param names
-				$f = preg_replace('#[^a-zA-Z0-9]#', '', $k);
-				$this->params[$f] = $v;
-				$criteria[] = "$k = :$f";
-			}
-			$this->where = 'WHERE ' . implode( $separator, $criteria );
-		}
-		elseif( $this->where )
-		{
-			$this->where = "WHERE {$this->where}";
-		}
+		$this->columns = ( is_array( $columns ) ? implode( ', ', $columns ) : $columns );
 
-		if( $this->order )
-			$this->order = "ORDER BY {$this->order}";
+		$this->query = "SELECT {$this->columns} FROM {$this->table}";
 
-		if( is_array( $columns ) )
-			$columns = implode( ', ', $columns );
-
-		$this->columns = $columns;
-
-		$this->query = "SELECT {$this->columns} FROM $table {$this->where} {$this->order}";
 		return $this;
 	}
 
@@ -76,6 +53,7 @@ class query
 	{
 		if( is_array( $where ) )
 		{
+			$criteria = array();
 			foreach( $where as $k => $v )
 			{
 				// PDO doesn't like special chars as bound param names, so scrubbing
@@ -109,27 +87,29 @@ class query
 		return $this->where( $like, $separator );
 	}
 
-	public function order( $order )
+	public function order( $order, $dir = 'ASC' )
 	{
-		$this->order = $order;
+		if( is_array( $order ) )
+			$order = implode( ', ', $order );
+
+		$this->order .= " $order $dir ";
+
 		return $this;
 	}
 
 	public function query()
 	{
-		$this->query = "SELECT {$this->columns} FROM {$this->table}";
 		if( ! empty( $this->where ) )
 			$this->query .= " WHERE {$this->where}";
 		if( ! empty( $this->order ) )
 			$this->query .= " ORDER BY {$this->order}";
-		if( !empty( $this->limit ) )
+		if( ! empty( $this->limit ) )
 			$this->query .= " LIMIT {$this->limit}";
 		return $this->query;
 	}
 
 	public function limit( $limit )
 	{
-		$this->query .= " LIMIT $limit";
 		$this->limit = $limit;
 		//$this->params['limit'] = (int)$limit;
 		return $this;
