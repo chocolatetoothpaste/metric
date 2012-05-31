@@ -461,13 +461,18 @@ function preg_filter_keys( $pattern, $replace, $input, $limit = -1 , &$count = n
  * @param	array	$array	the array to search
  */
 
-function array_pluck( $key, array $array )
+function array_pluck( $key, array $array, $unique = true )
 {
 	$return = array();
-	array_walk_recursive($array, function( &$val, $k ) use( $key, &$return )
+	array_walk_recursive($array, function( &$val, $k ) use( $key, &$return, $unique )
 	{
 		if( $k === $key )
-			$return[$val] = $val;
+		{
+			if( $unique )
+				$return[$val] = $val;
+			else
+				$return[] = $val;
+		}
 	});
 	return $return;
 }

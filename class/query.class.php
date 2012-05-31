@@ -9,30 +9,6 @@ class query
 	public $params = array(), $criteria = array(),
 		$query, $table, $where, $order, $columns;
 
-	final function __construct()
-	{
-		/*
-		if( $obj )
-		{
-			$this->object = $obj;
-			$this->columns = array_keys( get_object_vars( $obj ) );
-			$this->table = $obj->getTable();
-		}*/
-
-		/**
-		 * This could be a sweet start to doing joins and stuff through php
-		 */
-
-		/*foreach( func_get_args() as $obj )
-		{
-			$class = get_class( $obj );
-			$this->columns[$class] = array_keys( get_object_vars( $obj ) );
-			$this->table[$class] = $obj->getTable();
-		}*/
-		//var_dump($this);
-	}
-
-
 	/**
 	 * Creates a select statement using properties defined before calling method
 	 * @return string	the generated query string
