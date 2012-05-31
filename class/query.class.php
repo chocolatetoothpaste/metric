@@ -6,8 +6,7 @@
 
 class query
 {
-	public $params = array(), $criteria = array(),
-		$query, $table, $where, $order, $columns;
+	public $params = array(), $query, $table, $where, $order, $columns;
 
 	/**
 	 * Creates a select statement using properties defined before calling method
