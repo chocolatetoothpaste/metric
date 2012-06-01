@@ -13,10 +13,11 @@ date_default_timezone_set( 'America/Denver' );
 
 // these files are required, they include some
 // essential constants and some setup functions
-require( '../lib/class/config.class.php' );
+$root = dirname( __DIR__ );
+require( $root . '/class/config.class.php' );
 $config = new config;
 
-require( '../config.inc.php' );
+require( dirname( $root ) . '/config.inc.php' );
 require( 'config.inc.php' );
 include( 'functions.inc.php' );
 
