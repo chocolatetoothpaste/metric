@@ -176,9 +176,9 @@ abstract class Model
 	 * @return array
 	 */
 
-	final public static function getKeys()
+	final public static function getKeys( $key = false )
 	{
-		return static::$keys;
+		return ( $key ? static::$keys[$key] : static::$keys );
 	}
 
 

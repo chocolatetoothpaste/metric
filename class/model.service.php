@@ -34,14 +34,14 @@ abstract class Model
 
 		// grab the domain keys to check if request is a collection or a single entity
 		$domain = static::$domain;
-		$intersect = ( $domain ? (array) $domain::getKeys() : array() );
-		$intersect = array_flip( $intersect );
+		$keys = ( $domain ? (array) $domain::getKeys('primary') : array() );
+		$keys = array_flip( $keys );
 
 		try
 		{
 			if( ! empty( $data['q'] ) )
 				return static::search( $data['q'] );
-			else if( $method == 'GET' && ! array_intersect_key( $params, $intersect ) )
+			else if( $method == 'GET' && !! array_diff( $keys, $params ) )
 			 	return static::collection( $method );
 			else if( $method == 'GET' )
 				return static::read( $params, $data );
@@ -92,11 +92,12 @@ abstract class Model
 			$obj = new $domain();
 			$obj->capture( $post, $domain::getKeys() );
 			$obj->save();
-			return array(
+			/*return array(
 				'success'	=>	'true',
 				'response'	=>	$obj,
 				'status'	=>	$config->HTTP_CREATED
-			);
+			);*/
+			return static::respond( $obj, $config->HTTP_CREATED );
 		}
 		catch( \Exception $e )
 		{
@@ -116,11 +117,12 @@ abstract class Model
 		$obj = new $domain( $id['id'] );
 
 		if( $obj instanceof $domain && $obj->id )
-			return array(
+			/*return array(
 				'success'	=>	'true',
 				'response'	=>	$obj,
 				'status'	=>	$config->HTTP_OK
-			);
+			);*/
+			return static::respond( $obj, $config->HTTP_OK );
 		else
 		{
 			$class = explode( '\\', get_called_class() );
@@ -143,11 +145,12 @@ abstract class Model
 		$obj->capture( $put, $domain::getKeys() );
 
 		if( $obj->save() )
-			return array(
+			/*return array(
 				'success'	=>	'true',
 				'response'	=>	$obj,
 				'status'	=>	$config->HTTP_OK
-			);
+			);*/
+			return static::respond( $obj, $config->HTTP_OK );
 		else
 			throw new RESTException( 'Unable to update resource',
 				$config->HTTP_INTERNAL_SERVER_ERROR );
@@ -165,10 +168,11 @@ abstract class Model
 		$obj = new $domain( $params['id'] );
 
 		if( $obj->delete() )
-			$message = array(
+			/*$message = array(
 				'success'	=>	'true',
 				'status'	=>	$config->HTTP_OK
-			);
+			);*/
+			return static::respond( '', $config->HTTP_OK );
 		else
 			throw new RESTException( 'Unable to delete resource',
 				$config->HTTP_INTERNAL_SERVER_ERROR );
@@ -362,11 +366,12 @@ abstract class Model
 				$data = $stmt->fetchAll( \PDO::FETCH_ASSOC );
 			}
 
-			return array(
+			/*return array(
 				'success'	=>	'true',
 				'response'	=>	$data,
 				'status'	=>	$status
-			);
+			);*/
+			return static::response( $data, $status );
 		}
 
 		if( $stmt->errorCode() == '42S02' )
@@ -379,6 +384,7 @@ abstract class Model
 		throw new RESTException( $message, $config->HTTP_BAD_REQUEST );
 
 	} // end method collection
+
 
 	public static function search( $terms )
 	{
@@ -405,13 +411,23 @@ abstract class Model
 
 		if( $stmt && $stmt->errorCode() === '00000' )
 		{
-			return array(
+			/*return array(
 				'success'	=>	'true',
 				'response'	=>	$stmt->fetchAll( \PDO::FETCH_ASSOC ),
 				'status'	=>	$config->HTTP_PARTIAL_CONTENT
-			);
+			);*/
+			return static::respond( $stmt->fetchAll( \PDO::FETCH_ASSOC ), $config->HTTP_PARTIAL_CONTENT );
 		}
-
 	}
+
+
+	public static function respond( $response, $status = 200, $success = 'true' )
+	{
+		$return = array( 'success' => $success, 'status' => $status );
+		if( ! empty( $response ) )
+			$return['response'] = $response;
+		return $return;
+	}
+
 }
 ?>

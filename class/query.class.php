@@ -33,7 +33,7 @@ class query
 			{
 				// PDO doesn't like special chars as bound param names, so scrubbing
 				// them should reliably maintain unique param names
-				$clean = preg_replace('#[^a-zA-Z0-9]#', '', $k);
+				$clean = preg_replace('#[^a-zA-Z0-9_]#', '', $k);
 				$this->params[$clean] = $v;
 				$criteria[] = "$k = :$clean";
 			}
