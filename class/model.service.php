@@ -371,7 +371,7 @@ abstract class Model
 				'response'	=>	$data,
 				'status'	=>	$status
 			);*/
-			return static::response( $data, $status );
+			return static::respond( $data, $status );
 		}
 
 		if( $stmt->errorCode() == '42S02' )
@@ -423,9 +423,7 @@ abstract class Model
 
 	public static function respond( $response, $status = 200, $success = 'true' )
 	{
-		$return = array( 'success' => $success, 'status' => $status );
-		if( ! empty( $response ) )
-			$return['response'] = $response;
+		$return = array( 'success' => $success, 'status' => $status, 'response' => $response );
 		return $return;
 	}
 
