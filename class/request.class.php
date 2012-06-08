@@ -87,7 +87,8 @@ class request extends \HttpRequest
 	public function decode( $assoc = false )
 	{
 		if( strtolower( $this->getResponseHeader( 'Content-Type' ) ) == 'application/json' )
-			return json_decode( $this->getResponseBody(), $assoc );
+			$this->response = json_decode( $this->getResponseBody(), $assoc );
+		return $this;
 	}
 
 	private function hash()

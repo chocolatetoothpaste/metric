@@ -245,7 +245,8 @@ abstract class Model
 				}
 				else
 				{
-					$range = "{$field}='{$range}'";
+					//$range = "{$field}='{$range}'";
+					continue;
 				}
 			}
 		}
@@ -313,10 +314,37 @@ abstract class Model
 		// check for ranges and try to parse them
 		if( static::$ranges )
 		{
-			$ranges = static::getRanges( static::$ranges );
+			//$ranges = static::getRanges( static::$ranges );
+			foreach( static::$ranges as $field => &$range )
+			{
+				if( ! empty( $range ) || $range == 0 )
+				{
+					$date_regex = '\d{4}-\d{2}-\d{2} '
+						. '(([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9])';
+					if( 0 !== preg_match( '#^(\d*[,-][^/]?\d*-?)*$#', $range ) )
+					{
+						//error_log("$range");
+						$range = static::parseRange($range);
+						$range = implode( ',', $range );
+						$q->where( "$field IN ({$range})" );
+						unset( static::$ranges[$field] );
+						//error_log("$return[$field]");
+						//die;
+					}
+					elseif( preg_match( "#{$date_regex}/{$date_regex}#", $range ) )
+					{
+						$range = explode( '/', $range );
+						$q->between( $field, $range[0], $range[1] );
+					}
+					else
+					{
+						continue;
+					}
+				}
+			}
 
 			$status = $config->HTTP_PARTIAL_CONTENT;
-			$q->where( $ranges, ' AND ' );
+			$q->where( static::$ranges );
 		}
 
 		// check for custom options
@@ -342,7 +370,7 @@ abstract class Model
 			$q->limit( $options['limit'] );
 
 		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
-		$db->quote($q->query);
+		$db->quote($q->query());
 		$stmt = $db->execute( $q->query, $q->params );
 
 		if( $stmt && $stmt->errorCode() === '00000' )
@@ -366,11 +394,6 @@ abstract class Model
 				$data = $stmt->fetchAll( \PDO::FETCH_ASSOC );
 			}
 
-			/*return array(
-				'success'	=>	'true',
-				'response'	=>	$data,
-				'status'	=>	$status
-			);*/
 			return static::respond( $data, $status );
 		}
 
@@ -421,10 +444,9 @@ abstract class Model
 	}
 
 
-	public static function respond( $response, $status = 200, $success = 'true' )
+	public static function respond( $data, $status = 200, $success = 'true' )
 	{
-		$return = array( 'success' => $success, 'status' => $status, 'response' => $response );
-		return $return;
+		return array( 'success' => $success, 'status' => $status, 'data' => $data );
 	}
 
 }
