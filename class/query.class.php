@@ -62,6 +62,13 @@ class query
 		return $this->where( $like, $separator );
 	}
 
+	public function between( $column, $one, $two )
+	{
+		$this->params["__between_{$column}_one"] = $one;
+		$this->params["__between_{$column}_two"] = $two;
+		return $this->where( " $column BETWEEN :__between_{$column}_one AND :__between_{$column}_tow ");
+	}
+
 	public function order( $order, $dir = 'ASC' )
 	{
 		if( is_array( $order ) )

@@ -113,7 +113,7 @@ class Page
 				. '<head><title>404 Not Found</title></head><body>'
 				. '<h1>Page Not Found</h1>'
 				. '<p>The request ' . $this->request . ' was not found.</p>'
-				.'<p><em>&#968; Metric</em></p>'
+				. '<p><em>&#968; Metric</em></p>'
 				. '</body></html>';
 		}
 	}
@@ -152,7 +152,7 @@ class Page
 		// this header should fix this.
 		header( "Content-Type: {$this->content_type}" );
 
-		if( !$this->template )
+		if( ! $this->template )
 			echo $this->body;
 		else
 		{
@@ -163,7 +163,7 @@ class Page
 
 			// cache the page if the stars are aligned (no errors),
 			// because caching an errored page would be stupid
-			if( $this->cache && strlen( $this->body ) && !error_get_last() )
+			if( $this->cache && strlen( $this->body ) && ! error_get_last() )
 			{
 				$date = strtotime( '+1 month' );
 				$date = gmdate( DATE_RFC1123, $date );
