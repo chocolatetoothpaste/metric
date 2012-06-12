@@ -41,7 +41,7 @@ abstract class Model
 		{
 			if( ! empty( $data['q'] ) )
 				return static::search( $data['q'] );
-			else if( $method == 'GET' && !! array_diff( $keys, $params ) )
+			else if( $method == 'GET' && ( !! array_diff_key( $keys, $params ) || ! $domain ) )
 			 	return static::collection( $method );
 			else if( $method == 'GET' )
 				return static::read( $params, $data );
