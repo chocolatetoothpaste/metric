@@ -205,48 +205,6 @@ abstract class Model
 
 
 	/**
-	 * Loop through an array and look for strings that can be parsed into
-	 * ranges and build a query of the appropriate type
-	 * @param	array	$ranges
-	 * @return	array	$return
-	 */
-
-	public static function getRanges( array $ranges )
-	{
-		foreach( $ranges as $field => &$range )
-		{
-			if( ! empty( $range ) || $range == 0 )
-			{
-				$date_regex = '\d{4}-\d{2}-\d{2} '
-					. '(([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9])';
-				if( 0 !== preg_match( '#^(\d*[,-][^/]?\d*-?)*$#', $range ) )
-				{
-					//error_log("$range");
-					$range = static::parseRange($range);
-					$range = implode( ',', $range );
-					$range = "$field IN ({$range})";
-					//error_log("$return[$field]");
-					//die;
-				}
-				elseif( preg_match( "#{$date_regex}/{$date_regex}#", $range ) )
-				//if( strpos( $range, '/' ) !== false )
-				{
-					$range = str_replace( '/', '\' AND \'', $range );
-					$range = "$field BETWEEN '$range'";
-				}
-				else
-				{
-					//$range = "{$field}='{$range}'";
-					continue;
-				}
-			}
-		}
-		return $ranges;
-		//return $return;
-	} // end method getRanges
-
-
-	/**
 	 * Parse a string (typically the HTTP_PRAGMA header) for options to
 	 * manipulate data structure
 	 * @param	string	$options	a string to parse for options
