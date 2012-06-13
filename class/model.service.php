@@ -34,14 +34,22 @@ abstract class Model
 
 		// grab the domain keys to check if request is a collection or a single entity
 		$domain = static::$domain;
-		$keys = ( $domain ? (array) $domain::getKeys('primary') : array() );
-		$keys = array_flip( $keys );
+		if( $domain )
+		{
+			// pull the primary key(s), do a diff against page params, and if all keys are matched, it's probably a get request
+			$keys = ( $domain ? (array) $domain::getKeys('primary') : array() );
+			$keys = array_flip( $keys );
+			$keys = !! array_diff_key( $keys, $params );
+		}
+		else
+			$keys = true;
+
 
 		try
 		{
 			if( ! empty( $data['q'] ) )
 				return static::search( $data['q'] );
-			else if( $method == 'GET' && ( !! array_diff_key( $keys, $params ) || ! $domain ) )
+			else if( $method == 'GET' && $keys )
 			 	return static::collection( $method );
 			else if( $method == 'GET' )
 				return static::read( $params, $data );
@@ -136,11 +144,6 @@ abstract class Model
 		$obj->capture( $put, $domain::getKeys() );
 
 		if( $obj->save() )
-			/*return array(
-				'success'	=>	'true',
-				'response'	=>	$obj,
-				'status'	=>	$config->HTTP_OK
-			);*/
 			return static::respond( $obj, $config->HTTP_OK );
 		else
 			throw new RESTException( 'Unable to update resource',
@@ -159,10 +162,6 @@ abstract class Model
 		$obj = new $domain( $params['id'] );
 
 		if( $obj->delete() )
-			/*$message = array(
-				'success'	=>	'true',
-				'status'	=>	$config->HTTP_OK
-			);*/
 			return static::respond( '', $config->HTTP_OK );
 		else
 			throw new RESTException( 'Unable to delete resource',
@@ -283,7 +282,7 @@ abstract class Model
 					}
 					else
 					{
-						continue;
+						$q->where( array( $field => $range ) );
 					}
 				}
 			}
@@ -370,7 +369,7 @@ abstract class Model
 		$q->select( $fields, $domain::getTable() )->like( $like );
 
 		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
-		error_log($q->query());
+
 		$db->quote($q->query);
 		$stmt = $db->execute( $q->query, $q->params );
 
