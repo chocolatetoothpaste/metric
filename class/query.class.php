@@ -26,7 +26,7 @@ class query
 
 	public function where( $where, $separator = 'AND' )
 	{
-		if( is_array( $where ) )
+		if( is_array( $where ) && count( $where ) > 0 )
 		{
 			$criteria = array();
 			foreach( $where as $k => $v )

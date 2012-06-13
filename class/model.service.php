@@ -92,11 +92,7 @@ abstract class Model
 			$obj = new $domain();
 			$obj->capture( $post, $domain::getKeys() );
 			$obj->save();
-			/*return array(
-				'success'	=>	'true',
-				'response'	=>	$obj,
-				'status'	=>	$config->HTTP_CREATED
-			);*/
+
 			return static::respond( $obj, $config->HTTP_CREATED );
 		}
 		catch( \Exception $e )
@@ -117,11 +113,6 @@ abstract class Model
 		$obj = new $domain( $id['id'] );
 
 		if( $obj instanceof $domain && $obj->id )
-			/*return array(
-				'success'	=>	'true',
-				'response'	=>	$obj,
-				'status'	=>	$config->HTTP_OK
-			);*/
 			return static::respond( $obj, $config->HTTP_OK );
 		else
 		{
@@ -312,9 +303,9 @@ abstract class Model
 		$status = $config->HTTP_OK; // default status
 
 		// check for ranges and try to parse them
-		if( static::$ranges )
+		if( ! empty( static::$ranges ) )
 		{
-			//$ranges = static::getRanges( static::$ranges );
+			$status = $config->HTTP_PARTIAL_CONTENT;
 			foreach( static::$ranges as $field => &$range )
 			{
 				if( ! empty( $range ) || $range == 0 )
@@ -323,13 +314,9 @@ abstract class Model
 						. '(([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9])';
 					if( 0 !== preg_match( '#^(\d*[,-][^/]?\d*-?)*$#', $range ) )
 					{
-						//error_log("$range");
 						$range = static::parseRange($range);
 						$range = implode( ',', $range );
 						$q->where( "$field IN ({$range})" );
-						unset( static::$ranges[$field] );
-						//error_log("$return[$field]");
-						//die;
 					}
 					elseif( preg_match( "#{$date_regex}/{$date_regex}#", $range ) )
 					{
@@ -342,9 +329,6 @@ abstract class Model
 					}
 				}
 			}
-
-			$status = $config->HTTP_PARTIAL_CONTENT;
-			$q->where( static::$ranges );
 		}
 
 		// check for custom options
@@ -357,7 +341,6 @@ abstract class Model
 				$order = explode( ',', $options['order'] );
 				if( ! array_diff( $order, $fields ) )
 					$q->order( $order );
-					//$q->order = implode(', ', $order);
 				else
 					throw new RESTException( 'Field not acceptable for ordering',
 						$config->HTTP_NOT_ACCEPTABLE );
@@ -371,6 +354,7 @@ abstract class Model
 
 		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
 		$db->quote($q->query());
+
 		$stmt = $db->execute( $q->query, $q->params );
 
 		if( $stmt && $stmt->errorCode() === '00000' )
@@ -433,14 +417,8 @@ abstract class Model
 		$stmt = $db->execute( $q->query, $q->params );
 
 		if( $stmt && $stmt->errorCode() === '00000' )
-		{
-			/*return array(
-				'success'	=>	'true',
-				'response'	=>	$stmt->fetchAll( \PDO::FETCH_ASSOC ),
-				'status'	=>	$config->HTTP_PARTIAL_CONTENT
-			);*/
 			return static::respond( $stmt->fetchAll( \PDO::FETCH_ASSOC ), $config->HTTP_PARTIAL_CONTENT );
-		}
+
 	}
 
 
