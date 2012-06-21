@@ -46,7 +46,7 @@ class mysql extends database
 	/**
 	 * Fetches a row from the DB and updates an existing object
 	 * @param object $obj
-	 * @param object query $q
+	 * @param object query $query
 	 */
 
 	public function fetchIntoObject( &$obj, $query, array $params = array() )
