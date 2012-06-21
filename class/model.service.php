@@ -5,7 +5,7 @@ abstract class Model
 {
 	protected static $domain;
 	protected $get, $post, $put, $delete;
-	static public $method, $ranges, $options;
+	static public $method, $ranges = array(), $options = array();
 
 
 	/**
@@ -20,36 +20,43 @@ abstract class Model
 	public static function init( $method = 'GET', $params = array(), $data = array() )
 	{
 		global $config, $page;
-		// determine http request method and call the proper static method.
-		// this method is only called by child classes, service model is never
-		// instantiated. see child service models for usage and implementation
+
+		// check if a range (subset) is requested...
 		if( ! empty( $_SERVER['HTTP_RANGE'] ) )
 			static::$ranges = static::tokenize( $_SERVER['HTTP_RANGE'] );
 
+		// ...and look for any modifiers/options
 		if( ! empty( $_SERVER['HTTP_PRAGMA'] ) )
 			static::$options = static::tokenize( $_SERVER['HTTP_PRAGMA'] );
 
-		// merge data with params to make sure primary keys don't get changed by request vars
+		// merge data with params to make sure primary
+		// keys don't get changed by request vars
 		$data = array_merge($data, $params);
 
-		// grab the domain keys to check if request is a collection or a single entity
 		$domain = static::$domain;
+
+		// pull the primary key(s) and diff against page params
+		// if any key is returned, assume it's a collection
 		if( $domain )
 		{
-			// pull the primary key(s), do a diff against page params, and if all keys are matched, it's probably a get request
-			$keys = ( $domain ? (array) $domain::getKeys('primary') : array() );
+			$keys = (array) $domain::getKeys('primary');
+			// swap fields (values) for keys
+
 			$keys = array_flip( $keys );
-			$keys = !! array_diff_key( $keys, $params );
+
+			// flip the boolean twice (array() [falsy value] -> true -> false)
+			// or (array(some_key) [truish value] -> false -> true
+			$collection = !! array_diff_key( $keys, $params );
+			unset($keys);
 		}
 		else
-			$keys = true;
-
+			$collection = true;
 
 		try
 		{
 			if( ! empty( $data['q'] ) )
 				return static::search( $data['q'] );
-			else if( $method == 'GET' && $keys )
+			else if( $method == 'GET' && $collection )
 			 	return static::collection( $method );
 			else if( $method == 'GET' )
 				return static::read( $params, $data );
@@ -172,7 +179,9 @@ abstract class Model
 
 
 	/**
-	 *
+	 * Parse a range string into usable values
+	 * @param	string	$values	an arbitrary string of ranges
+	 * ex: 104-109,143; -100 (0 - 100); 100- (>=100)
 	 */
 
 	public static function parseRange( $values )
@@ -186,8 +195,8 @@ abstract class Model
 			{
 				$range = explode( '-', $range );
 				// don't need to check if $range[0] exists
-				// (if range is like "-40" which means zero through 40)
-				// if it's null it starts from zero
+				// if range is "-40" or similar (which means 0-40)
+				// $range[0] is null and it starts from 0
 				$range = range( $range[0], $range[1] );
 				$ret = array_merge( $ret, $range );
 			}
@@ -204,36 +213,32 @@ abstract class Model
 
 
 	/**
-	 * Parse a string (typically the HTTP_PRAGMA header) for options to
-	 * manipulate data structure
-	 * @param	string	$options	a string to parse for options
+	 * Parse a string into usable options/ranges
+	 * @param	string	$option	a string to parse for options
+	 * @return	array
 	 */
 
-	public static function tokenize( $options )
+	public static function tokenize( $option )
 	{
-		$options = preg_split( '/;\s?/', $options );
-		$option = array();
-		foreach( $options as $opt )
+		// split string into chunks at semi-colon or whitespace chars
+		$option = preg_split( '/;\s*/', $option );
+		$return = array();
+
+		foreach( $option as $opt )
 		{
-			if( $opt )
-			{
-				$opt = explode( '=', $opt );
-				if( count($opt) > 1 )
-					$option[$opt[0]] = $opt[1];
-				else
-					$option[$opt[0]] = true;
-			}
+			$opt = explode( '=', $opt );
+			$return[$opt[0]] = ( count( $opt ) > 1 ? $opt[1] : true );
 		}
-		unset( $options, $opt );
-		return $option;
+		// gc
+		unset( $option, $opt );
+
+		return $return;
 	} // end method tokenize
 
 
 	/**
 	 * Returns a collection of objects in response to a REST request
 	 * @param	string	$method		the HTTP request method
-	 * @param	string	$ranges		string of units/ranges to fetch
-	 * @param	string	$options	string of options to parse
 	 * @return	array
 	 */
 
@@ -254,6 +259,7 @@ abstract class Model
 		if( empty( $domain ) )
 			throw new RESTException( 'Unable to load service interface',
 				$config->HTTP_INTERNAL_SERVER_ERROR );
+
 		$fields = $domain::getFields();
 
 		$q = new \query;
@@ -265,25 +271,21 @@ abstract class Model
 			$status = $config->HTTP_PARTIAL_CONTENT;
 			foreach( static::$ranges as $field => &$range )
 			{
-				if( ! empty( $range ) || $range == 0 )
+				$date_regex = '\d{4}-\d{2}-\d{2} '
+					. '(([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9])';
+				if( 0 !== preg_match( '#^(\d*[,-][^/]?\d*-?)*$#', $range ) )
 				{
-					$date_regex = '\d{4}-\d{2}-\d{2} '
-						. '(([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9])';
-					if( 0 !== preg_match( '#^(\d*[,-][^/]?\d*-?)*$#', $range ) )
-					{
-						$range = static::parseRange($range);
-						$range = implode( ',', $range );
-						$q->where( "$field IN ({$range})" );
-					}
-					elseif( preg_match( "#{$date_regex}/{$date_regex}#", $range ) )
-					{
-						$range = explode( '/', $range );
-						$q->between( $field, $range[0], $range[1] );
-					}
-					else
-					{
-						$q->where( array( $field => $range ) );
-					}
+					$range = static::parseRange( $range );
+					$q->in( $field, $range );
+				}
+				else if( preg_match( "#{$date_regex}/{$date_regex}#", $range ) )
+				{
+					$range = explode( '/', $range );
+					$q->between( $field, $range[0], $range[1] );
+				}
+				else
+				{
+					$q->where( array( $field => $range ) );
 				}
 			}
 		}
@@ -302,50 +304,49 @@ abstract class Model
 					throw new RESTException( 'Field not acceptable for ordering',
 						$config->HTTP_NOT_ACCEPTABLE );
 			}
+
+			if( ! empty( $options['limit'] ) )
+				$q->limit( $options['limit'] );
 		}
 
 		$q->select( $fields, $domain::getTable() );
-
-		if( ! empty( $options['limit'] ) )
-			$q->limit( $options['limit'] );
-
 		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
-		$db->quote($q->query());
+		$stmt = $db->execute( $q->query(), $q->params );
 
-		$stmt = $db->execute( $q->query, $q->params );
-
-		if( $stmt && $stmt->errorCode() === '00000' )
+		if( $stmt->errorCode() === '00000' )
 		{
-			$data = array();
-			if( !empty( $options['group'] ) )
+			if( ! empty( $options['group'] ) )
 			{
+				$data = array();
 				$group = explode( ',', $options['group'] );
 				while( $row = $stmt->fetch( \PDO::FETCH_ASSOC,
 					\PDO::FETCH_ORI_NEXT ) )
 				{
-					if( !empty( $group[1] ) )
-						$d =& $data[$row[$group[0]]][$row[$group[1]]][];
-					else
-						$d =& $data[$row[$group[0]]][];
-					$d = $row;
+					$d =& $data;
+					// unlimited groupability, at the low, low cost of compute cycles :P
+					foreach( $group as $g )
+						$d =& $d[$row[$g]];
+					$d[] = $row;
 				}
 			}
 			else
-			{
 				$data = $stmt->fetchAll( \PDO::FETCH_ASSOC );
-			}
 
 			return static::respond( $data, $status );
 		}
-
-		if( $stmt->errorCode() == '42S02' )
-			$message = 'Schema does not exist for data model ' . $domain;
-		if( $stmt->errorCode() == '42S22' )
-			$message = 'Schema does not match data model';
 		else
+		{
 			$message = 'Unable to retrieve data';
 
-		throw new RESTException( $message, $config->HTTP_BAD_REQUEST );
+			// error code and query are only in response if config::DEV is true
+			// @see self::init()
+			throw new RESTException(
+				$message,
+				$config->HTTP_BAD_REQUEST,
+				$stmt->errorCode(),
+				$q->query
+			);
+		}
 
 	} // end method collection
 
@@ -374,7 +375,8 @@ abstract class Model
 		$stmt = $db->execute( $q->query, $q->params );
 
 		if( $stmt && $stmt->errorCode() === '00000' )
-			return static::respond( $stmt->fetchAll( \PDO::FETCH_ASSOC ), $config->HTTP_PARTIAL_CONTENT );
+			return static::respond( $stmt->fetchAll( \PDO::FETCH_ASSOC ),
+				$config->HTTP_PARTIAL_CONTENT );
 
 	}
 

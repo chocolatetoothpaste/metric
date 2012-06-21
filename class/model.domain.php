@@ -27,18 +27,16 @@ abstract class Model
 		{
 			$db = \mysql::instance( $config->db[$config->DB_MAIN] );
 
-			$keys = $this->getKeys();
+			$pk = (array) $this->getKeys('primary');
 			$fields = static::getFields();
-			$pk = $keys['primary'];
 			$q = new \query();
 
-			if( !is_array( $params ) ):
-				if( is_array( $pk ) )
-					$pk = $pk[0];
+			if( ! is_array( $params ) ):
+				$pk = $pk[0];
 
 				$params = array( $pk => $params );
 
-			elseif( is_array( $pk ) && array_intersect_key( $pk, $params ) ):
+			elseif( array_intersect_key( $pk, $params ) ):
 				$params = array_combine( $pk, $params );
 
 
@@ -113,15 +111,15 @@ abstract class Model
 			}
 		endforeach;
 
-		$sql = ( $update
-			? $query->update( $table, $columns, $criteria )
-			: $query->insert( $table, $columns ) );
+		if( $update )
+			$query->update( $table, $columns )->where( $criteria );
+		else
+			$query->insert( $table, $columns );
 
-		$db->execute( $sql, $query->params );
-		//error_log($db->result->errorCode());
+		$db->execute( $query->query(), $query->params );
 
 		// 00000 means no errors
-		if( $db->result->errorCode() === '00000' )
+		if( $db->stmt->errorCode() === '00000' )
 		{
 			if( !$update )
 				$this->{$keys[0]} = $db->lastInsertId();
@@ -131,10 +129,10 @@ abstract class Model
 		else
 		{
 			error_log( 'Domain error::' . get_class($this)
-					   . ' - ' . $db->result->errorCode() . ' :: ' . print_r($db->result->errorInfo(), true ) );
-			$info = $db->result->errorInfo();
+					   . ' - ' . $db->stmt->errorCode() . ' :: ' . print_r($db->stmt->errorInfo(), true ) );
+			$db->stmt->errorInfo();
 
-			if( $db->result->errorCode() == '42S22' )
+			if( $db->stmt->errorCode() == '42S22' )
 			{
 				$message = 'Schema does not match data model ' . \get_called_class();
 				$code = $config->HTTP_INTERNAL_SERVER_ERROR;
@@ -167,7 +165,7 @@ abstract class Model
 		$q = "DELETE FROM $table WHERE $key = ? LIMIT 1";
 		$db->execute($q, array($this->{$key}));
 
-		return ( $db->result->errorCode() === '00000' ? true : false );
+		return ( $db->stmt->errorCode() === '00000' ? true : false );
 	}
 
 
@@ -346,12 +344,12 @@ abstract class Model
 	{
 		global $config;
 		$q = new \query;
-		$q->select( static::getFields(), static::$table, $params );
+		$q->select( static::getFields(), static::$table )->where( $params );
 		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
-		$db->execute( $q->query, $q->params );
+		$db->execute( $q->query(), $q->params );
 
-		if( $db->result )
-			return $db->result->fetchAll( \PDO::FETCH_CLASS, get_called_class() );
+		if( $db->stmt )
+			return $db->stmt->fetchAll( \PDO::FETCH_CLASS, get_called_class() );
 	}
 
 }

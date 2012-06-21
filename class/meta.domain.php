@@ -49,10 +49,10 @@ class Meta extends Model
 			}
 
 			$q->select( $fields, $this->getTable() )->where( $params );
-			$result = $db->execute( $q->query(), $q->params );
+			$db->execute( $q->query(), $q->params );
 
-			if( $result )
-				foreach( $db->result->fetchAll(PDO::FETCH_ASSOC) as $value )
+			if( $db->stmt->errorCode() == '00000' )
+				foreach( $db->stmt->fetchAll(PDO::FETCH_ASSOC) as $value )
 					$this->{$value['meta_key']} = $value['meta_value'];
 
 		}
@@ -104,12 +104,12 @@ class Meta extends Model
 		{
 			$query->insert( $table, $c );
 
-			$result = $db->execute( $query->query, $query->params );
+			$db->execute( $query->query(), $query->params );
 
-			if( $result->errorCode() == '23000' )
+			if( $db->stmt->errorCode() == '23000' )
 			{
-				$query->update( $table, $c, array( 'fk_id' => '', 'meta_key' => '' ) );
-				$db->execute( $query->query, $query->params );
+				$query->update( $table, $c )->where( array( 'fk_id' => '', 'meta_key' => '' ) );
+				$db->execute( $query->query(), $query->params );
 			}
 			$sql[] = $query;
 		}
