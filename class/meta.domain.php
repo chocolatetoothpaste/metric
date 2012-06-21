@@ -48,8 +48,8 @@ class Meta extends Model
 					$this->$k = $v;
 			}
 
-			$q->select( $fields, $this->getTable() )->where( $params );
-			$db->execute( $q->query(), $q->params );
+			$q->select( $fields, $this->getTable() )->where( $params )->query();
+			$db->execute( $q );
 
 			if( $db->stmt->errorCode() == '00000' )
 				foreach( $db->stmt->fetchAll(PDO::FETCH_ASSOC) as $value )
@@ -102,14 +102,14 @@ class Meta extends Model
 
 		foreach( $columns as $c )
 		{
-			$query->insert( $table, $c );
+			$query->insert( $table, $c )->query();
 
-			$db->execute( $query->query(), $query->params );
+			$db->execute( $query );
 
 			if( $db->stmt->errorCode() == '23000' )
 			{
-				$query->update( $table, $c )->where( array( 'fk_id' => '', 'meta_key' => '' ) );
-				$db->execute( $query->query(), $query->params );
+				$query->update( $table, $c )->where( array( 'fk_id' => '', 'meta_key' => '' ) )->query();
+				$db->execute( $query );
 			}
 			$sql[] = $query;
 		}

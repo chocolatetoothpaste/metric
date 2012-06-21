@@ -169,7 +169,7 @@ class query
 		$columns = sprintf( '(%s)', implode( ', ', $columns ) );
 		$this->query = "INSERT INTO $table $columns VALUES $params";
 
-		return $this->query;
+		return $this;
 	}
 
 
