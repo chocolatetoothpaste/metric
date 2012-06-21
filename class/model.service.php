@@ -29,10 +29,6 @@ abstract class Model
 		if( ! empty( $_SERVER['HTTP_PRAGMA'] ) )
 			static::$options = static::tokenize( $_SERVER['HTTP_PRAGMA'] );
 
-		// merge data with params to make sure primary
-		// keys don't get changed by request vars
-		$data = array_merge($data, $params);
-
 		$domain = static::$domain;
 
 		// pull the primary key(s) and diff against page params
@@ -40,8 +36,8 @@ abstract class Model
 		if( $domain )
 		{
 			$keys = (array) $domain::getKeys('primary');
-			// swap fields (values) for keys
 
+			// swap fields (values) for keys
 			$keys = array_flip( $keys );
 
 			// flip the boolean twice (array() [falsy value] -> true -> false)
@@ -58,16 +54,17 @@ abstract class Model
 				return static::search( $data['q'] );
 			else if( $method == 'GET' && $collection )
 			 	return static::collection( $method );
-			else if( $method == 'GET' )
+			else if( $method == 'GET' && $domain )
 				return static::read( $params, $data );
-			else if( $method == 'POST' )
+			else if( $method == 'POST' && $domain )
 				return static::create( $data );
-			else if( $method == 'PUT' )
+			else if( $method == 'PUT' && $domain )
 				return static::update( $params, $data );
-			else if( $method == 'DELETE' )
+			else if( $method == 'DELETE' && $domain )
 				return static::delete( $params );
 			else
-				throw new RESTException("Method $method not allowed",
+				throw new RESTException(
+					"Method $method not allowed at {$page->request}",
 					$config->HTTP_METHOD_NOT_ALLOWED );
 
 		}
@@ -95,12 +92,8 @@ abstract class Model
 
 	public static function create( $post )
 	{
-		global $config, $page;
+		global $config;
 		$domain = static::$domain;
-
-		if( ! $domain )
-			throw new RESTException('Method not allowed at ' . $page->request,
-				$config->HTTP_METHOD_NOT_ALLOWED );
 
 		try
 		{
@@ -121,33 +114,21 @@ abstract class Model
 		global $config, $page;
 		$domain = static::$domain;
 
-		if( ! $domain )
-			throw new RESTException('Method not allowed at ' . $page->request,
-				$config->HTTP_METHOD_NOT_ALLOWED );
-
-		$obj = new $domain( $id['id'] );
+		$obj = new $domain( $id );
 
 		if( $obj instanceof $domain && $obj->id )
 			return static::respond( $obj, $config->HTTP_OK );
 		else
-		{
-			$class = explode( '\\', get_called_class() );
-			throw new RESTException( 'Unable to locate the service '
-				. end( $class ) . ' at ' . $page->request,
+			throw new RESTException( 'Resource not found ' . $page->request,
 				$config->HTTP_NOT_FOUND );
-		}
 	}
 
 	public static function update( $params, $put )
 	{
-		global $config, $page;
+		global $config;
 		$domain = static::$domain;
 
-		if( ! $domain )
-			throw new RESTException('Method not allowed at ' . $page->request,
-				$config->HTTP_METHOD_NOT_ALLOWED );
-
-		$obj = new $domain( $params['id'] );
+		$obj = new $domain( $params );
 		$obj->capture( $put, $domain::getKeys() );
 
 		if( $obj->save() )
@@ -159,22 +140,16 @@ abstract class Model
 
 	public static function delete( $params )
 	{
-		global $config, $page;
+		global $config;
 		$domain = static::$domain;
 
-		if( ! $domain )
-			throw new RESTException('Method not allowed at ' . $page->request,
-				$config->HTTP_METHOD_NOT_ALLOWED );
-
-		$obj = new $domain( $params['id'] );
+		$obj = new $domain( $params );
 
 		if( $obj->delete() )
 			return static::respond( '', $config->HTTP_OK );
 		else
 			throw new RESTException( 'Unable to delete resource',
 				$config->HTTP_INTERNAL_SERVER_ERROR );
-
-		return $message;
 	}
 
 
@@ -336,12 +311,10 @@ abstract class Model
 		}
 		else
 		{
-			$message = 'Unable to retrieve data';
-
 			// error code and query are only in response if config::DEV is true
 			// @see self::init()
 			throw new RESTException(
-				$message,
+				'Unable to retrieve data',
 				$config->HTTP_BAD_REQUEST,
 				$stmt->errorCode(),
 				$q->query
@@ -360,6 +333,7 @@ abstract class Model
 		$search = $domain::getSearch();
 		$table = $domain::getTable();
 		$q = new \query;
+		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
 		$like = array();
 		$params = array();
 
@@ -367,16 +341,25 @@ abstract class Model
 			foreach( $terms as $k => $term )
 				$like[$field] = $term;
 
-		$q->select( $fields, $domain::getTable() )->like( $like );
+		$q->select( $fields, $domain::getTable() )->like( $like )->query();
+		$db->execute( $q );
 
-		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
-
-		$db->quote($q->query);
-		$stmt = $db->execute( $q->query, $q->params );
-
-		if( $stmt && $stmt->errorCode() === '00000' )
-			return static::respond( $stmt->fetchAll( \PDO::FETCH_ASSOC ),
-				$config->HTTP_PARTIAL_CONTENT );
+		if( $db->stmt->errorCode() === '00000' )
+		{
+			$data = $stmt->fetchAll( \PDO::FETCH_ASSOC );
+			return static::respond( $data, $config->HTTP_PARTIAL_CONTENT );
+		}
+		else
+		{
+			// error code and query are only in response if config::DEV is true
+			// @see self::init()
+			throw new RESTException(
+				'Unable to retrieve data',
+				$config->HTTP_BAD_REQUEST,
+				$stmt->errorCode(),
+				$q->query
+			);
+		}
 
 	}
 
