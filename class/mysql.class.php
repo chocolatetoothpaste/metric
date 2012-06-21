@@ -49,9 +49,9 @@ class mysql extends database
 	 * @param	object	$query	an query object
 	 */
 
-	public function fetchIntoObject( &$obj, $query, array $params = array() )
+	public function fetchIntoObject( &$obj, query $query )
 	{
-		$this->stmt = $this->execute( $query, $params );
+		$this->stmt = $this->execute( $query->query, $query->params );
 
 		if( $this->stmt )
 		{
@@ -103,9 +103,9 @@ class mysql extends database
 	 * Executes a query using passed params and returns a statement obj
 	 */
 
-	public function execute( $query, array $params = array() )
+	public function execute( query $query )
 	{
-		$this->stmt = parent::prepare( $query );
+		$this->stmt = parent::prepare( $query->query );
 		/*if( ! empty( $params['limit'] ) )
 		{
 			$limit = (int) $params['limit'];
@@ -113,7 +113,7 @@ class mysql extends database
 			//unset( $params['limit'] );
 		}*/
 
-		$this->stmt->execute( $params );
+		$this->stmt->execute( $query->params );
 		//$this->stmt->execute();
 		return $this->stmt;
 	}

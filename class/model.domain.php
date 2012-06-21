@@ -49,8 +49,8 @@ abstract class Model
 
 			endif;
 
-			$q->select( $fields, $this->getTable() )->where( $params );
-			$db->fetchIntoObject( $this, $q->query(), $q->params );
+			$q->select( $fields, $this->getTable() )->where( $params )->query();
+			$db->fetchIntoObject( $this, $q );
 		}
 
 	}
@@ -112,11 +112,11 @@ abstract class Model
 		endforeach;
 
 		if( $update )
-			$query->update( $table, $columns )->where( $criteria );
+			$query->update( $table, $columns )->where( $criteria )->query();
 		else
-			$query->insert( $table, $columns );
+			$query->insert( $table, $columns )->query();
 
-		$db->execute( $query->query(), $query->params );
+		$db->execute( $query );
 
 		// 00000 means no errors
 		if( $db->stmt->errorCode() === '00000' )
@@ -267,9 +267,10 @@ abstract class Model
 
 			$this->meta_obj->setKeys( $this->getMetaKeys() );
 			$this->meta_obj->setTable( $this->getMetaTable() );
-			$query = 'SELECT meta_key, meta_value FROM '
-				. $this->meta_obj->getTable() . ' WHERE fk_id = ?';
-			$result = $db->execute( $query, array( $this->id ) );
+			$query = new \query;
+			$query->select( 'meta_key, meta_value', $this->meta_obj->getTable() )->where( 'fk_id = ?' );
+			$query->params[] = $this->id;
+			$result = $db->execute( $query );
 
 			if( $result )
 			{
@@ -344,9 +345,9 @@ abstract class Model
 	{
 		global $config;
 		$q = new \query;
-		$q->select( static::getFields(), static::$table )->where( $params );
 		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
-		$db->execute( $q->query(), $q->params );
+		$q->select( static::getFields(), static::$table )->where( $params )->query();
+		$db->execute( $q );
 
 		if( $db->stmt )
 			return $db->stmt->fetchAll( \PDO::FETCH_CLASS, get_called_class() );

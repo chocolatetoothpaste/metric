@@ -309,17 +309,17 @@ abstract class Model
 				$q->limit( $options['limit'] );
 		}
 
-		$q->select( $fields, $domain::getTable() );
+		$q->select( $fields, $domain::getTable() )->query();
 		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
-		$stmt = $db->execute( $q->query(), $q->params );
+		$db->execute( $q );
 
-		if( $stmt->errorCode() === '00000' )
+		if( $db->stmt->errorCode() === '00000' )
 		{
 			if( ! empty( $options['group'] ) )
 			{
 				$data = array();
 				$group = explode( ',', $options['group'] );
-				while( $row = $stmt->fetch( \PDO::FETCH_ASSOC,
+				while( $row = $db->stmt->fetch( \PDO::FETCH_ASSOC,
 					\PDO::FETCH_ORI_NEXT ) )
 				{
 					$d =& $data;
@@ -330,7 +330,7 @@ abstract class Model
 				}
 			}
 			else
-				$data = $stmt->fetchAll( \PDO::FETCH_ASSOC );
+				$data = $db->stmt->fetchAll( \PDO::FETCH_ASSOC );
 
 			return static::respond( $data, $status );
 		}

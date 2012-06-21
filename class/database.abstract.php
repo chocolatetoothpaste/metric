@@ -6,10 +6,10 @@
 
 abstract class database extends PDO
 {
-	abstract public function fetchIntoObject( &$obj, $query, array $params = array() );
+	abstract public function fetchIntoObject( &$obj, query $query );
 	abstract public function fetchClass( $class, $query, array $params = array() );
 	abstract public function next();
-	abstract public function execute( $query, array $params = array() );
+	abstract public function execute( query $query );
 
 	protected static $instance = array();
 
