@@ -43,43 +43,5 @@ abstract class database extends PDO
 		return date('Y-m-d H:i:s', ( $time === -1 ? time() : $time ) );
 	}
 
-
-	/**
-	 * takes an array of fields and prepares
-	 * them for use in a query statement
-	 * @param array $fields
-	 * @return array
-	 */
-
-	public function prepareFields( &$data )
-	{
-		$return = array();
-		foreach( $data as $k => $v )
-			$return[] = "{$k} = :{$k}";
-
-		return $return;
-	} // end function prepareFields
-
-
-	/**
-	 * Recursively scrubs an array or string of illegal characters
-	 * @param mixed $string
-	 */
-
-	public function sanitize( $string, $ignore = array() )
-	{
-		if ( is_array( $string ) )
-		{
-			$ignore = array_flip( $ignore );
-			foreach ( $string as $key => $value )
-			{
-				if( empty( $ignore[$key] ) )
-					$string[$key] = $this->sanitize( $value, $ignore );
-			}
-			return $string;
-		}
-		return parent::quote( $string );
-	}	//	end function sanitize()
-
 } // end abstract class database
 ?>
