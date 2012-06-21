@@ -29,24 +29,13 @@ abstract class Model
 
 			$pk = (array) $this->getKeys('primary');
 			$fields = static::getFields();
-			$q = new \query();
+			$q = new \query;
 
 			if( ! is_array( $params ) ):
+				// 99.9% of the time, the first part of the
+				// primary key will be the auto_increment field
 				$pk = $pk[0];
-
 				$params = array( $pk => $params );
-
-			elseif( array_intersect_key( $pk, $params ) ):
-				$params = array_combine( $pk, $params );
-
-
-				/**
-				 * Not ready for this yet
-				 *
-				 * $key = array_search( '*', $q->params );
-				 * unset( $q->params[$key]);
-				 */
-
 			endif;
 
 			$q->select( $fields, $this->getTable() )->where( $params )->query();
@@ -121,17 +110,13 @@ abstract class Model
 		// 00000 means no errors
 		if( $db->stmt->errorCode() === '00000' )
 		{
-			if( !$update )
+			if( ! $update )
 				$this->{$keys[0]} = $db->lastInsertId();
 
 			return true;
 		}
 		else
 		{
-			error_log( 'Domain error::' . get_class($this)
-					   . ' - ' . $db->stmt->errorCode() . ' :: ' . print_r($db->stmt->errorInfo(), true ) );
-			$db->stmt->errorInfo();
-
 			if( $db->stmt->errorCode() == '42S22' )
 			{
 				$message = 'Schema does not match data model ' . \get_called_class();

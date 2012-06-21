@@ -18,6 +18,7 @@ class mysql extends database
 	public function __construct( &$info )
 	{
 		global $config;
+
 		// build the connection string and try to establish a connection,
 		// otherwise die with honor. this should probably just go to global handler
 		try
@@ -46,17 +47,17 @@ class mysql extends database
 	/**
 	 * Fetches a row from the DB and updates an existing object
 	 * @param	object	$obj
-	 * @param	object	$query	an query object
+	 * @param	object	$query	a query object
 	 */
 
 	public function fetchIntoObject( &$obj, query $query )
 	{
-		$this->stmt = $this->execute( $query->query, $query->params );
+		$this->stmt = $this->execute( $query );
 
 		if( $this->stmt )
 		{
 			$this->stmt->setFetchMode( PDO::FETCH_INTO, $obj );
-			$this->stmt->fetch( PDO::FETCH_INTO );
+			$this->stmt->fetch();
 		}
 
 		return $this->stmt;
@@ -70,9 +71,9 @@ class mysql extends database
 	 * @return object
 	 */
 
-	public function fetchClass( $class, $query, array $params = array() )
+	public function fetchClass( $class, query $query )
 	{
-		$this->stmt = $this->execute( $query, $params );
+		$this->stmt = $this->execute( $query );
 
 		if( $this->stmt )
 		{
