@@ -94,8 +94,7 @@ class mysql extends database
 
 	public function next()
 	{
-		$this->stmt->setFetchMode( $this->fetch_mode, $this->option );
-		return $this->stmt->fetch( $this->fetch_mode, PDO::FETCH_ORI_NEXT );
+		return $this->stmt->fetch( PDO::FETCH_ORI_NEXT );
 	}
 
 
