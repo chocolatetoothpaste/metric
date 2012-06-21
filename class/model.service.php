@@ -319,8 +319,8 @@ abstract class Model
 			{
 				$data = array();
 				$group = explode( ',', $options['group'] );
-				while( $row = $db->stmt->fetch( \PDO::FETCH_ASSOC,
-					\PDO::FETCH_ORI_NEXT ) )
+				$db->stmt->setFetchMode( \PDO::FETCH_ASSOC );
+				while( $row = $db->next() )
 				{
 					$d =& $data;
 					// unlimited groupability, at the low, low cost of compute cycles :P
