@@ -49,9 +49,9 @@ class request extends \HttpRequest
 	public function prepare( $method, $data = array() )
 	{
 		$this->setMethod( $method );
-		$this->setPostFields( $data );
 		if( $method !== \HttpRequest::METH_GET )
 		{
+			$this->setPostFields( $data );
 			$this->length = strlen( $this->getPostData() );
 			$this->addHeaders( array( 'Content-Length' => $this->length ) );
 		}

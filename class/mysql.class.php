@@ -7,7 +7,7 @@
 
 class mysql extends database
 {
-	public $err_code, $err_info, $result, $fetch_mode, $option;
+	public $err_code, $err_info, $stmt, $fetch_mode, $option;
 
 
 	/**
@@ -51,15 +51,15 @@ class mysql extends database
 
 	public function fetchIntoObject( &$obj, $query, array $params = array() )
 	{
-		$this->result = $this->execute( $query, $params );
+		$this->stmt = $this->execute( $query, $params );
 
-		if( $this->result )
+		if( $this->stmt )
 		{
-			$this->result->setFetchMode( PDO::FETCH_INTO, $obj );
-			$this->result->fetch( PDO::FETCH_INTO );
+			$this->stmt->setFetchMode( PDO::FETCH_INTO, $obj );
+			$this->stmt->fetch( PDO::FETCH_INTO );
 		}
 
-		return $this->result;
+		return $this->stmt;
 	}
 
 
@@ -72,15 +72,15 @@ class mysql extends database
 
 	public function fetchClass( $class, $query, array $params = array() )
 	{
-		$this->result = $this->execute( $query, $params );
+		$this->stmt = $this->execute( $query, $params );
 
-		if( $this->result )
+		if( $this->stmt )
 		{
-			//$this->result->setFetchMode( PDO::FETCH_CLASS, $class );
-			//$return = $this->result->fetch();
+			//$this->stmt->setFetchMode( PDO::FETCH_CLASS, $class );
+			//$return = $this->stmt->fetch();
 			$this->option = $class;
 			$this->fetch_mode = PDO::FETCH_CLASS;
-			$return = $this->result->fetchObject($class);
+			$return = $this->stmt->fetchObject($class);
 		}
 
 		return $return;
@@ -88,14 +88,14 @@ class mysql extends database
 
 
 	/**
-	 * Fetches the next row from a PDOStatement object stored in $this->result
+	 * Fetches the next row from a PDOStatement object stored in $this->stmt
 	 * @return mixed
 	 */
 
 	public function next()
 	{
-		$this->result->setFetchMode( $this->fetch_mode, $this->option );
-		return $this->result->fetch( $this->fetch_mode, PDO::FETCH_ORI_NEXT );
+		$this->stmt->setFetchMode( $this->fetch_mode, $this->option );
+		return $this->stmt->fetch( $this->fetch_mode, PDO::FETCH_ORI_NEXT );
 	}
 
 
@@ -105,17 +105,17 @@ class mysql extends database
 
 	public function execute( $query, array $params = array() )
 	{
-		$this->result = parent::prepare( $query );
+		$this->stmt = parent::prepare( $query );
 		/*if( ! empty( $params['limit'] ) )
 		{
 			$limit = (int) $params['limit'];
-			$this->result->bindParam( ':limit', $limit, \PDO::PARAM_INT );
+			$this->stmt->bindParam( ':limit', $limit, \PDO::PARAM_INT );
 			//unset( $params['limit'] );
 		}*/
 
-		$this->result->execute( $params );
-		//$this->result->execute();
-		return $this->result;
+		$this->stmt->execute( $params );
+		//$this->stmt->execute();
+		return $this->stmt;
 	}
 
 }	//	end class db

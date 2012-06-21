@@ -6,7 +6,7 @@
 
 class query
 {
-	public $params = array(), $query, $table, $where, $order, $columns;
+	public $params = array(), $query, $table, $where, $order = array(), $columns;
 
 	/**
 	 * Creates a select statement using properties defined before calling method
@@ -31,8 +31,8 @@ class query
 			$criteria = array();
 			foreach( $where as $k => $v )
 			{
-				// PDO doesn't like special chars as bound param names, so scrubbing
-				// them should reliably maintain unique param names
+				// PDO doesn't like special chars as bound param names
+				// scrubbing them should reliably maintain unique param names
 				$clean = preg_replace('#[^a-zA-Z0-9_]#', '', $k);
 				$this->params[$clean] = $v;
 				$criteria[] = "$k = :$clean";
@@ -44,6 +44,20 @@ class query
 		// check if a previous where statement has been set and glue it all together
 		$this->where = ( $this->where ? $this->where . " $separator $where" : $where );
 
+		return $this;
+	}
+
+	public function in( array $ins )
+	{
+		$in = array();
+		foreach( $ins as $v )
+		{
+			$k = "__in_$v";
+			$this->params[$k] = $v;
+			$in[] = ":$k";
+		}
+		$in = implode( ',', $in );
+		$this->where( "$field IN ($in)" );
 		return $this;
 	}
 
@@ -64,9 +78,13 @@ class query
 
 	public function between( $column, $one, $two )
 	{
-		$this->params["__between_{$column}_one"] = $one;
-		$this->params["__between_{$column}_two"] = $two;
-		return $this->where( " $column BETWEEN :__between_{$column}_one AND :__between_{$column}_tow ");
+		$k = "__between_{$column}_";
+		$k1 = preg_replace('#[^a-zA-Z0-9_]#', '', "{$k}{$one}");
+		$k2 = preg_replace('#[^a-zA-Z0-9_]#', '',"{$k}{$two}");
+		$this->params[$k1] = $one;
+		$this->params[$k2] = $two;
+		$this->where( "$column BETWEEN :$k1 AND :$k2 ");
+		return $this;
 	}
 
 	public function order( $order, $dir = 'ASC' )
@@ -74,7 +92,7 @@ class query
 		if( is_array( $order ) )
 			$order = implode( ', ', $order );
 
-		$this->order .= " $order $dir ";
+		$this->order[] = "$order $dir";
 
 		return $this;
 	}
@@ -84,7 +102,7 @@ class query
 		if( ! empty( $this->where ) )
 			$this->query .= " WHERE {$this->where}";
 		if( ! empty( $this->order ) )
-			$this->query .= " ORDER BY {$this->order}";
+			$this->query .= ' ORDER BY ' . implode( ', ', $this->order );
 		if( ! empty( $this->limit ) )
 			$this->query .= " LIMIT {$this->limit}";
 		return $this->query;
@@ -163,16 +181,14 @@ class query
 	 * @return string
 	 */
 
-	public function update( $table, array $params, array $where = array() )
+	public function update( $table, array $params )
 	{
-		$this->params = $params + $where;
+		$this->params = $params;
 		$columns = asprintf( '%1$s = :%1$s', array_keys( $params ) );
 		$columns = implode( ', ', $columns );
-		$where = asprintf( '%1$s = :%1$s', array_keys( $where ) );
-		$where = implode( ' AND ', $where );
-		$this->query = "UPDATE $table SET $columns WHERE $where";
+		$this->query = "UPDATE $table SET $columns";
 
-		return $this->query;
+		return $this;
 	}
 
 }

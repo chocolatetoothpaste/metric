@@ -9,6 +9,14 @@ class RESTException extends \Exception
 		$this->error = $error;
 		$this->debug = $debug;
 
+		if( $error )
+		{
+			if( $error == '42S02' )
+				$debug = 'Schema does not exist for data model';
+			else if( $error == '42S22' )
+				$debug = 'Schema does not match data model';
+		}
+
 		parent::__construct( $message, $code );
 	}
 
