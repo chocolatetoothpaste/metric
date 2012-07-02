@@ -20,20 +20,20 @@ abstract class Model
 	 * @param mixed $params
 	 */
 
-	function __construct( $params = '' )
+	function __construct( $params = null )
 	{
 		global $config;
 		if( $params )
 		{
 			$db = \mysql::instance( $config->db[$config->DB_MAIN] );
 
-			$pk = (array) $this->getKeys('primary');
 			$fields = static::getFields();
 			$q = new \query;
 
 			if( ! is_array( $params ) ):
 				// 99.9% of the time, the first part of the
 				// primary key will be the auto_increment field
+				$pk = (array) $this->getKeys('primary');
 				$pk = $pk[0];
 				$params = array( $pk => $params );
 			endif;
@@ -51,7 +51,7 @@ abstract class Model
 	 * @param array $array
 	 */
 
-	public function capture( &$array, $scrub = array() )
+	public function capture( array &$array, $scrub = array() )
 	{
 		\array_merge_object( $this, $array, $scrub );
 	}

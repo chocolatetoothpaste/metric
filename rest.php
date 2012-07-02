@@ -2,7 +2,9 @@
 include( $config->PATH_LIB_INCLUDE . '/http_status.inc.php' );
 
 $page->template = false;
-$page->content_type = $_SERVER['HTTP_ACCEPT'];
+$page->content_type = ( ! empty( $_SERVER['HTTP_ACCEPT'] )
+	? $_SERVER['HTTP_ACCEPT']
+	: 'application/json' ;
 
 if( $_SERVER['REQUEST_METHOD'] === 'GET' )
 {
