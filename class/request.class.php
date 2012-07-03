@@ -54,9 +54,10 @@ class request extends \HttpRequest
 
 	public function range( array $ranges )
 	{
-		$range = '';
+		$range = array();
 		foreach( $ranges as $token => $value )
-			$range .= "$token=$value; ";
+			$range[] = "$token=$value; ";
+		$range = implode( '; ', $range );
 		$this->addHeaders( array( 'Range' => $range ) );
 
 		return $this;
