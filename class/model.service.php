@@ -23,7 +23,9 @@ abstract class Model
 
 		// check if a range (subset) is requested...
 		if( ! empty( $_SERVER['HTTP_RANGE'] ) )
+		{
 			static::$ranges = static::tokenize( $_SERVER['HTTP_RANGE'] );
+		}
 
 		// ...and look for any modifiers/options
 		if( ! empty( $_SERVER['HTTP_PRAGMA'] ) )
@@ -53,7 +55,7 @@ abstract class Model
 			if( ! empty( $data['q'] ) )
 				return static::search( $data['q'] );
 			else if( $method == 'GET' && $collection )
-			 	return static::collection( $method );
+			 	return static::collection( $method, $params );
 			else if( $method == 'GET' && $domain )
 				return static::read( $params, $data );
 			else if( $method == 'POST' && $domain )
@@ -218,7 +220,7 @@ abstract class Model
 	 * @return	array
 	 */
 
-	public static function collection( $method )
+	public static function collection( $method, array $params = array() )
 	{
 		global $config;
 
@@ -226,6 +228,8 @@ abstract class Model
 		if( $method != 'GET' )
 			throw new RESTException('Collections are read-only',
 				$config->HTTP_METHOD_NOT_ALLOWED);
+
+		static::$ranges = array_merge( static::$ranges, $params );
 
 		// make a local copy of domain name so domain
 		// properties and methods can be accessed
@@ -352,7 +356,7 @@ abstract class Model
 
 		if( $db->stmt->errorCode() === '00000' )
 		{
-			$data = $stmt->fetchAll( \PDO::FETCH_ASSOC );
+			$data = $db->stmt->fetchAll( \PDO::FETCH_ASSOC );
 			return static::respond( $data, $config->HTTP_PARTIAL_CONTENT );
 		}
 		else
