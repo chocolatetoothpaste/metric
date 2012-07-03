@@ -124,7 +124,7 @@ abstract class Model
 			}
 			else if( $config->DEV )
 			{
-				$message = json_encode( $info );
+				$message = json_encode( $db->stmt->errorInfo() );
 				$code = $config->HTTP_INTERNAL_SERVER_ERROR;
 			}
 			else
