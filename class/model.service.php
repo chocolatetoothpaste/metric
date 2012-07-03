@@ -105,7 +105,7 @@ abstract class Model
 		}
 		catch( \Exception $e )
 		{
-			throw new RESTException( $e->getMessage(), $e->getCode() );
+			throw new RESTException( $e->getMessage(), $config->HTTP_BAD_REQUEST, $e->getCode() );
 		}
 	}
 
@@ -202,7 +202,8 @@ abstract class Model
 		foreach( $option as $opt )
 		{
 			$opt = explode( '=', $opt );
-			$return[$opt[0]] = ( count( $opt ) > 1 ? $opt[1] : true );
+			if( ! empty( $opt[0] ) )
+				$return[$opt[0]] = ( count( $opt ) > 1 ? $opt[1] : true );
 		}
 		// gc
 		unset( $option, $opt );
