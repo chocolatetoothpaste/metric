@@ -245,12 +245,10 @@ class Page
 		{
 			echo '
 			<script type="text/javascript">
-				document.location.replace(', addslashes( $url ), ');
+				document.location.replace("', addslashes( $url ), '");
 			</script>';
 		}
 
-		die( 'Redirecting... <a href="' . $url
-			. '">click here</a> if redirect fails.' );
 	}	// end function redirect
 
 
@@ -294,6 +292,17 @@ class Page
 		} catch( \Exception $e ) {
 			die( "Unable to load fragment $frag" );
 		}
+	}
+
+
+	/**
+	 * Safely echo a value onto the page
+	 * @param	string	$var
+	 */
+
+	public function write( $var )
+	{
+		return ( ! empty( $var ) ? $var : '' );
 	}
 
 }	// end class page

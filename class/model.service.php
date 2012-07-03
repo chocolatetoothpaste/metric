@@ -227,7 +227,9 @@ abstract class Model
 			throw new RESTException('Collections are read-only',
 				$config->HTTP_METHOD_NOT_ALLOWED);
 
-		// static::$domain is defined by the domain model
+		// make a local copy of domain name so domain
+		// properties and methods can be accessed
+		// [can't do static::$domain::someMethod()]
 		$domain = static::$domain;
 
 		// if domain is empty it's probably an error or someone
@@ -277,8 +279,10 @@ abstract class Model
 				if( ! array_diff( $order, $fields ) )
 					$q->order( $order );
 				else
-					throw new RESTException( 'Field not acceptable for ordering',
-						$config->HTTP_NOT_ACCEPTABLE );
+					throw new RESTException(
+						'Field not acceptable for ordering',
+						$config->HTTP_NOT_ACCEPTABLE
+					);
 			}
 
 			if( ! empty( $options['limit'] ) )
@@ -299,7 +303,8 @@ abstract class Model
 				while( $row = $db->next() )
 				{
 					$d =& $data;
-					// unlimited groupability, at the low, low cost of compute cycles :P
+					// unlimited groupability, at the
+					// low, low cost of compute cycles :P
 					foreach( $group as $g )
 						$d =& $d[$row[$g]];
 					$d[] = $row;
@@ -367,7 +372,11 @@ abstract class Model
 
 	public static function respond( $data, $status = 200, $success = 'true' )
 	{
-		return array( 'success' => $success, 'status' => $status, 'data' => $data );
+		return array(
+			'success' => $success,
+			'status' => $status,
+			'data' => $data
+		);
 	}
 
 }
