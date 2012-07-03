@@ -414,19 +414,10 @@ if( !function_exists( 'mime_content_type' ) )
 			);
 
 			$ext = strtolower( trim( strrchr( $filename, '.' ), '.' ) );
-
-			if( isset( $types[$ext] ) )
-			{
-				$mime_type = $types[$ext];
-			}
-			else
-			{
-				$mime_type = 'application/octet-stream';
-			}
+			$mime_type = ( ! empty( $types[$ext] ) ? $types[$ext] : 'application/octet-stream' );
 		}
 
 		return $mime_type;
-
 	}	//	end function mime_content_type
 
 }

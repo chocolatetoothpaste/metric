@@ -14,8 +14,9 @@ class request extends \HttpRequest
 		) );
 	}
 
-	public function git( $data = array() )
+	public function git( $data = null )
 	{
+		$this->setQueryData( $data );
 		$this->prepare( \HttpRequest::METH_GET, $data );
 		$this->send();
 
@@ -24,38 +25,30 @@ class request extends \HttpRequest
 
 	public function post( $data = array() )
 	{
-		$this->prepare( \HttpRequest::METH_POST, $data );
-		$this->send();
+		$this->setPostFields( $data );
+		$this->prepare( \HttpRequest::METH_POST );
 
 		return $this;
 	}
 
-	public function put( $data = array() )
+	public function put( array $data = array() )
 	{
-		$this->prepare( \HttpRequest::METH_PUT, $data );
-		$this->send();
+		$this->setPutData( http_build_query( $data ) );
+		$this->prepare( \HttpRequest::METH_PUT );
 
 		return $this;
 	}
 
-	public function delete( $data = array() )
+	public function delete()
 	{
-		$this->prepare( \HttpRequest::METH_DELETE, $data );
-		$this->send();
+		$this->prepare( \HttpRequest::METH_DELETE );
 
 		return $this;
 	}
 
-	public function prepare( $method, $data = array() )
+	public function prepare( $method )
 	{
 		$this->setMethod( $method );
-		if( $method !== \HttpRequest::METH_GET )
-		{
-			$this->setPostFields( $data );
-			$this->length = strlen( $this->getPostData() );
-			$this->addHeaders( array( 'Content-Length' => $this->length ) );
-		}
-
 		//$this->hash();
 	}
 
