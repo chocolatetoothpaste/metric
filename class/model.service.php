@@ -23,9 +23,7 @@ abstract class Model
 
 		// check if a range (subset) is requested...
 		if( ! empty( $_SERVER['HTTP_RANGE'] ) )
-		{
 			static::$ranges = static::tokenize( $_SERVER['HTTP_RANGE'] );
-		}
 
 		// ...and look for any modifiers/options
 		if( ! empty( $_SERVER['HTTP_PRAGMA'] ) )
@@ -59,7 +57,7 @@ abstract class Model
 			else if( $method == 'GET' && $domain )
 				return static::read( $params, $data );
 			else if( $method == 'POST' && $domain )
-				return static::create( $data );
+				return static::create( array_merge( $data, $params ) );
 			else if( $method == 'PUT' && $domain )
 				return static::update( $params, $data );
 			else if( $method == 'DELETE' && $domain )
