@@ -1,7 +1,7 @@
 <?php
 class config
 {
-	private $const_ = array(), $var_ = array();
+	private $const_ = array(), $var_ = array('classes' => array(), 'alias' => array(), 'routes' => array());
 
 
 	/**
