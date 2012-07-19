@@ -7,8 +7,6 @@ class RESTException extends \Exception
 
 	public function __construct( $message, $code = 500, $error = null, $debug = null )
 	{
-		$this->error = $error;
-		$this->debug = $debug;
 
 		if( $error )
 		{
@@ -17,6 +15,9 @@ class RESTException extends \Exception
 			else if( $error == '42S22' )
 				$debug = 'Schema does not match data model';
 		}
+
+		$this->error = $error;
+		$this->debug = $debug;
 
 		parent::__construct( $message, $code );
 	}

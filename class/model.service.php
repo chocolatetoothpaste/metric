@@ -50,6 +50,9 @@ abstract class Model
 
 		try
 		{
+			// searching could probably be merged in collection method, though
+			// chunks of collection should be moved into some supporting
+			// functions. it's getting a bit chunky and could use some trimming
 			if( ! empty( $data['q'] ) )
 				return static::search( $data['q'] );
 			else if( $method == 'GET' && $collection )
@@ -76,13 +79,19 @@ abstract class Model
 				'message'	=>	$e->getMessage()
 			);
 
+			// send error/debug info as part of response if in a DEV
+			// environment, otherwise write to error logs
 			if( $config->DEV )
 			{
-				if( $error = $e->getError() )
-					$return['error'] = $error;
-
-				if( $debug = $e->getDebug() )
-					$return['debug'] = $debug;
+				$return['error'] = $e->getError();
+				$return['debug'] = $e->getDebug();
+			}
+			else
+			{
+				$class = get_called_class();
+				error_log( "$class request failed: {$page->request}" );
+				error_log( "$class error:" . $e->getError() );
+				error_log( "$class debug:" . $e->getDebug() );
 			}
 
 			return $return;
@@ -105,7 +114,8 @@ abstract class Model
 		}
 		catch( \Exception $e )
 		{
-			throw new RESTException( $e->getMessage(), $config->HTTP_BAD_REQUEST, $e->getCode() );
+			throw new RESTException( $e->getMessage(),
+				$config->HTTP_BAD_REQUEST, $e->getCode() );
 		}
 	}
 

@@ -1,7 +1,7 @@
 <?php
 
-/**
- * For setting up bitwise values in apps
+/*
+ * Bitwise values
 define('', 1);
 define('', 2);
 define('', 4);
@@ -33,7 +33,7 @@ define('', 134217728);
 define('', 268435456);
 define('', 536870912);
 define('', 1073741824);
- */
+*/
 
 // core paths
 $config->define( 'PATH_LIB_CLASS',		$config->PATH_LIB . '/class' );
