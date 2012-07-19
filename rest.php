@@ -1,8 +1,8 @@
 <?php
 include( $config->PATH_LIB_INCLUDE . '/http_status.inc.php' );
 
-$page->template = false;
-$page->content_type = ( ! empty( $_SERVER['HTTP_ACCEPT'] )
+$this->template = false;
+$this->content_type = ( ! empty( $_SERVER['HTTP_ACCEPT'] )
 	? $_SERVER['HTTP_ACCEPT']
 	: 'application/json' );
 
@@ -17,41 +17,36 @@ else
 	parse_str( $input, $data );
 }
 
-//$page->authorize($input);
-//$service = $page->callback[0];
+//$this->authorize($input);
+//$service = $this->callback[0];
 //$service::authenticate($input);
 
 /**
  * @see	\Service\Model::init()
  */
-$page->response = call_user_func_array( $page->callback, array(
+$response = call_user_func_array( $this->callback, array(
 	'method'	=>	$_SERVER['REQUEST_METHOD'],
-	'params'	=>	$page->params,
+	'params'	=>	$this->params,
 	'data'		=>	$data
 ) );
 
-// determine response type and pass response through to the page handler
-if( $page->content_type === 'application/json' )
-{
-	$page->body = json_encode( $page->response );
-}
-elseif( $page->content_type === 'application/xml' )
-{
-}
-else
-{
-	$page->response['status'] = $config->HTTP_NOT_ACCEPTABLE;
-	$page->response['message'] = 'The server was unable to understand your request,'
-		. ' please check your request parameters.';
-}
-
-header( $config->http_status[$page->response['status']] );
+// send the http status and the date. content type gets sent by page::render
+header( $config->http_status[$response['status']] );
 header( 'Date: ' . gmdate( DATE_RFC1123 ) );
 
-if(	!empty($config->DEV) )
+// determine response type and pass response through to the page handler
+if( $this->content_type === 'application/json' )
+	echo json_encode( $response );
+
+elseif( $this->content_type === 'application/xml' )
 {
-	header( 'X-Execute-Time: ' .  microtime( true ) - $_start__ );
+	// build xml response
 }
 
-$page->render();
+else
+{
+	header( $config->http_status[$config->HTTP_NOT_ACCEPTABLE] );
+	echo 'The server was unable to understand your request,',
+		' please check your request parameters.';
+}
 ?>

@@ -25,18 +25,18 @@ class Page
 		// check if the page is in the public dir, protected pages dir, or if
 		// a "view" exists. finally, check if request is defined in config file
 		// as a service or alias to a file
-		if( ! empty( $config->PATH_CONTROLLER ) && file_exists( $config->PATH_CONTROLLER . $this->request . '.php' ) )
+		if( file_exists( $config->PATH_CONTROLLER . $this->request . '.php' ) )
 			$this->file = $config->PATH_CONTROLLER . $this->request . '.php';
-		elseif( !empty( $config->alias[$this->request] ) )
+		elseif( ! empty( $config->alias[$this->request] ) )
 			$this->file = $config->alias[$this->request];
 		else//if( false !== strpos($request, $config->URL_REST, 0) )
 		{
 			/**
-			 * grab all routes and combine them into a single pattern
-			 * so the URL matching is only executed once. Do regex
-			 * substitutions for extracting named params and the service name.
-			 * The (?J) modifier allows duplicate named params, since multiple
-			 * routes will accept params with overlapping names
+			 * grab all routes and combine them into a single pattern so the
+			 * URL matching is only executed once. Do regex substitutions
+			 * for extracting named params and the service name. The (?J)
+			 * modifier allows duplicate named params in the combined regex,
+			 * since multiple routes will have params with the same names
 			 */
 			$string = '(?J)^' . implode( '$|^', $config->routes ) . '$';
 			$match = array(
@@ -67,25 +67,25 @@ class Page
 				// modifier will be introduced in the future
 				array_walk( $matches, function( $v, $k ) use( &$matches )
 				{
-					if( !$v || is_numeric( $k ) )
+					if( ! $v || is_numeric( $k ) )
 						unset($matches[$k]);
 				});
 				//*/
 
 				$this->file = $config->PAGE_REST_SERVER;
-				$service = 'Service\\' . ucwords($matches['service']);
+				$service = 'Service\\' . ucwords( $matches['service'] );
 
-				unset($matches['service']);
+				unset( $matches['service'] );
 
 				$this->params = $matches;
-				if( !empty( $config->classes[$service] ) )
-					$this->callback = array($service, 'init');
+				if( ! empty( $config->classes[$service] ) )
+					$this->callback = array( $service, 'init' );
 
 				return;
 			}
 		}
 
-		if( !file_exists( $this->file ) )
+		if( ! file_exists( $this->file ) )
 		{
 			$this->notFound();
 		}
@@ -102,20 +102,20 @@ class Page
 	}	// end method parseURL
 
 
+	/**
+	 * Display a 404 Not Found page
+	 */
+
 	private function notFound()
 	{
-		if( !empty( $config->PAGE_404 ) && file_exists( $config->PAGE_404 ) )
-			$this->file = $config->PAGE_404;
-		else
-		{
-			header('HTTP/1.1 404 Not Found');
-			$this->body = '<!doctype html><html>'
-				. '<head><title>404 Not Found</title></head><body>'
-				. '<h1>Page Not Found</h1>'
-				. '<p>The request ' . $this->request . ' was not found.</p>'
-				. '<p><em>&#968; Metric</em></p>'
-				. '</body></html>';
-		}
+		header( 'HTTP/1.1 404 Not Found' );
+		echo '<!doctype html><html>',
+			'<head><title>404 Not Found</title></head><body>',
+			'<h1>Page Not Found</h1>',
+			'<p>The request ', $this->request, ' was not found.</p>',
+			'<p><em>&#968; Metric</em></p>',
+			'</body></html>';
+		die;
 	}
 
 
@@ -140,6 +140,47 @@ class Page
 
 
 	/**
+	 * Load the page controller and view
+	 */
+
+	public function load()
+	{
+		global $config;
+
+		// start an output buffer to begin building page. this allows headers
+		// to be set in the script before anything is output
+		ob_start();
+
+		// it is likely page controllers will be classes in the future, so this
+		// section and the section below are left as comments to enable it
+		/*// get all declared class names to compare after including file
+		$classes = get_declared_classes();
+		//*/
+
+		// load the page controller...
+		require_once( $this->file );
+
+		// ...and the view, if there is one
+		if( $this->view )
+			require_once( $this->view );
+
+		/*//
+		// get the new list of classes and see
+		// if a new one was defined by controller
+		$new_class = array_diff( get_declared_classes(), $classes );
+		unset( $classes );
+		// if a new class was found, instantiate it and call init function
+		if( $new_class )
+		{
+			list( $new_class ) = $new_class;
+			$class = new $new_class;
+			$class->init();
+		}
+		//*/
+	}
+
+
+	/**
 	 * Sets up the page and displays it
 	 * @param string $contents
 	 * @global object $auth
@@ -147,6 +188,8 @@ class Page
 
 	public function render()
 	{
+		$this->body = ob_get_clean();
+
 		// in the past, there have been a couple (minor) issues with the
 		// browser trying to download the page rather than render it,
 		// this header should fix this.
@@ -189,7 +232,11 @@ class Page
 	public function cache( $request = null )
 	{
 		global $config;
+
+		// allow request to be passed as arg to accommodate customized pages
+		// to be cached, otherwise cache the default request
 		$request = iif( ! $request, $this->request );
+
 		// grab the most recent mtime of a file/files, create a hash
 		$mtime = max( filemtime( $this->file ), filemtime( $this->view ) );
 
@@ -223,13 +270,14 @@ class Page
 
 	/**
 	 * Redirects to another page, safe fall back if headers are sent
-	 * @access public static
+	 * @access	public
 	 * @param	string	$url
 	 */
 
 	public static function redirect( $url )
 	{
 		global $config;
+
 		// write session to the disk
 		session_write_close();
 
@@ -243,10 +291,9 @@ class Page
 			header( "Location: $url" );
 		else
 		{
-			echo '
-			<script type="text/javascript">
-				document.location.replace("', addslashes( $url ), '");
-			</script>';
+			echo '<script type="text/javascript">
+					document.location.replace("', addslashes( $url ), '");
+				</script>';
 		}
 
 	}	// end function redirect
@@ -261,8 +308,9 @@ class Page
 		global $config;
 		$https = ( $config->DEV && ! $config->FORCE_SSL
 			? true
-			: !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on' );
+			: ! empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on' );
 
+		// if redirect is true and https is not on, redirect to https site
 		if( $redirect && ! $https )
 		{
 			static::redirect( 'https://' . $_SERVER['HTTP_HOST']
@@ -280,15 +328,14 @@ class Page
 	 * @param	boolean	$return
 	 */
 
-	public function frag( $frag, $return = false )
+	public function frag( $frag )
 	{
 		global $config;
 		$frag = $config->PATH_FRAG . "/{$frag}.phtml";
 		try {
-			if( $return )
-				return include( $frag );
-			else
-				include( $frag );
+			// if included file returns a value, return that. if not then the
+			// return statement is safely ignored and the file included normally
+			return include( $frag );
 		} catch( \Exception $e ) {
 			die( "Unable to load fragment $frag" );
 		}

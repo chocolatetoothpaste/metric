@@ -47,7 +47,7 @@ class query
 		return $this;
 	}
 
-	public function in( array $ins )
+	public function in( $field, array $ins )
 	{
 		$in = array();
 		foreach( $ins as $v )
