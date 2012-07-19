@@ -61,7 +61,7 @@ class query
 		return $this;
 	}
 
-	public function like( array $like, $separator = ' AND ' )
+	public function like( array $like, $separator = 'AND' )
 	{
 		foreach( $like as $k => &$v )
 		{
@@ -72,6 +72,7 @@ class query
 
 		unset($v);
 		$like = implode( ' OR ', $like );
+		$like = "($like)";
 
 		return $this->where( $like, $separator );
 	}

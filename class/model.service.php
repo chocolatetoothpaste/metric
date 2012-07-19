@@ -51,7 +51,7 @@ abstract class Model
 		try
 		{
 			if( ! empty( $data['q'] ) )
-				return static::search( $data['q'] );
+				return static::search( $data['q'], $params );
 			else if( $method == 'GET' && $collection )
 			 	return static::collection( $method, $params );
 			else if( $method == 'GET' && $domain )
@@ -332,9 +332,10 @@ abstract class Model
 	} // end method collection
 
 
-	public static function search( $terms )
+	public static function search( $terms, $params )
 	{
 		global $config;
+		static::$ranges = array_merge( static::$ranges, $params );
 		$terms = explode( ' ', $terms );
 		$domain = static::$domain;
 		$fields = $domain::getFields();
@@ -343,11 +344,35 @@ abstract class Model
 		$q = new \query;
 		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
 		$like = array();
-		$params = array();
 
 		foreach( $search as $field )
 			foreach( $terms as $k => $term )
 				$like[$field] = $term;
+
+		// check for ranges and try to parse them
+		if( ! empty( static::$ranges ) )
+		{
+			$status = $config->HTTP_PARTIAL_CONTENT;
+			foreach( static::$ranges as $field => &$range )
+			{
+				$date_regex = '\d{4}-\d{2}-\d{2} '
+					. '(([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9])';
+				if( 0 !== preg_match( '#^(\d*[,-][^/]?\d*-?)*$#', $range ) )
+				{
+					$range = static::parseRange( $range );
+					$q->in( $field, $range );
+				}
+				else if( preg_match( "#{$date_regex}/{$date_regex}#", $range ) )
+				{
+					$range = explode( '/', $range );
+					$q->between( $field, $range[0], $range[1] );
+				}
+				else
+				{
+					$q->where( array( $field => $range ) );
+				}
+			}
+		}
 
 		$q->select( $fields, $domain::getTable() )->like( $like )->query();
 		$db->execute( $q );
