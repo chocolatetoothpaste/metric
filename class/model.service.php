@@ -126,7 +126,7 @@ abstract class Model
 
 		$obj = new $domain( $id );
 
-		if( $obj instanceof $domain && $obj->id )
+		if( $obj instanceof $domain )
 			return static::respond( $obj, $config->HTTP_OK );
 		else
 			throw new RESTException( 'Resource not found ' . $page->request,
