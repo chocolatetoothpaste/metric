@@ -5,7 +5,7 @@ class Template extends \Metric\Page\Page {}\n
 ?>";
 
 CONFIG="<?php\n\n
-
+\$config->define( 'DIE_BEFORE_REDIRECT',	false );\n\n
 \$config->define( 'PATH_ROOT',		dirname( \$_SERVER['DOCUMENT_ROOT'] ) );\n
 \$config->define( 'PATH_LIB',		\$config->PATH_ROOT . '/${PWD##*/}' );\n
 \$config->define( 'PATH_PAGE',		\$config->PATH_ROOT . '/page');\n
@@ -33,7 +33,7 @@ mkdir page/view
 
 echo -e $PAGE > page/template/template.class.php
 touch page/controller/index.php
-echo '<p>The engine is running!</p><p><em>&#968; Metric</em></p>' > page/view/index.phtml
+echo '<p>Help! I\'m alive, my heat is beating like hammer</p><p><em>&#968; Metric</em></p>' > page/view/index.phtml
 
 mkdir public
 echo "<?php include( '../lib/bootstrap.php' ); ?>" > public/index.php
