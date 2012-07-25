@@ -100,6 +100,17 @@ class mysql extends database
 
 
 	/**
+	 * Overriding parent function to create a stmt object internally
+	 */
+
+	public function prepare( $statement, $driver_options = array() )
+	{
+		$this->stmt = parent::prepare( $statement, $driver_options );
+		return $this->stmt;
+	}
+
+
+	/**
 	 * Executes a query using passed params and returns a statement obj
 	 */
 
