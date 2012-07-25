@@ -36,7 +36,7 @@ class config
 
     public function __isset($var)
     {
-        return isset($this->const_[$var]) || isset($this->var_[$var]);
+        return ( isset($this->const_[$var]) || isset($this->var_[$var]) );
     }
 
     public function __unset($var)
