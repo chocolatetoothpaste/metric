@@ -15,7 +15,7 @@ class mysql extends database
 	 * @param string $name
 	 */
 
-	public function __construct( &$info )
+	public function __construct( $info )
 	{
 		global $config;
 
