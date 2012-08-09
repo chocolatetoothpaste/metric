@@ -16,13 +16,15 @@ endif;
 $files = explode( ',', $files );
 
 foreach( $files as &$file )
-	$file = "$dir/$file.$type";
+	if( $file )
+		$file = "$dir/$file.$type";
 
 //$this->mtime = array_walk( 'filemtime', $files );
 //$this->mtime = max( $this->mtime );
 
 
 foreach( $files as &$file )
-	require( $file );
+	if( $file )
+		require( $file );
 unset( $file );
 ?>

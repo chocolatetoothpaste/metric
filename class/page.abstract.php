@@ -1,7 +1,7 @@
 <?php
 namespace Metric\Page;
 
-class Page
+abstract class Page
 {
 	public $file, $view, $cache, $body, $hash, $request, $https, $callback;
 	public $template = false;
