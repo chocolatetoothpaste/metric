@@ -68,7 +68,7 @@ abstract class Model
 
 				return array( 'status' => $config->HTTP_OK );
 			}
-			else if( ! empty( $data['q'] ) )
+			else if( ! empty( static::$options['search'] || ! empty( $data['q'] ) )
 				return static::search( $data['q'], $params );
 			else if( $method == 'GET' && $collection )
 			 	return static::collection( $method, $params );
