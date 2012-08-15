@@ -24,11 +24,22 @@ else
 /**
  * @see	\Service\Model::init()
  */
-$response = call_user_func_array( $this->callback, array(
-	'method'	=>	$_SERVER['REQUEST_METHOD'],
-	'params'	=>	$this->params,
-	'data'		=>	$data
-) );
+if( is_callable( $this->callback ) )
+{
+	$response = call_user_func_array( $this->callback, array(
+		'method'	=>	$_SERVER['REQUEST_METHOD'],
+		'params'	=>	$this->params,
+		'data'		=>	$data
+	) );
+}
+else
+{
+	$response = array(
+		'success' => 'false',
+		'status' => $config->HTTP_INTERNAL_SERVER_ERROR,
+		'error' => 'Serice interface '
+			. ( $config->DEV ? $this->callback[0] : '' ) . ' not callable' );
+}
 
 // send the http status and the date. content type gets sent by page::render
 header( $config->http_status[$response['status']] );
@@ -42,7 +53,8 @@ elseif( $this->content_type === 'application/xml' )
 {
 	// build xml response
 }
-
+elseif( $_SERVER['REQUEST_METHOD'] === 'OPTIONS' )
+	ob_clean();
 else
 {
 	header( $config->http_status[$config->HTTP_NOT_ACCEPTABLE] );

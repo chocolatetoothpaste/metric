@@ -5,6 +5,7 @@ class Template extends \Metric\Page\Page {}\n
 ?>";
 
 CONFIG="<?php\n\n
+\$config->define( 'DEV',					true );\n\n
 \$config->define( 'DIE_BEFORE_REDIRECT',	false );\n\n
 \$config->define( 'PATH_ROOT',		dirname( \$_SERVER['DOCUMENT_ROOT'] ) );\n
 \$config->define( 'PATH_LIB',		\$config->PATH_ROOT . '/${PWD##*/}' );\n

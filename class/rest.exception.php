@@ -5,19 +5,30 @@ class RESTException extends \Exception
 {
 	private $error, $debug;
 
-	public function __construct( $message, $code = 500, $error = null, $debug = null )
+	public function __construct( $message, $code = 500, $error = 0, $message = null )
 	{
+		global $config;
 
-		if( $error )
+		if( $error == '42S22' )
 		{
-			if( $error == '42S02' )
-				$debug = 'Schema does not exist for data model';
-			else if( $error == '42S22' )
-				$debug = 'Schema does not match data model';
+			$this->debug = 'Schema does not match data model ' . \get_called_class();
+			$code = $config->HTTP_INTERNAL_SERVER_ERROR;
 		}
-
-		$this->error = $error;
-		$this->debug = $debug;
+		else if( $error == '23000' )
+		{
+			$this->debug = 'Conflict exists among keys';
+			$code = $config->HTTP_CONFLICT;
+		}
+		else if( $error == '42S02' )
+		{
+			$code = $config->HTTP_INTERNAL_SERVER_ERROR;
+			$this->debug = 'Schema does not exist for data model. Check data model and connection info';
+		}
+		else
+		{
+			$this->debug = 'Unable to create resource';
+			$code = $config->HTTP_BAD_REQUEST;
+		}
 
 		parent::__construct( $message, $code );
 	}
