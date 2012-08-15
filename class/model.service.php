@@ -53,7 +53,22 @@ abstract class Model
 			// searching could probably be merged in collection method, though
 			// chunks of collection should be moved into some supporting
 			// functions. it's getting a bit chunky and could use some trimming
-			if( ! empty( $data['q'] ) )
+			if( $method == 'OPTIONS' ) {
+				if( isset( $config->CORS_ORIGINS ) )
+					header( 'Access-Control-Allow-Origin: '
+						. ( is_array( $config->CORS_ORIGINS )
+							? implode( ' ', $config->CORS_ORIGINS )
+							: $config->CORS_ORIGINS ) );
+
+				if( isset( $config->CORS_METHODS ) )
+					header( 'Access-Control-Allow-Methods: '
+						. ( is_array( $config->CORS_METHODS )
+							? implode( ' ', $config->CORS_METHODS )
+							: $config->CORS_METHODS ) );
+
+				return array( 'status' => $config->HTTP_OK );
+			}
+			else if( ! empty( $data['q'] ) )
 				return static::search( $data['q'], $params );
 			else if( $method == 'GET' && $collection )
 			 	return static::collection( $method, $params );
@@ -90,8 +105,8 @@ abstract class Model
 			{
 				$class = get_called_class();
 				error_log( "$class request failed: {$page->request}" );
-				error_log( "$class error:" . $e->getError() );
-				error_log( "$class debug:" . $e->getDebug() );
+				error_log( "$class error: " . $e->getError() );
+				error_log( "$class debug: " . $e->getDebug() );
 			}
 
 			return $return;
@@ -102,50 +117,61 @@ abstract class Model
 	public static function create( $post )
 	{
 		global $config;
-		$domain = static::$domain;
 
 		try
 		{
+			$domain = static::$domain;
 			$obj = new $domain();
 			$obj->capture( $post, $domain::getKeys() );
 			$obj->save();
-
-			return static::respond( $obj, $config->HTTP_CREATED );
 		}
 		catch( \Exception $e )
 		{
 			throw new RESTException( $e->getMessage(),
-				$config->HTTP_BAD_REQUEST, $e->getCode() );
+				$config->HTTP_INTERNAL_SERVER_ERROR, $e->getCode() );
 		}
+
+		return static::respond( $obj, $config->HTTP_CREATED );
 	}
 
 	public static function read( $id, $get )
 	{
 		global $config, $page;
-		$domain = static::$domain;
 
-		$obj = new $domain( $id );
+		try
+		{
+			$domain = static::$domain;
+			$obj = new $domain( $id );
+			//if( $obj instanceof $domain )
+		}
+		catch( \Exception $e )
+		{
+			throw new RESTException( $e->getMessage(),
+				$config->HTTP_INTERNAL_SERVER_ERROR, $e->getCode() );
+		}
 
-		if( $obj instanceof $domain )
-			return static::respond( $obj, $config->HTTP_OK );
-		else
-			throw new RESTException( 'Resource not found ' . $page->request,
-				$config->HTTP_NOT_FOUND );
+		return static::respond( $obj, $config->HTTP_OK );
 	}
 
 	public static function update( $params, $put )
 	{
 		global $config;
-		$domain = static::$domain;
 
-		$obj = new $domain( $params );
-		$obj->capture( $put, $domain::getKeys() );
+		try
+		{
+			$domain = static::$domain;
 
-		if( $obj->save() )
-			return static::respond( $obj, $config->HTTP_OK );
-		else
-			throw new RESTException( 'Unable to update resource',
-				$config->HTTP_INTERNAL_SERVER_ERROR );
+			$obj = new $domain( $params );
+			$obj->capture( $put, $domain::getKeys() );
+			$obj->save();
+		}
+		catch( \Exception $e )
+		{
+			throw new RESTException( $e->getMessage(),
+				$config->HTTP_INTERNAL_SERVER_ERROR, $e->getCode() );
+		}
+
+		return static::respond( $obj, $config->HTTP_OK );
 	}
 
 	public static function delete( $params )
@@ -235,7 +261,7 @@ abstract class Model
 		// GET is the only method allowed for collections for now
 		if( $method != 'GET' )
 			throw new RESTException('Collections are read-only',
-				$config->HTTP_METHOD_NOT_ALLOWED);
+				$config->HTTP_METHOD_NOT_ALLOWED );
 
 		static::$ranges = array_merge( static::$ranges, $params );
 
@@ -334,7 +360,7 @@ abstract class Model
 			throw new RESTException(
 				'Unable to retrieve data',
 				$config->HTTP_BAD_REQUEST,
-				$stmt->errorCode(),
+				$db->stmt->errorCode(),
 				$q->query
 			);
 		}

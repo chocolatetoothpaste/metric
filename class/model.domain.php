@@ -23,6 +23,7 @@ abstract class Model
 	function __construct( $params = null )
 	{
 		global $config;
+
 		if( $params )
 		{
 			$db = \mysql::instance( $config->db[$config->DB_MAIN] );
@@ -40,6 +41,12 @@ abstract class Model
 
 			$q->select( $fields, $this->getTable() )->where( $params )->query();
 			$db->fetchIntoObject( $this, $q );
+
+			if( $db->stmt->errorCode() !== '00000' )
+			{
+				$info = $db->stmt->errorInfo();
+				throw new \Exception( $info[2], $info[0] );
+			}
 		}
 
 	}
@@ -75,10 +82,11 @@ abstract class Model
 		$columns = $this->getFields( true, $this );
 
 		$keys = ( !empty( $keys['unique'] )
-			? array_merge((array)$keys['primary'], (array)$keys['unique'])
+			? array_merge( (array)$keys['primary'], (array)$keys['unique'] )
 			: (array)$keys['primary'] );
 
-		foreach( $keys as $type => $k ):
+		foreach( $keys as $type => $k )
+		{
 			// if a primary key has a value in the
 			// property list, update an existing row
 			if( !empty( $this->$k ) )
@@ -98,7 +106,7 @@ abstract class Model
 			{
 				unset( $columns[$k] );
 			}
-		endforeach;
+		}
 
 		if( $update )
 			$query->update( $table, $columns )->where( $criteria )->query();
@@ -117,23 +125,8 @@ abstract class Model
 		}
 		else
 		{
-			if( $db->stmt->errorCode() == '42S22' )
-			{
-				$message = 'Schema does not match data model ' . \get_called_class();
-				$code = $config->HTTP_INTERNAL_SERVER_ERROR;
-			}
-			else if( $config->DEV )
-			{
-				$message = json_encode( $db->stmt->errorInfo() );
-				$code = $config->HTTP_INTERNAL_SERVER_ERROR;
-			}
-			else
-			{
-				$message = 'Unable to create resource';
-				$code = $config->HTTP_NOT_ACCEPTABLE;
-			}
-
-			throw new \Exception( $message, $code );
+			$info = $db->stmt->errorInfo();
+			throw new \Exception( $info[2], $info[0] );
 		}
 	}
 

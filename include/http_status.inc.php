@@ -62,6 +62,7 @@ $config->http_status = array(
 	$config->HTTP_NOT_FOUND				=>	'HTTP/1.1 404 Not Found',
 	$config->HTTP_METHOD_NOT_ALLOWED	=>	'HTTP/1.1 405 Method Not Allowed',
 	$config->HTTP_NOT_ACCEPTABLE		=>	'HTTP/1.1 406 Not Acceptable',
+	$config->HTTP_CONFLICT				=>	'HTTP/1.1 409 Conflict',
 	$config->HTTP_EXPECTATION_FAILED	=>	'HTTP/1.1 417 Expectation Failed',
 	$config->HTTP_INTERNAL_SERVER_ERROR	=>	'HTTP/1.1 500 Internal Server Error',
 	$config->HTTP_NOT_IMPLEMENTED		=>	'HTTP/1.1 501 Not Implemented'
