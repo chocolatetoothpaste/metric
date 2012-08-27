@@ -7,7 +7,15 @@
 
 class mysql extends database
 {
-	public $err_code, $err_info, $stmt, $fetch_mode, $option;
+	public $err_code, $stmt, $fetch_mode, $option;
+
+	public static $err_info = array(
+		1054	=>	array( 'code' => 500, 'message' => 'Schema does not match data model' ),
+		1048	=>	array( 'code' => 417, 'message' => 'Possible null fields' ),
+		1062	=>	array( 'code' => 409, 'message' => 'Conflict detected on unique index' ),
+		1146	=>	array( 'code' => 409, 'message' => 'Schema does not exist for data model' )
+	);
+
 
 
 	/**

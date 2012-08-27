@@ -10,7 +10,7 @@ namespace Domain;
 
 abstract class Model
 {
-	protected static $keys, $table, $search;
+	protected static $keys, $table, $search, $connection = 'default';
 	protected $meta_table, $meta_fields = array(), $meta_obj = array();
 
 
@@ -26,7 +26,7 @@ abstract class Model
 
 		if( $params )
 		{
-			$db = \mysql::instance( $config->db[$config->DB_MAIN] );
+			$db = \mysql::instance( $config->db[static::$connection] );
 
 			$fields = static::getFields();
 			$q = new \query;
@@ -72,7 +72,7 @@ abstract class Model
 	public function save()
 	{
 		global $config;
-		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
+		$db = \mysql::instance( $config->db[static::$connection] );
 
 		$query = new \query;
 		$update = false;
@@ -126,7 +126,7 @@ abstract class Model
 		else
 		{
 			$info = $db->stmt->errorInfo();
-			throw new \Exception( $info[2], $info[0] );
+			throw new \Exception( $info[2], $info[1] );
 		}
 	}
 
@@ -134,7 +134,7 @@ abstract class Model
 	public function delete()
 	{
 		global $config;
-		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
+		$db = \mysql::instance( $config->db[static::$connection] );
 		$table = $this->getTable();
 		$keys = $this->getKeys();
 		$key = ( is_array( $keys['primary'] )
@@ -172,6 +172,12 @@ abstract class Model
 	final public static function getSearch()
 	{
 		return static::$search;
+	}
+
+
+	final public static function getConnection()
+	{
+		return static::$connection;
 	}
 
 
@@ -236,7 +242,7 @@ abstract class Model
 		if( $refresh || !( $this->meta_obj instanceof \Domain\Meta ) )
 		{
 			global $config;
-			$db = \mysql::instance( $config->db[$config->DB_MAIN] );
+			$db = \mysql::instance( $config->db[static::$connection] );
 			$this->meta_obj = new Meta;
 			foreach( $this->meta_fields as $prop )
 			{
@@ -323,7 +329,7 @@ abstract class Model
 	{
 		global $config;
 		$q = new \query;
-		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
+		$db = \mysql::instance( $config->db[static::$connection] );
 		$q->select( static::getFields(), static::$table )->where( $params )->query();
 		$db->execute( $q );
 

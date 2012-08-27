@@ -17,7 +17,9 @@ class query
 	{
 		$this->table = $table;
 
-		$this->columns = ( is_array( $columns ) ? implode( ', ', $columns ) : $columns );
+		$this->columns = ( is_array( $columns )
+			? '`' . implode( '`, `', $columns ) . '`'
+			: $columns );
 
 		$this->query = "SELECT {$this->columns} FROM {$this->table}";
 
@@ -137,7 +139,7 @@ class query
 				// sort the keys so that each group of values are inserted in
 				// the same order
 				ksort( $void );
-				if( !$columns )
+				if( ! $columns )
 				{
 					$columns = array_keys( $params[0] );
 					sort( $columns );
@@ -167,7 +169,7 @@ class query
 			$params = sprintf( '(%s)', $params );
 		}
 
-		$columns = sprintf( '(%s)', implode( ', ', $columns ) );
+		$columns = sprintf( '(%s)', '`' . implode( '`, `', $columns ) . '`' );
 		$this->query = "INSERT INTO $table $columns VALUES $params";
 
 		return $this;
@@ -185,7 +187,7 @@ class query
 	public function update( $table, array $params )
 	{
 		$this->params = $params;
-		$columns = asprintf( '%1$s = :%1$s', array_keys( $params ) );
+		$columns = asprintf( '`%1$s` = :%1$s', array_keys( $params ) );
 		$columns = implode( ', ', $columns );
 		$this->query = "UPDATE $table SET $columns";
 
