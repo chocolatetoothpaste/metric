@@ -68,7 +68,7 @@ abstract class Model
 
 				return array( 'status' => $config->HTTP_OK );
 			}
-			else if( ! empty( static::$options['search'] || ! empty( $data['q'] ) )
+			else if( ! empty( static::$options['search'] ) || ! empty( $data['q'] ) )
 				return static::search( $data['q'], $params );
 			else if( $method == 'GET' && $collection )
 			 	return static::collection( $method, $params );
@@ -277,6 +277,7 @@ abstract class Model
 				$config->HTTP_INTERNAL_SERVER_ERROR );
 
 		$fields = $domain::getFields();
+		$connection = $domain::getConnection();
 
 		$q = new \query;
 		$status = $config->HTTP_OK; // default status
@@ -310,17 +311,33 @@ abstract class Model
 		if( static::$options )
 		{
 			$options = static::$options;
-			if( ! empty( $options['order'] ) )
+			if( ! empty( $options['sort:asc'] )
+				|| ! empty( $options['sort:desc'] ) )
 			{
+				$asc = $desc = array();
+
+				if( ! empty( $options['sort:desc'] ) )
+				{
+					$desc = explode( ',', $options['sort:desc'] );
+					$q->order( $desc, 'DESC' );
+				}
+
+				if( ! empty( $options['sort:asc'] ) )
+				{
+					$asc = explode( ',', $options['sort:asc'] );
+					$q->order( $asc );
+				}
+
 				// this is some pretty crappy hack checking, first run
-				$order = explode( ',', $options['order'] );
-				if( ! array_diff( $order, $fields ) )
-					$q->order( $order );
-				else
+				$diff = array_diff( array_merge( $asc, $desc ), $fields );
+				if( $diff )
 					throw new RESTException(
-						'Field not acceptable for ordering',
+						'Fields not acceptable for ordering: '
+							. implode( ', ', $diff ),
 						$config->HTTP_NOT_ACCEPTABLE
 					);
+
+
 			}
 
 			if( ! empty( $options['limit'] ) )
@@ -328,7 +345,7 @@ abstract class Model
 		}
 
 		$q->select( $fields, $domain::getTable() )->query();
-		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
+		$db = \mysql::instance( $config->db[$connection] );
 		$db->execute( $q );
 
 		if( $db->stmt->errorCode() === '00000' )
@@ -337,6 +354,18 @@ abstract class Model
 			{
 				$data = array();
 				$group = explode( ',', $options['group'] );
+
+				// do some rookie hack checking
+				$diff = array_diff( $group, $fields );
+				if( $diff )
+				{
+					throw new RESTException(
+						'Fields not acceptable for grouping: '
+							. implode( ', ', $diff ),
+						$config->HTTP_NOT_ACCEPTABLE
+					);
+				}
+
 				$db->stmt->setFetchMode( \PDO::FETCH_ASSOC );
 				while( $row = $db->next() )
 				{
@@ -374,11 +403,12 @@ abstract class Model
 		static::$ranges = array_merge( static::$ranges, $params );
 		$terms = explode( ' ', $terms );
 		$domain = static::$domain;
+		$connection = $domain::getConnection();
 		$fields = $domain::getFields();
 		$search = $domain::getSearch();
 		$table = $domain::getTable();
 		$q = new \query;
-		$db = \mysql::instance( $config->db[$config->DB_MAIN] );
+		$db = \mysql::instance( $config->db[$connection] );
 		$like = array();
 
 		foreach( $search as $field )

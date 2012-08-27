@@ -36,7 +36,7 @@ function __autoload( $file )
 	}
 	catch( Exception $e )
 	{
-		die( "Unable to load class $file" . $e->getMessage() );
+		die( "Unable to load class $file. " . $e->getMessage() );
 	}
 
 }

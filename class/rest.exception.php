@@ -5,32 +5,21 @@ class RESTException extends \Exception
 {
 	private $error, $debug;
 
-	public function __construct( $message, $code = 500, $error = 0, $message = null )
+	public function __construct( $message, $status = 500, $error = 0, $debug = null )
 	{
-		global $config;
+		$this->error = $error;
+		$this->debug = $debug;
 
-		if( $error == '42S22' )
+		$err_info =& \mysql::$err_info;
+
+		if( ! empty( $err_info[$error] ) )
 		{
-			$this->debug = 'Schema does not match data model ' . \get_called_class();
-			$code = $config->HTTP_INTERNAL_SERVER_ERROR;
-		}
-		else if( $error == '23000' )
-		{
-			$this->debug = 'Conflict exists among keys';
-			$code = $config->HTTP_CONFLICT;
-		}
-		else if( $error == '42S02' )
-		{
-			$code = $config->HTTP_INTERNAL_SERVER_ERROR;
-			$this->debug = 'Schema does not exist for data model. Check data model and connection info';
-		}
-		else
-		{
-			$this->debug = 'Unable to create resource';
-			$code = $config->HTTP_BAD_REQUEST;
+			$this->debug = $message;
+			$message = $err_info[$error]['message'];
+			$status = $err_info[$error]['code'];
 		}
 
-		parent::__construct( $message, $code );
+		parent::__construct( $message, $status );
 	}
 
 	public function getDebug()
@@ -43,5 +32,4 @@ class RESTException extends \Exception
 		return $this->error;
 	}
 }
-
 ?>

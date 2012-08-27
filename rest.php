@@ -2,9 +2,11 @@
 include( $config->PATH_LIB_INCLUDE . '/http_status.inc.php' );
 
 $this->template = false;
-$this->content_type = ( ! empty( $_SERVER['HTTP_ACCEPT'] )
-	? $_SERVER['HTTP_ACCEPT']
-	: 'application/json' );
+
+$this->content_type = ( $_SERVER['HTTP_ACCEPT'] === '*/*'
+	|| false !== strpos( $_SERVER['HTTP_ACCEPT'], 'application/json' )
+		? 'application/json'
+		: $_SERVER['HTTP_ACCEPT'] );
 
 if( $_SERVER['REQUEST_METHOD'] === 'GET' )
 {
@@ -24,6 +26,7 @@ else
 /**
  * @see	\Service\Model::init()
  */
+
 if( is_callable( $this->callback ) )
 {
 	$response = call_user_func_array( $this->callback, array(
@@ -35,10 +38,31 @@ if( is_callable( $this->callback ) )
 else
 {
 	$response = array(
-		'success' => 'false',
-		'status' => $config->HTTP_INTERNAL_SERVER_ERROR,
-		'error' => 'Serice interface '
-			. ( $config->DEV ? $this->callback[0] : '' ) . ' not callable' );
+		'success'	=> 'false',
+		'status'	=> $config->HTTP_INTERNAL_SERVER_ERROR,
+		'message'	=> 'Serice not available'
+	);
+
+	$error = $this->callback[0] . ' not found';
+
+	if( file_exists( $config->PATH_SERVICE[$this->callback[0]] ) )
+	{
+		$end = get_declared_classes();
+		$end = end( $end );
+		$debug = 'File exists but service could not be loaded. Found ' . $end;
+		unset( $end );
+	}
+
+	if( $config->DEV )
+	{
+		$response['error'] =& $error;
+		$response['debug'] =& $debug;
+	}
+	else
+	{
+		error_log( $error );
+		error_log( $debug );
+	}
 }
 
 // send the http status and the date. content type gets sent by page::render
@@ -53,12 +77,14 @@ elseif( $this->content_type === 'application/xml' )
 {
 	// build xml response
 }
+
 elseif( $_SERVER['REQUEST_METHOD'] === 'OPTIONS' )
 	ob_clean();
+
 else
 {
+	error_log( $_SERVER['HTTP_ACCEPT'] );
 	header( $config->http_status[$config->HTTP_NOT_ACCEPTABLE] );
-	echo 'The server was unable to understand your request,',
-		' please check your request parameters.';
 }
+
 ?>
