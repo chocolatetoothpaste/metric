@@ -6,7 +6,7 @@
 namespace Domain;
 class Meta extends Model
 {
-	//protected static $table, $keys;
+	protected static $table, $keys, $connection;
 	//public $id, $fk_id;
 	//protected $keys = array( 'primary' => array( 'id', 'fk_id' ) );
 
@@ -15,7 +15,7 @@ class Meta extends Model
 		global $config;
 		if( $params )
 		{
-			$db = \mysql::instance( $config->DB_MAIN );
+			$db = \mysql::instance( static::$connection );
 			$keys = $this->getKeys();
 			$fields = $this->getFields();
 			$pk = $keys['primary'];
@@ -68,10 +68,15 @@ class Meta extends Model
 		static::$table = $table;
 	}
 
+	public function setConnection( $connection )
+	{
+		static::$connection = $connection;
+	}
+
 	public function save()
 	{
 		global $config;
-		$db = \mysql::instance( $config->DB_MAIN );
+		$db = \mysql::instance( static::$connection );
 		$query = new \query();
 		$columns = array();
 		$update = false;

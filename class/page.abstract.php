@@ -57,8 +57,6 @@ abstract class Page
 			preg_match_all( $pattern, $this->request,
 				$matches, PREG_SET_ORDER );
 
-			error_log( print_r( $matches, true));
-
 			if( $matches )
 			{
 				// shift a useless index

@@ -3,10 +3,8 @@ include( $config->PATH_LIB_INCLUDE . '/http_status.inc.php' );
 
 $this->template = false;
 
-$this->content_type = ( $_SERVER['HTTP_ACCEPT'] === '*/*'
-	|| false !== strpos( $_SERVER['HTTP_ACCEPT'], 'application/json' )
-		? 'application/json'
-		: $_SERVER['HTTP_ACCEPT'] );
+// until another data type is accepted, just default to this...
+$this->content_type = 'application/json';
 
 if( $_SERVER['REQUEST_METHOD'] === 'GET' )
 {
@@ -72,15 +70,10 @@ header( 'Date: ' . gmdate( DATE_RFC1123 ) );
 // determine response type and pass response through to the page handler
 if( $this->content_type === 'application/json' )
 	echo json_encode( $response );
-
 elseif( $this->content_type === 'application/xml' )
 {
 	// build xml response
 }
-
-elseif( $_SERVER['REQUEST_METHOD'] === 'OPTIONS' )
-	ob_clean();
-
 else
 {
 	error_log( $_SERVER['HTTP_ACCEPT'] );
