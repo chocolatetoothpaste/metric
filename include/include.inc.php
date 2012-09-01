@@ -20,8 +20,8 @@ require( $root . '/class/config.class.php' );
 $config = new config;
 
 require( dirname( $root ) . '/config.inc.php' );
-require( 'config.inc.php' );
-include( 'functions.inc.php' );
+require( $root . '/config.inc.php' );
+include( $root . '/functions.inc.php' );
 
 // this will attempt to autoload a class, otherwise
 // it throws an exception and halts execution
