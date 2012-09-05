@@ -315,34 +315,29 @@ abstract class Model
 		if( static::$options )
 		{
 			$options = static::$options;
-			if( ! empty( $options['sort:asc'] )
-				|| ! empty( $options['sort:desc'] ) )
+			$asc = $desc = array();
+
+			if( ! empty( $options['desc'] ) )
 			{
-				$asc = $desc = array();
-
-				if( ! empty( $options['sort:desc'] ) )
-				{
-					$desc = explode( ',', $options['sort:desc'] );
-					$q->order( $desc, 'DESC' );
-				}
-
-				if( ! empty( $options['sort:asc'] ) )
-				{
-					$asc = explode( ',', $options['sort:asc'] );
-					$q->order( $asc );
-				}
-
-				// this is some pretty crappy hack checking, first run
-				$diff = array_diff( array_merge( $asc, $desc ), $fields );
-				if( $diff )
-					throw new RESTException(
-						'Fields not acceptable for ordering: '
-							. implode( ', ', $diff ),
-						$config->HTTP_NOT_ACCEPTABLE
-					);
-
-
+				$desc = explode( ',', $options['desc'] );
+				$q->order( $desc, 'DESC' );
 			}
+
+			if( ! empty( $options['asc'] ) )
+			{
+				$asc = explode( ',', $options['asc'] );
+				$q->order( $asc );
+			}
+
+			// this is some pretty crappy hack checking, first run
+			$diff = array_diff( array_merge( $asc, $desc ), $fields );
+			if( $diff )
+				throw new RESTException(
+					'Fields not acceptable for ordering: '
+						. implode( ', ', $diff ),
+					$config->HTTP_NOT_ACCEPTABLE
+				);
+
 
 			if( ! empty( $options['limit'] ) )
 				$q->limit( $options['limit'] );
