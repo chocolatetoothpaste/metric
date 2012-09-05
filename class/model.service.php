@@ -177,15 +177,19 @@ abstract class Model
 	public static function delete( $params )
 	{
 		global $config;
-		$domain = static::$domain;
 
-		$obj = new $domain( $params );
-
-		if( $obj->delete() )
+		try
+		{
+			$domain = static::$domain;
+			$obj = new $domain( $params );
+			$obj->delete();
 			return static::respond( '', $config->HTTP_OK );
-		else
+		}
+		catch( \Exception $e )
+		{
 			throw new RESTException( 'Unable to delete resource',
 				$config->HTTP_INTERNAL_SERVER_ERROR );
+		}
 	}
 
 

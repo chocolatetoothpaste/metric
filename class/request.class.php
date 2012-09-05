@@ -42,6 +42,7 @@ class request extends \HttpRequest
 	public function delete()
 	{
 		$this->prepare( \HttpRequest::METH_DELETE );
+		$this->send();
 
 		return $this;
 	}

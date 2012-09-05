@@ -194,6 +194,20 @@ class query
 		return $this;
 	}
 
+
+	/**
+	 * Creates a select statement using properties defined before calling method
+	 * @return string	the generated query string
+	 */
+
+	public function delete( $table )
+	{
+		$this->table = $table;
+		$this->query = "DELETE FROM {$this->table}";
+
+		return $this;
+	}
+
 }
 
 ?>
