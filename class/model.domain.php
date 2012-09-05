@@ -137,13 +137,26 @@ abstract class Model
 		$db = \mysql::instance( $config->db[static::$connection] );
 		$table = $this->getTable();
 		$keys = $this->getKeys();
-		$key = ( is_array( $keys['primary'] )
-			? $keys['primary'][0]
-			: $keys['primary'] );
-		$q = "DELETE FROM $table WHERE $key = ? LIMIT 1";
-		$db->execute($q, array($this->{$key}));
+		$keys = $keys['primary'];
+		$val = array();
 
-		return ( $db->stmt->errorCode() === '00000' ? true : false );
+		foreach( $keys as $v )
+			$val[$v] = $this->$v;
+
+		$q = new \query();
+
+		// when using this delete function in this context, only one row will
+		// ever be deleted, so limit statement to 1 row to avoid malicious code
+		$q->delete($table)->where($val)->limit(1)->query();
+
+		$db->execute( $q, $val );
+
+		// 00000 means no errors
+		if( $db->stmt->errorCode() !== '00000' )
+		{
+			$info = $db->stmt->errorInfo();
+			throw new \Exception( $info[2], $info[1] );
+		}
 	}
 
 

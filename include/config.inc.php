@@ -39,8 +39,11 @@ define('', 1073741824);
 $config->define( 'PATH_LIB_CLASS',		$config->PATH_LIB . '/class' );
 $config->define( 'PATH_LIB_INCLUDE',	$config->PATH_LIB . '/include' );
 
-if( !isset($config->PAGE_REST_SERVER) )
-	$config->define('PAGE_REST_SERVER', $config->PATH_LIB . '/rest.php');
+if( ! isset( $config->PAGE_REST_SERVER ) )
+	$config->define( 'PAGE_REST_SERVER', $config->PATH_LIB . '/rest.php' );
+
+if( ! isset( $config->DIE_BEFORE_REDIRECT ) )
+	$config->define( 'DIE_BEFORE_REDIRECT', false );
 
 $config->alias = array_merge( array(
 	'/load'	=>	$config->PATH_LIB . '/load.php'
