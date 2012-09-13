@@ -53,22 +53,7 @@ abstract class Model
 			// searching could probably be merged in collection method, though
 			// chunks of collection should be moved into some supporting
 			// functions. it's getting a bit chunky and could use some trimming
-			if( $method == 'OPTIONS' ) {
-				if( isset( $config->CORS_ORIGINS ) )
-					header( 'Access-Control-Allow-Origin: '
-						. ( is_array( $config->CORS_ORIGINS )
-							? implode( ' ', $config->CORS_ORIGINS )
-							: $config->CORS_ORIGINS ) );
-
-				if( isset( $config->CORS_METHODS ) )
-					header( 'Access-Control-Allow-Methods: '
-						. ( is_array( $config->CORS_METHODS )
-							? implode( ' ', $config->CORS_METHODS )
-							: $config->CORS_METHODS ) );
-
-				return array( 'status' => $config->HTTP_OK );
-			}
-			else if( ! empty( static::$options['search'] ) || ! empty( $data['q'] ) )
+			if( ! empty( static::$options['search'] ) || ! empty( $data['q'] ) )
 				return static::search( $data['q'], $params );
 			else if( $method == 'GET' && $collection )
 			 	return static::collection( $method, $params );
