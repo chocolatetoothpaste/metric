@@ -27,7 +27,7 @@ CONFIG="<?php\n
 \$config->template = 'Template';\n
 ?>\c";
 
-ERR="<p>Help! I'm alive, my heart is beating like hammer</p><p><em>&#968; Metric</em></p>\c"
+ERR="<p>Help! I'm alive, my heart is beating like a hammer</p><p><em>&#968; Metric</em></p>\c"
 
 cd ..
 
