@@ -41,11 +41,11 @@ abstract class Model
 
 			$q->select( $fields, $this->getTable() )->where( $params )->query();
 			$db->fetchIntoObject( $this, $q );
+			$info = $db->stmt->errorInfo();
 
-			if( $db->stmt->errorCode() !== '00000' )
+			if( $info[0] !== '00000' || ! is_null( $info[1] ) )
 			{
-				$info = $db->stmt->errorInfo();
-				throw new \Exception( $info[2], $info[0] );
+				throw new \Exception( $info[2], $info[1] );
 			}
 		}
 

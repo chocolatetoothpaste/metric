@@ -10,15 +10,6 @@ class RESTException extends \Exception
 		$this->error = $error;
 		$this->debug = $debug;
 
-		$err_info =& \mysql::$err_info;
-
-		if( ! empty( $err_info[$error] ) )
-		{
-			$this->debug = $message;
-			$message = $err_info[$error]['message'];
-			$status = $err_info[$error]['code'];
-		}
-
 		parent::__construct( $message, $status );
 	}
 
