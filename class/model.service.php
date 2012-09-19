@@ -31,10 +31,12 @@ abstract class Model
 
 		$domain = static::$domain;
 
-		// pull the primary key(s) and diff against page params
-		// if any key is returned, assume it's a collection
+		// if domain is not set, default to collect. (without a domain, system
+		// wouldn't know how to pull a single entity anyway)
 		if( $domain )
 		{
+			// pull the primary key(s) and diff against page params
+			// if any key is returned, assume it's a collection
 			$keys = (array) $domain::getKeys('primary');
 
 			// swap fields (values) for keys
@@ -43,10 +45,13 @@ abstract class Model
 			// flip the boolean twice (array() [falsy value] -> true -> false)
 			// or (array(some_key) [truish value] -> false -> true
 			$collection = !! array_diff_key( $keys, $params );
-			unset($keys);
+			unset( $keys );
 		}
+		// collection is the safest default. collections can return a single
+		// result, read method can't return a collection
 		else
 			$collection = true;
+
 
 		try
 		{
@@ -86,6 +91,7 @@ abstract class Model
 				$return['error'] = $e->getError();
 				$return['debug'] = $e->getDebug();
 			}
+
 			else
 			{
 				$class = get_called_class();
@@ -122,7 +128,7 @@ abstract class Model
 
 	public static function read( $id, $get )
 	{
-		global $config, $page;
+		global $config;
 
 		try
 		{
@@ -277,16 +283,22 @@ abstract class Model
 			{
 				$date_regex = '\d{4}-\d{2}-\d{2} '
 					. '(([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9])';
+
+				// check if range is numeric
 				if( 0 !== preg_match( '#^(\d*[,-][^/]?\d*-?)*$#', $range ) )
 				{
 					$range = static::parseRange( $range );
-					$q->in( $field, $range );
+					$q->where( $field )->in( $range );
 				}
+
+				// check if range is dates
 				else if( preg_match( "#{$date_regex}/{$date_regex}#", $range ) )
 				{
 					$range = explode( '/', $range );
-					$q->between( $field, $range[0], $range[1] );
+					$q->where( $field )->between( $range[0], $range[1] );
 				}
+
+				// finally, range is key=value pair
 				else
 				{
 					$q->where( array( $field => $range ) );
@@ -332,12 +344,13 @@ abstract class Model
 
 		if( $db->stmt->errorCode() === '00000' )
 		{
+			// check if results need to be grouped (assoc array)
 			if( ! empty( $options['group'] ) )
 			{
 				$data = array();
 				$group = explode( ',', $options['group'] );
 
-				// do some rookie hack checking
+				// do some n00b hack checking
 				$diff = array_diff( $group, $fields );
 				if( $diff )
 				{
@@ -351,19 +364,22 @@ abstract class Model
 				$db->stmt->setFetchMode( \PDO::FETCH_ASSOC );
 				while( $row = $db->next() )
 				{
-					$d =& $data;
 					// unlimited groupability, at the
 					// low, low cost of compute cycles :P
+					$d =& $data;
 					foreach( $group as $g )
 						$d =& $d[$row[$g]];
 					$d[] = $row;
 				}
 			}
+
+			// no special grouping, just return all results
 			else
 				$data = $db->stmt->fetchAll( \PDO::FETCH_ASSOC );
 
 			return static::respond( $data, $status );
 		}
+
 		else
 		{
 			// error code and query are only in response if config::DEV is true
@@ -409,12 +425,12 @@ abstract class Model
 				if( 0 !== preg_match( '#^(\d*[,-][^/]?\d*-?)*$#', $range ) )
 				{
 					$range = static::parseRange( $range );
-					$q->in( $field, $range );
+					$q->where( $field )->in( $range );
 				}
 				else if( preg_match( "#{$date_regex}/{$date_regex}#", $range ) )
 				{
 					$range = explode( '/', $range );
-					$q->between( $field, $range[0], $range[1] );
+					$q->where( $field )->between( $range[0], $range[1] );
 				}
 				else
 				{

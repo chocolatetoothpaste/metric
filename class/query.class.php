@@ -49,7 +49,7 @@ class query
 		return $this;
 	}
 
-	public function in( $field, array $ins )
+	public function in( array $ins )
 	{
 		$in = array();
 		foreach( $ins as $v )
@@ -59,7 +59,8 @@ class query
 			$in[] = ":$k";
 		}
 		$in = implode( ',', $in );
-		$this->where( "$field IN ($in)" );
+		$this->where( "IN ($in)", '' );
+
 		return $this;
 	}
 
@@ -79,14 +80,15 @@ class query
 		return $this->where( $like, $separator );
 	}
 
-	public function between( $column, $one, $two )
+	public function between( $one, $two )
 	{
 		$k = "__between_{$column}_";
 		$k1 = preg_replace('#[^a-zA-Z0-9_]#', '', "{$k}{$one}");
 		$k2 = preg_replace('#[^a-zA-Z0-9_]#', '',"{$k}{$two}");
 		$this->params[$k1] = $one;
 		$this->params[$k2] = $two;
-		$this->where( "$column BETWEEN :$k1 AND :$k2 ");
+		$this->where( "BETWEEN :$k1 AND :$k2 ", '' );
+
 		return $this;
 	}
 
