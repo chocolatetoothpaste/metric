@@ -6,7 +6,7 @@ class request extends \HttpRequest
 	public function __construct( $url = '' )
 	{
 		global $config;
-		parent::__construct( $config->URL_API . $url );
+		parent::__construct( $url );
 		$this->setHeaders( array(
 			'Connection' => 'close',
 			'Content-Type' => 'application/x-www-form-urlencoded',
