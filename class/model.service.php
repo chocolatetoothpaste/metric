@@ -109,11 +109,12 @@ abstract class Model
 			$obj = new $domain();
 			$obj->capture( $post, $domain::getKeys() );
 			$obj->save();
+			return static::respond( $obj, $config->HTTP_OK );
 		}
 		catch( \Exception $e )
 		{
-			throw new RESTException( $e->getMessage(),
-				$config->HTTP_INTERNAL_SERVER_ERROR, $e->getCode() );
+			throw new RESTException( 'An error occured',
+				$config->HTTP_INTERNAL_SERVER_ERROR, $e->getCode(), $e->getMessage() );
 		}
 
 		return static::respond( $obj, $config->HTTP_CREATED );
@@ -127,15 +128,13 @@ abstract class Model
 		{
 			$domain = static::$domain;
 			$obj = new $domain( $id );
-			//if( $obj instanceof $domain )
+			return static::respond( $obj, $config->HTTP_OK );
 		}
 		catch( \Exception $e )
 		{
-			throw new RESTException( $e->getMessage(),
-				$config->HTTP_INTERNAL_SERVER_ERROR, $e->getCode() );
+			throw new RESTException( 'An error occured',
+				$config->HTTP_INTERNAL_SERVER_ERROR, $e->getCode(), $e->getMessage() );
 		}
-
-		return static::respond( $obj, $config->HTTP_OK );
 	}
 
 	public static function update( $params, $put )
@@ -149,14 +148,13 @@ abstract class Model
 			$obj = new $domain( $params );
 			$obj->capture( $put, $domain::getKeys() );
 			$obj->save();
+			return static::respond( $obj, $config->HTTP_OK );
 		}
 		catch( \Exception $e )
 		{
-			throw new RESTException( $e->getMessage(),
-				$config->HTTP_INTERNAL_SERVER_ERROR, $e->getCode() );
+			throw new RESTException( 'An error occured',
+				$config->HTTP_INTERNAL_SERVER_ERROR, $e->getCode(), $e->getMessage() );
 		}
-
-		return static::respond( $obj, $config->HTTP_OK );
 	}
 
 	public static function delete( $params )
@@ -172,8 +170,8 @@ abstract class Model
 		}
 		catch( \Exception $e )
 		{
-			throw new RESTException( 'Unable to delete resource',
-				$config->HTTP_INTERNAL_SERVER_ERROR );
+			throw new RESTException( 'An error occured',
+				$config->HTTP_INTERNAL_SERVER_ERROR, $e->getCode(), $e->getMessage() );
 		}
 	}
 
@@ -370,11 +368,12 @@ abstract class Model
 		{
 			// error code and query are only in response if config::DEV is true
 			// @see self::init()
+			$info = $db->stmt->errorInfo();
 			throw new RESTException(
 				'Unable to retrieve data',
 				$config->HTTP_BAD_REQUEST,
-				$db->stmt->errorCode(),
-				$q->query
+				$info[1],
+				$info[2]
 			);
 		}
 
@@ -436,11 +435,12 @@ abstract class Model
 		{
 			// error code and query are only in response if config::DEV is true
 			// @see self::init()
+			$info = $db->stmt->errorInfo();
 			throw new RESTException(
 				'Unable to retrieve data',
 				$config->HTTP_BAD_REQUEST,
-				$stmt->errorCode(),
-				$q->query
+				$info[1],
+				$info[2]
 			);
 		}
 
