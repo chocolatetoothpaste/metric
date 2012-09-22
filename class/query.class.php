@@ -92,6 +92,16 @@ class query
 		return $this;
 	}
 
+	public function group( $group, $dir = 'ASC' )
+	{
+		if( is_array( $group ) )
+			$group = implode( ', ', $group );
+
+		$this->group[] = "$group $dir";
+
+		return $this;
+	}
+
 	public function order( $order, $dir = 'ASC' )
 	{
 		if( is_array( $order ) )
@@ -106,6 +116,8 @@ class query
 	{
 		if( ! empty( $this->where ) )
 			$this->query .= " WHERE {$this->where}";
+		if( ! empty( $this->group ) )
+			$this->query .= ' GROUP BY ' . implode( ', ', $this->group );
 		if( ! empty( $this->order ) )
 			$this->query .= ' ORDER BY ' . implode( ', ', $this->order );
 		if( ! empty( $this->limit ) )

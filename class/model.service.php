@@ -310,6 +310,10 @@ abstract class Model
 		if( static::$options )
 		{
 			$options = static::$options;
+
+			if( ! empty( $options['group'] ) )
+				$q->group( $options['group'] );
+
 			$asc = $desc = array();
 
 			if( ! empty( $options['desc'] ) )
@@ -345,17 +349,18 @@ abstract class Model
 		if( $db->stmt->errorCode() === '00000' )
 		{
 			// check if results need to be grouped (assoc array)
-			if( ! empty( $options['group'] ) )
+			if( ! empty( $options['index'] ) )
 			{
 				$data = array();
-				$group = explode( ',', $options['group'] );
+				$index = explode( ',', $options['index'] );
+				error_log($options['index']);
 
 				// do some n00b hack checking
-				$diff = array_diff( $group, $fields );
+				$diff = array_diff( $index, $fields );
 				if( $diff )
 				{
 					throw new RESTException(
-						'Fields not acceptable for grouping: '
+						'Fields not acceptable for indexing: '
 							. implode( ', ', $diff ),
 						$config->HTTP_NOT_ACCEPTABLE
 					);
@@ -367,7 +372,7 @@ abstract class Model
 					// unlimited groupability, at the
 					// low, low cost of compute cycles :P
 					$d =& $data;
-					foreach( $group as $g )
+					foreach( $index as $g )
 						$d =& $d[$row[$g]];
 					$d[] = $row;
 				}
