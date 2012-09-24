@@ -337,7 +337,8 @@ abstract class Page
 			// return statement is safely ignored and the file included normally
 			return include( $frag );
 		} catch( \Exception $e ) {
-			die( "Unable to load fragment $frag" );
+			echo "Unable to load fragment $frag: ", $e->getMessage();
+			die;
 		}
 	}
 
