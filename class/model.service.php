@@ -353,7 +353,6 @@ abstract class Model
 			{
 				$data = array();
 				$index = explode( ',', $options['index'] );
-				error_log($options['index']);
 
 				// do some n00b hack checking
 				$diff = array_diff( $index, $fields );

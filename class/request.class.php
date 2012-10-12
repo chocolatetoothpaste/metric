@@ -27,6 +27,7 @@ class request extends \HttpRequest
 	{
 		$this->setPostFields( $data );
 		$this->prepare( \HttpRequest::METH_POST );
+		$this->send();
 
 		return $this;
 	}
@@ -35,6 +36,7 @@ class request extends \HttpRequest
 	{
 		$this->setPutData( http_build_query( $data ) );
 		$this->prepare( \HttpRequest::METH_PUT );
+		$this->send();
 
 		return $this;
 	}
