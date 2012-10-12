@@ -76,7 +76,6 @@ elseif( $this->content_type === 'application/xml' )
 }
 else
 {
-	error_log( $_SERVER['HTTP_ACCEPT'] );
 	header( $config->http_status[$config->HTTP_NOT_ACCEPTABLE] );
 }
 

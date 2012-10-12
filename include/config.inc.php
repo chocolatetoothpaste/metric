@@ -45,6 +45,9 @@ if( ! isset( $config->PAGE_REST_SERVER ) )
 if( ! isset( $config->DIE_BEFORE_REDIRECT ) )
 	$config->define( 'DIE_BEFORE_REDIRECT', false );
 
+if( ! isset( $config->FORCE_SSL ) )
+	$config->define( 'FORCE_SSL', false );
+
 $config->alias = array_merge( array(
 	'/load'	=>	$config->PATH_LIB . '/load.php'
 ), $config->alias );
