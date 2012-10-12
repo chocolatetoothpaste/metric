@@ -232,7 +232,7 @@ abstract class Model
 		{
 			$opt = explode( '=', $opt );
 			if( ! empty( $opt[0] ) )
-				$return[$opt[0]] = ( count( $opt ) > 1 ? $opt[1] : true );
+				$return[$opt[0]] = ( ! empty( $opt[1] ) ? $opt[1] : true );
 		}
 		// gc
 		unset( $option, $opt );
