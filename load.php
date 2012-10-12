@@ -16,15 +16,36 @@ endif;
 $files = explode( ',', $files );
 
 foreach( $files as &$file )
-	if( $file )
+{
+	if( ! empty( $config->$type[$file] ) )
+	{
+		if( is_array( $config->$type[$file] ) )
+		{
+			foreach( $config->$type[$file] as $f )
+				require("$dir/$f.$type");
+		}
+
+		else
+		{
+			$file = "$dir/$file.$type";
+			require($file);
+		}
+	}
+
+	else
+	{
 		$file = "$dir/$file.$type";
+		require($file);
+		// $mtime = max( $mtime, filemtime( $file ) );
+	}
+}
 
 //$this->mtime = array_walk( 'filemtime', $files );
 //$this->mtime = max( $this->mtime );
 
 
-foreach( $files as &$file )
-	if( $file )
-		require( $file );
-unset( $file );
+// foreach( $files as &$file )
+// 	if( $file )
+// 		require( $file );
+// unset( $file );
 ?>

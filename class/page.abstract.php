@@ -229,19 +229,22 @@ abstract class Page
 	 * Caches the output of a page
 	 */
 
-	public function cache( $request = null )
+	public function cache( $request = null, $mtime = 0 )
 	{
 		global $config;
 
 		// allow request to be passed as arg to accommodate customized pages
 		// to be cached, otherwise cache the default request
-		$request = iif( ! $request, $this->request );
+		if( ! $request )
+			$request = $this->request;
 
 		// grab the most recent mtime of a file/files, create a hash
-		$mtime = max( filemtime( $this->file ), filemtime( $this->view ) );
+		if( ! $mtime )
+			$mtime = max( filemtime( $this->file ), filemtime( $this->view ) );
 
 		$this->hash = md5( $request ) . "-{$mtime}";
 		$this->cache = $config->PATH_CACHE . "/{$this->hash}";
+
 		header( "Cache-Control: {$this->visibility}", false );
 		header( "Etag: {$this->hash}" );
 		header( 'Pragma: cache' );
@@ -249,13 +252,13 @@ abstract class Page
 		// check if user has a local cached file
 		// else check for a server cached file
 		// else generate a new file and if possible cache it
-		if( !empty( $_SERVER['HTTP_IF_NONE_MATCH'] )
+		if( ! empty( $_SERVER['HTTP_IF_NONE_MATCH'] )
 			&& $_SERVER['HTTP_IF_NONE_MATCH'] === "$this->hash" )
 		{
 			header( $config->http_status[$config->HTTP_NOT_MODIFIED] );
 			die;
 		}
-		elseif( file_exists( $this->cache ) && filesize( $this->cache ) > 0 )
+		else if( file_exists( $this->cache ) && filesize( $this->cache ) > 0 )
 		{
 			header( "X-Cache-Retrieved: {$this->hash}" );
 			echo file_get_contents( $this->cache );
