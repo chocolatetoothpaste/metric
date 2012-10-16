@@ -75,41 +75,28 @@ abstract class Model
 		$db = \mysql::instance( $config->db[static::$connection] );
 
 		$query = new \query;
-		$update = false;
+		$update = true;
 		$criteria = array();
 		$table = $this->getTable();
 		$keys = $this->getKeys();
 		$columns = $this->getFields( true, $this );
 
-		$keys = ( !empty( $keys['unique'] )
+		$keys = ( ! empty( $keys['unique'] )
 			? array_merge( (array)$keys['primary'], (array)$keys['unique'] )
 			: (array)$keys['primary'] );
 
-		foreach( $keys as $type => $k )
-		{
-			// if a primary key has a value in the
-			// property list, update an existing row
-			if( !empty( $this->$k ) )
-			{
-				if( $type == 'primary' )
-				{
-					$update = true;
-					$criteria[$k] = $this->$k;
-					unset( $columns[$k] );
-				}
-				elseif( $update == true )
-				{
-					unset( $columns[$k] );
-				}
-			}
-			else
-			{
-				unset( $columns[$k] );
-			}
-		}
+		$intersect = array_intersect_key( $columns, array_flip( $keys ) );
+
+		array_walk( $intersect, function( $v ) use ( &$update ) {
+			if( empty( $col ) )
+				$update = false;
+		});
 
 		if( $update )
-			$query->update( $table, $columns )->where( $criteria )->query();
+		{
+			$columns = array_diff( $intersect, $columns );
+			$query->update( $table, $columns )->where( $intersect )->query();
+		}
 		else
 			$query->insert( $table, $columns )->query();
 
