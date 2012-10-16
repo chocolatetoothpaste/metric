@@ -88,13 +88,13 @@ abstract class Model
 		$intersect = array_intersect_key( $columns, array_flip( $keys ) );
 
 		array_walk( $intersect, function( $v ) use ( &$update ) {
-			if( empty( $col ) )
+			if( empty( $v ) )
 				$update = false;
 		});
 
 		if( $update )
 		{
-			$columns = array_diff( $intersect, $columns );
+			$columns = array_diff( $columns, $intersect );
 			$query->update( $table, $columns )->where( $intersect )->query();
 		}
 		else
