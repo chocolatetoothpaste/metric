@@ -12,39 +12,46 @@ elseif( $files = get('css') ):
 	$type = 'css';
 endif;
 
-//$page->cache( $files );
-$files = explode( ',', $files );
+$res = explode( ',', $files );
+$max = 0;
 
-foreach( $files as &$file )
+// array_walk( $res, function( $v ) use( $dir, $type, &$max ) {
+// 	$v = "$dir/$v.$type";
+// 	if( file_exists( $v ) )
+// 		$max = max( filemtime( $v ), $max );
+// });
+
+//$page->cache( $files, $max );
+
+foreach( $res as &$file )
 {
 	if( ! empty( $config->$type[$file] ) )
 	{
 		if( is_array( $config->$type[$file] ) )
 		{
 			foreach( $config->$type[$file] as $f )
-				require("$dir/$f.$type");
+				require( "$dir/$f.$type" );
 		}
 
 		else
 		{
 			$file = "$dir/$file.$type";
-			require($file);
+			require( $file );
 		}
 	}
 
 	else
 	{
 		$file = "$dir/$file.$type";
-		require($file);
-		// $mtime = max( $mtime, filemtime( $file ) );
+		require( $file );
 	}
 }
 
-//$this->mtime = array_walk( 'filemtime', $files );
+//$this->mtime = array_walk( 'filemtime', $res );
 //$this->mtime = max( $this->mtime );
 
 
-// foreach( $files as &$file )
+// foreach( $res as &$file )
 // 	if( $file )
 // 		require( $file );
 // unset( $file );
