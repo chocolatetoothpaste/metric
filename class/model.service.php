@@ -23,7 +23,7 @@ abstract class Model
 
 		// check if a range (subset) is requested...
 		if( ! empty( $_SERVER['HTTP_RANGE'] ) )
-			static::$ranges = static::tokenize( $_SERVER['HTTP_RANGE'] );
+			static::$ranges = $_SERVER['HTTP_RANGE'];
 
 		// ...and look for any modifiers/options
 		if( ! empty( $_SERVER['HTTP_PRAGMA'] ) )
@@ -256,7 +256,7 @@ abstract class Model
 			throw new RESTException('Collections are read-only',
 				$config->HTTP_METHOD_NOT_ALLOWED );
 
-		static::$ranges = array_merge( static::$ranges, $params );
+		// static::$ranges = array_merge( static::$ranges, $params );
 
 		// make a local copy of domain name so domain
 		// properties and methods can be accessed
@@ -279,29 +279,34 @@ abstract class Model
 		if( ! empty( static::$ranges ) )
 		{
 			$status = $config->HTTP_PARTIAL_CONTENT;
-			foreach( static::$ranges as $field => &$range )
+			$ranges = preg_split( '/;\s*/', static::$ranges, -1, PREG_SPLIT_NO_EMPTY );
+
+			foreach( $ranges as &$range )
 			{
+				$reg = '/([!<>]?=|[<>])/';
+				$range = preg_split( $reg, $range, -1, PREG_SPLIT_DELIM_CAPTURE );
+
+				//error_log( print_r($range, true));
 				$date_regex = '\d{4}-\d{2}-\d{2} '
 					. '(([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9])';
 
 				// check if range is numeric
-				if( 0 !== preg_match( '#^(\d*[,-][^/]?\d*-?)*$#', $range ) )
+				if( 0 !== preg_match( '#^(\d*[,-][^/]?\d*-?)*$#', $range[2] ) )
 				{
-					$range = static::parseRange( $range );
-					$q->where( $field )->in( $range );
+					$range[2] = static::parseRange( $range[2] );
+					$q->where( $range[0] )->in( $range[2] );
 				}
 
 				// check if range is dates
-				else if( preg_match( "#{$date_regex}/{$date_regex}#", $range ) )
+				else if( preg_match( "#{$date_regex}/{$date_regex}#", $range[2] ) )
 				{
-					$range = explode( '/', $range );
-					$q->where( $field )->between( $range[0], $range[1] );
+					$range[2] = explode( '/', $range[2] );
+					$q->where( $range[0] )->between( $range[2][0], $range[2][1] );
 				}
 
-				// finally, range is key=value pair
 				else
 				{
-					$q->where( array( $field => $range ) );
+					$q->where( $range[0] . $range[1] . $range[2] );
 				}
 			}
 		}

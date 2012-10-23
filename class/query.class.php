@@ -82,35 +82,54 @@ class query
 
 	public function between( $one, $two )
 	{
+		// a unique id of some kind is required to dsitinguish fields, so a md5
+		// hash of the current where clause should give one each time
+		$column = md5( $ths->where );
 		$k = "__between_{$column}_";
+
+		// replace non-alpha-numeric (plus underscore) characters in the values
+		// and use those as part of the unique field name (otherwise there the
+		// values would collide)
 		$k1 = preg_replace('#[^a-zA-Z0-9_]#', '', "{$k}{$one}");
 		$k2 = preg_replace('#[^a-zA-Z0-9_]#', '',"{$k}{$two}");
+
 		$this->params[$k1] = $one;
 		$this->params[$k2] = $two;
-		$this->where( "BETWEEN :$k1 AND :$k2 ", '' );
+		$this->where( " BETWEEN :$k1 AND :$k2 ", '' );
 
 		return $this;
 	}
 
-	public function group( $group, $dir = 'ASC' )
+	public function group( $group, $direction = 'ASC' )
 	{
 		if( is_array( $group ) )
 			$group = implode( ', ', $group );
 
-		$this->group[] = "$group $dir";
+		$this->group[] = "$group $direction";
 
 		return $this;
 	}
 
-	public function order( $order, $dir = 'ASC' )
+	public function order( $order, $direction = 'ASC' )
 	{
 		if( is_array( $order ) )
 			$order = implode( ', ', $order );
 
-		$this->order[] = "$order $dir";
+		$this->order[] = "$order $direction";
 
 		return $this;
 	}
+
+	public function limit( $limit )
+	{
+		$this->limit = $limit;
+		return $this;
+	}
+
+
+	/**
+	 * Compile each part together and generate a valid SQL statement
+	 */
 
 	public function query()
 	{
@@ -123,13 +142,6 @@ class query
 		if( ! empty( $this->limit ) )
 			$this->query .= " LIMIT {$this->limit}";
 		return $this->query;
-	}
-
-	public function limit( $limit )
-	{
-		$this->limit = $limit;
-		//$this->params['limit'] = (int)$limit;
-		return $this;
 	}
 
 
