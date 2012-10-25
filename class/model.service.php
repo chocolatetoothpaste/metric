@@ -1,9 +1,9 @@
 <?php
 namespace Service;
 
-abstract class Model
+abstract class Model extends Collection
 {
-	protected static $domain;
+	public static $domain;
 	protected $get, $post, $put, $delete;
 	static public $method, $ranges = array(), $options = array();
 
@@ -58,18 +58,21 @@ abstract class Model
 			// searching could probably be merged in collection method, though
 			// chunks of collection should be moved into some supporting
 			// functions. it's getting a bit chunky and could use some trimming
-			if( ! empty( static::$options['search'] ) || ! empty( $data['q'] ) )
-				return static::search( $data['q'], $params );
-			else if( $method == 'GET' && $collection )
+			if( $method == 'GET' && $collection )
 			 	return static::collection( $method, $params );
+
 			else if( $method == 'GET' && $domain )
 				return static::read( $params, $data );
+
 			else if( $method == 'POST' && $domain )
 				return static::create( array_merge( $data, $params ) );
+
 			else if( $method == 'PUT' && $domain )
 				return static::update( $params, $data );
+
 			else if( $method == 'DELETE' && $domain )
 				return static::delete( $params );
+
 			else
 				throw new RESTException(
 					"Method $method not allowed at {$page->request}",
@@ -92,13 +95,11 @@ abstract class Model
 				$return['debug'] = $e->getDebug();
 			}
 
-			else
-			{
-				$class = get_called_class();
-				error_log( "$class request failed: {$page->request}" );
-				error_log( "$class error: " . $e->getError() );
-				error_log( "$class debug: " . $e->getDebug() );
-			}
+			// log errors, no matter what environment
+			$class = get_called_class();
+			error_log( "$class request failed: {$page->request}" );
+			error_log( "$class error: " . $e->getError() );
+			error_log( "$class debug: " . $e->getDebug() );
 
 			return $return;
 		}
@@ -113,14 +114,16 @@ abstract class Model
 		{
 			$domain = static::$domain;
 			$obj = new $domain();
-			$obj->capture( $post, $domain::getKeys() );
+			$obj->update( $post );
+			error_log(print_r( $obj, true));
 			$obj->save();
 			return static::respond( $obj, $config->HTTP_OK );
 		}
 		catch( \Exception $e )
 		{
 			throw new RESTException( 'An error occured',
-				$config->HTTP_INTERNAL_SERVER_ERROR, $e->getCode(), $e->getMessage() );
+				$config->HTTP_INTERNAL_SERVER_ERROR, $e->getCode(),
+				$e->getMessage() );
 		}
 
 		return static::respond( $obj, $config->HTTP_CREATED );
@@ -139,7 +142,8 @@ abstract class Model
 		catch( \Exception $e )
 		{
 			throw new RESTException( 'An error occured',
-				$config->HTTP_INTERNAL_SERVER_ERROR, $e->getCode(), $e->getMessage() );
+				$config->HTTP_INTERNAL_SERVER_ERROR, $e->getCode(),
+				$e->getMessage() );
 		}
 	}
 
@@ -152,14 +156,15 @@ abstract class Model
 			$domain = static::$domain;
 
 			$obj = new $domain( $params );
-			$obj->capture( $put, $domain::getKeys() );
+			$obj->update( $put );
 			$obj->save();
 			return static::respond( $obj, $config->HTTP_OK );
 		}
 		catch( \Exception $e )
 		{
 			throw new RESTException( 'An error occured',
-				$config->HTTP_INTERNAL_SERVER_ERROR, $e->getCode(), $e->getMessage() );
+				$config->HTTP_INTERNAL_SERVER_ERROR, $e->getCode(),
+				$e->getMessage() );
 		}
 	}
 
@@ -177,7 +182,8 @@ abstract class Model
 		catch( \Exception $e )
 		{
 			throw new RESTException( 'An error occured',
-				$config->HTTP_INTERNAL_SERVER_ERROR, $e->getCode(), $e->getMessage() );
+				$config->HTTP_INTERNAL_SERVER_ERROR, $e->getCode(),
+				$e->getMessage() );
 		}
 	}
 
@@ -273,18 +279,23 @@ abstract class Model
 		$connection = $domain::getConnection();
 
 		$q = new \query;
+		$q->where( $params );
 		$status = $config->HTTP_OK; // default status
 
 		// check for ranges and try to parse them
 		if( ! empty( static::$ranges ) )
 		{
 			$status = $config->HTTP_PARTIAL_CONTENT;
-			$ranges = preg_split( '/;\s*/', static::$ranges, -1, PREG_SPLIT_NO_EMPTY );
+			$ranges = preg_split( '/;\s*/', static::$ranges, -1,
+				PREG_SPLIT_NO_EMPTY );
 
 			foreach( $ranges as &$range )
 			{
-				$reg = '/([!<>]?=|[<>])/';
-				$range = preg_split( $reg, $range, -1, PREG_SPLIT_DELIM_CAPTURE );
+				// <=, >=, !=, <>, and = are the accepted operators, so 1 or 2
+				// matches are checked
+				$reg = '/([!<>]?=|[<>]{1,2})/';
+				$range = preg_split( $reg, $range, -1,
+					PREG_SPLIT_DELIM_CAPTURE );
 
 				//error_log( print_r($range, true));
 				$date_regex = '\d{4}-\d{2}-\d{2} '
@@ -298,10 +309,12 @@ abstract class Model
 				}
 
 				// check if range is dates
-				else if( preg_match( "#{$date_regex}/{$date_regex}#", $range[2] ) )
+				else if( preg_match( "#{$date_regex}/{$date_regex}#",
+					$range[2] ) )
 				{
 					$range[2] = explode( '/', $range[2] );
-					$q->where( $range[0] )->between( $range[2][0], $range[2][1] );
+					$q->where( $range[0] )->between( $range[2][0],
+						$range[2][1] );
 				}
 
 				else
@@ -315,6 +328,19 @@ abstract class Model
 		if( static::$options )
 		{
 			$options = static::$options;
+
+			// basic searchability in 6 lines!
+			if( ! empty( $options['search'] ) )
+			{
+				$terms = str_replace( ' ', '%', $options['search'] );
+				$search = $domain::getSearch();
+
+				$like = array();
+				foreach( $search as $field )
+					$like[$field] = $terms;
+
+				$q->like( $like );
+			}
 
 			if( ! empty( $options['group'] ) )
 				$q->group( $options['group'] );
@@ -343,8 +369,25 @@ abstract class Model
 				);
 
 
-			if( ! empty( $options['limit'] ) )
-				$q->limit( $options['limit'] );
+			if( ! empty( $options['limit'] ) ) {
+				if( empty( $options['offset'] ) )
+					$options['offset'] = 0;
+
+				if( preg_match( '/\D/', $options['limit'] ) )
+					throw new RESTException(
+						'Invalid limit: ' . $options['limit'],
+						$config->HTTP_NOT_ACCEPTABLE
+					);
+
+				if( preg_match( '/\D/', $options['offset'] ) )
+					throw new RESTException(
+						'Invalid offset: ' . $options['offset'],
+						$config->HTTP_NOT_ACCEPTABLE
+					);
+
+				$q->limit( $options['limit'], 0 );
+			}
+
 		}
 
 		$q->select( $fields, $domain::getTable() )->query();
@@ -362,15 +405,17 @@ abstract class Model
 				// do some n00b hack checking
 				$diff = array_diff( $index, $fields );
 				if( $diff )
-				{
 					throw new RESTException(
 						'Fields not acceptable for indexing: '
 							. implode( ', ', $diff ),
 						$config->HTTP_NOT_ACCEPTABLE
 					);
-				}
 
 				$db->stmt->setFetchMode( \PDO::FETCH_ASSOC );
+
+				// I was hoping to do away with unnecessary "0" indexes (when
+				// only one set exists), but consistency is WAY more important
+				// i.e., $index[0] = row
 				while( $row = $db->next() )
 				{
 					// unlimited groupability, at the
@@ -382,7 +427,8 @@ abstract class Model
 				}
 			}
 
-			// no special grouping, just return all results
+			// no special grouping, just return all results. consistency is
+			// broken here rows are not under sub arrays, so no 0 index :(
 			else
 				$data = $db->stmt->fetchAll( \PDO::FETCH_ASSOC );
 
@@ -403,73 +449,6 @@ abstract class Model
 		}
 
 	} // end method collection
-
-
-	public static function search( $terms, $params )
-	{
-		global $config;
-		static::$ranges = array_merge( static::$ranges, $params );
-		$terms = explode( ' ', $terms );
-		$domain = static::$domain;
-		$connection = $domain::getConnection();
-		$fields = $domain::getFields();
-		$search = $domain::getSearch();
-		$table = $domain::getTable();
-		$q = new \query;
-		$db = \mysql::instance( $config->db[$connection] );
-		$like = array();
-
-		foreach( $search as $field )
-			foreach( $terms as $k => $term )
-				$like[$field] = $term;
-
-		// check for ranges and try to parse them
-		if( ! empty( static::$ranges ) )
-		{
-			$status = $config->HTTP_PARTIAL_CONTENT;
-			foreach( static::$ranges as $field => &$range )
-			{
-				$date_regex = '\d{4}-\d{2}-\d{2} '
-					. '(([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9])';
-				if( 0 !== preg_match( '#^(\d*[,-][^/]?\d*-?)*$#', $range ) )
-				{
-					$range = static::parseRange( $range );
-					$q->where( $field )->in( $range );
-				}
-				else if( preg_match( "#{$date_regex}/{$date_regex}#", $range ) )
-				{
-					$range = explode( '/', $range );
-					$q->where( $field )->between( $range[0], $range[1] );
-				}
-				else
-				{
-					$q->where( array( $field => $range ) );
-				}
-			}
-		}
-
-		$q->select( $fields, $domain::getTable() )->like( $like )->query();
-		$db->execute( $q );
-
-		if( $db->stmt->errorCode() === '00000' )
-		{
-			$data = $db->stmt->fetchAll( \PDO::FETCH_ASSOC );
-			return static::respond( $data, $config->HTTP_PARTIAL_CONTENT );
-		}
-		else
-		{
-			// error code and query are only in response if config::DEV is true
-			// @see self::init()
-			$info = $db->stmt->errorInfo();
-			throw new RESTException(
-				'Unable to retrieve data',
-				$config->HTTP_BAD_REQUEST,
-				$info[1],
-				$info[2]
-			);
-		}
-
-	}
 
 
 	public static function respond( $data, $status = 200, $success = 'true' )

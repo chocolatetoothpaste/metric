@@ -74,6 +74,7 @@ class query
 		}
 
 		unset($v);
+
 		$like = implode( ' OR ', $like );
 		$like = "($like)";
 
@@ -120,9 +121,9 @@ class query
 		return $this;
 	}
 
-	public function limit( $limit )
+	public function limit( $limit, $offset = 0 )
 	{
-		$this->limit = $limit;
+		$this->limit = "$offset, $limit";
 		return $this;
 	}
 
