@@ -10,7 +10,7 @@ namespace Domain;
 
 abstract class Model
 {
-	protected static $keys, $table, $search, $connection = 'default';
+	protected static $keys, $table, $search, $connection = 'default', $db;
 	protected $meta_table, $meta_fields = array(), $meta_obj = array();
 
 
@@ -27,6 +27,7 @@ abstract class Model
 		if( $params )
 		{
 			$db = \mysql::instance( $config->db[static::$connection] );
+			//static::$db = $db;
 
 			$fields = static::getFields();
 			$q = new \query;
@@ -61,6 +62,16 @@ abstract class Model
 	public function capture( array &$array, $scrub = array() )
 	{
 		\array_merge_object( $this, $array, $scrub );
+	}
+
+	public function update( array &$array )
+	{
+		$keys = static::getKeys('primary');
+		$keys = array_flip( $keys );
+
+		foreach( $array as $k => $v )
+			if( property_exists( $this, $k ) && ! isset( $keys[$k] ) )
+				$this->{$k} = $v;
 	}
 
 
@@ -178,6 +189,12 @@ abstract class Model
 	final public static function getConnection()
 	{
 		return static::$connection;
+	}
+
+
+	final public static function setConnection( $connection )
+	{
+		static::$connection = $connection;
 	}
 
 

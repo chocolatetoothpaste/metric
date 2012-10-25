@@ -1,17 +1,6 @@
 <?php
 
 /**
- * Trims tab characters from a string, handy for slimming down output
- * @param string $text
- */
-
-function trim_tabs( $text )
-{
-	str_replace( "\t", '', $text );
-}
-
-
-/**
  * Replaces <br /> with a system new line
  * @param string $str
  * @return string
@@ -24,6 +13,7 @@ function br2nl( $str )
 
 
 /**
+ * DEPRECATED: see Metric\Page\Page::write()
  * Checks if a var is set and has a value
  * @param mixed &$var - the var to check if is set and has value
  * @param mixed $value [optional] - a value to check $var against
@@ -34,19 +24,9 @@ function br2nl( $str )
 //function setAndValue( &$var, $value = '', $strict = true )
 function setAndValue( &$var, $value = '', $strict = true )
 {
-	$return = ( !strlen( $value ) ? $var
+	$return = ( ! strlen( $value ) ? $var
 		: ( $strict ? $var === $value : $var == $value ) );
 	return ( $return ? $var : false );
-
-	/**
-	 * this is the old method, leaving it here just in case...
-
-	$return = ( isset( $var )
-		&& $var
-		&& ( ( $strict ? $var === $value : $var == $value )
-		|| !strlen( $value ) ) );
-	return ( $return ? $var : false );
-	 */
 }
 
 
@@ -193,6 +173,7 @@ function server( $key = -1, $default = '' )
 }
 
 /**
+ * DEPRECATED: see Metric\Page\Page::write()
  * Checks if an array key is set and if it has a value (strict type check)
  * @param array &$array - the array to check for $key in
  * @param string $key - the key to check if has value
@@ -201,39 +182,26 @@ function server( $key = -1, $default = '' )
  * @return boolean
  */
 
-function keyAndValue( &$array, $key, $value = '', $strict = true )
+function keyAndValue( array &$array, $key, $value = '', $strict = true )
 {
 	$return = false;
 	$key = (array)$key;
-	if( is_array( $array ) )
-	{
-		$arr = $array;
-			foreach( $key as $k )
-				if( isset( $arr[$k] ) )
-					$arr = $arr[$k];
-				else
-					return false;
-
-		if( $arr ){
-			if( !strlen( $value ) )
-				$return = $arr;
+	$arr = $array;
+		foreach( $key as $k )
+			if( isset( $arr[$k] ) )
+				$arr = $arr[$k];
 			else
-				$return = ( $strict ? $arr === $value : $arr == $value );
+				return false;
 
-		}
+	if( $arr ){
+		if( !strlen( $value ) )
+			$return = $arr;
+		else
+			$return = ( $strict ? $arr === $value : $arr == $value );
+
 	}
 
 	return $return;
-
-	/**
-	 * this is the old method, leaving it here just in case...
-
-	$return = ( is_array( $array ) && array_key_exists( $key, $array )
-		&& $array[$key]
-		&& ( ( $strict ? $array[$key] === $value : $array[$key] == $value )
-		|| !strlen( $value ) ) );
-	return ( $return ? $array[$key] : false );*/
-
 }
 
 
