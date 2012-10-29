@@ -45,24 +45,16 @@ abstract class Model
 			$info = $db->stmt->errorInfo();
 
 			if( $info[0] !== '00000' || ! is_null( $info[1] ) )
-			{
 				throw new \Exception( $info[2], $info[1] );
-			}
 		}
 
 	}
 
 
 	/**
-	 * Captures passed data and merges it with object properties. for fast and
-	 * dirty object updates!
+	 * Update an object with associate array of new values
 	 * @param array $array
 	 */
-
-	public function capture( array &$array, $scrub = array() )
-	{
-		\array_merge_object( $this, $array, $scrub );
-	}
 
 	public function update( array &$array )
 	{
@@ -80,7 +72,7 @@ abstract class Model
 	 * @param object $obj
 	 */
 
-	public function save()
+	public function save( $force_new = false )
 	{
 		global $config;
 		$db = \mysql::instance( $config->db[static::$connection] );
@@ -90,7 +82,7 @@ abstract class Model
 		$criteria = array();
 		$table = $this->getTable();
 		$keys = $this->getKeys();
-		$columns = $this->getFields( true, $this );
+		$columns = $this->getFields( $this );
 
 		$keys = ( ! empty( $keys['unique'] )
 			? array_merge( (array)$keys['primary'], (array)$keys['unique'] )
@@ -103,11 +95,12 @@ abstract class Model
 				$update = false;
 		});
 
-		if( $update )
+		if( ! $force_new || $update )
 		{
 			$columns = array_diff( $columns, $intersect );
 			$query->update( $table, $columns )->where( $intersect )->query();
 		}
+
 		else
 			$query->insert( $table, $columns )->query();
 
@@ -119,8 +112,8 @@ abstract class Model
 			if( ! $update )
 				$this->{$keys[0]} = $db->lastInsertId();
 
-			return true;
 		}
+
 		else
 		{
 			$info = $db->stmt->errorInfo();
@@ -237,13 +230,13 @@ abstract class Model
 	 * @return	array	the array of vars
 	 */
 
-	final public static function getFields( $values = false, $obj = null )
+	final public static function getFields( $obj = null )
 	{
-			$class = get_called_class();
-			$vars = call_user_func('get_class_vars', $class );
-			return ( $values
-				? array_intersect_key( get_object_vars($obj), $vars )
-				: array_keys( $vars ) );
+		$vars = call_user_func('get_class_vars', get_called_class() );
+
+		return ( ! is_null( $obj )
+			? array_intersect_key( get_object_vars( $obj ), $vars )
+			: array_keys( $vars ) );
 	}
 
 
@@ -261,10 +254,9 @@ abstract class Model
 			global $config;
 			$db = \mysql::instance( $config->db[static::$connection] );
 			$this->meta_obj = new Meta;
+
 			foreach( $this->meta_fields as $prop )
-			{
 				$this->meta_obj->{$prop} = null;
-			}
 
 			$this->meta_obj->setKeys( $this->getMetaKeys() );
 			$this->meta_obj->setTable( $this->getMetaTable() );
@@ -277,10 +269,9 @@ abstract class Model
 			{
 				$this->meta_obj->fk_id = $this->id;
 				$data = $result->fetchAll( \PDO::FETCH_OBJ );
+
 				foreach( $data as $v )
-				{
 					$this->meta_obj->{$v->meta_key} = $v->meta_value;
-				}
 			}
 		}
 
@@ -298,9 +289,8 @@ abstract class Model
 	public function meta( $key )
 	{
 		if( !( $this->meta_obj instanceof Meta ) )
-		{
 			$this->meta_obj = $this->getMeta();
-		}
+
 		return ( isset( $this->meta_obj->$key )
 			? $this->meta_obj->$key
 			: false );
@@ -316,14 +306,12 @@ abstract class Model
 	public function setMeta( $meta, $value = '' )
 	{
 		if( is_array( $meta ) )
-		{
 			// do a capture of array into meta vars
-			$this->meta_obj->capture( $meta );
-		}
+			$this->meta_obj->update( $meta );
+
 		elseif( $meta instanceof Meta )
-		{
 			$this->meta_obj = $meta;
-		}
+
 		else
 		{
 			$message = '\Domain\Model::setMeta() expects parameter 1 to be '

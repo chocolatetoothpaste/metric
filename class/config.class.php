@@ -12,12 +12,27 @@ class config
 	 * @param string $val
 	 */
 
-	public function define( $const, $val )
+	public function define( $const, $val = '' )
 	{
-		if( isset( $this->const_[$const] ) )
-			throw new Exception( "Configuration constant $const already defined" );
+
+		if( is_array( $const ) )
+		{
+			$int = array_intersect_key( $this->const_, $const );
+			if( ! $int )
+				$this->const_ = array_merge( $this->const_, $const );
+			else
+				throw new Exception( 'Cannot redeclare config constants'
+					. implode( ', ', $const ) );
+		}
+
 		else
-			$this->const_[$const] = $val;
+		{
+			if( ! isset( $this->const_[$const] ) )
+				$this->const_[$const] = $val;
+			else
+				throw new Exception( "Cannot redeclare config constant $const" );
+
+		}
 	}
 
 
@@ -44,7 +59,7 @@ class config
 	 * @param string $val
 	 */
 
-	public function __set( $var, $val )
+	public function __set( $var, $val = '' )
 	{
 		if( isset( $this->const_[$var] ) )
 			throw new Exception( "Configuration constant $var already defined" );
