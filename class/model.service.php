@@ -27,22 +27,39 @@ abstract class Model extends Collection
 		if( ! empty( $_SERVER['HTTP_PRAGMA'] ) )
 			static::$options = static::tokenize( $_SERVER['HTTP_PRAGMA'] );
 
-		// if domain is not set, default to collect. (without a domain, system
-		// wouldn't know how to pull a single entity anyway)
+		// if domain is not set, default to collection. (without a domain,
+		// system wouldn't know how to pull a single entity anyway)
 		if( ! empty( static::$domain ) )
 		{
 			$domain = static::$domain;
-			// pull the primary key(s) and diff against page params
-			// if any key is returned, assume it's a collection
-			$keys = (array) $domain::getKeys( 'primary' );
 
-			// swap fields (values) for keys
-			$keys = array_flip( $keys );
+			if( $method == 'GET' )
+			{
+				// pull the primary key(s) and diff against page params
+				// if any key is returned, assume it's a collection
+				$keys = (array) $domain::getKeys( 'primary' );
 
-			// flip the boolean twice (array() [falsy value] -> true -> false)
-			// or (array(some_key) [truish value] -> false -> true
-			$collection = !! array_diff_key( $keys, $params );
-			unset( $keys );
+				// swap fields (values) for keys
+				$keys = array_flip( $keys );
+
+				// flip the boolean twice (array() [falsy value] -> true -> false)
+				// or (array(some_key) [truish value] -> false -> true
+				$collection = !! array_diff_key( $keys, $params );
+				unset( $keys );
+			}
+
+			else if( $method == 'POST' )
+			{
+				$fields = $domain::getFields();
+
+				// swap fields (values) for keys
+				$fields = array_flip( $fields );
+
+				// flip the boolean twice (array() [falsy value] -> true -> false)
+				// or (array(some_key) [truish value] -> false -> true
+				$collection = ! array_intersect_key( $fields, $data );
+				unset( $fields );
+			}
 		}
 
 		// collection is the safest default. collections can return a single
@@ -63,8 +80,9 @@ abstract class Model extends Collection
 
 			else if( $method == 'POST' )
 			{
+				// error_log( print_r( $data, true ) );
 				return ( $collection
-					? static::postCollection( array_merge( $data, $params ) )
+					? static::postCollection( $data )
 					: static::post( array_merge( $data, $params ) ) );
 			}
 
