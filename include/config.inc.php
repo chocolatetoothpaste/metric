@@ -52,19 +52,20 @@ $config->alias = array_merge( array(
 	'/load'	=>	$config->PATH_LIB . '/load.php'
 ), $config->alias );
 
+$lib = $config->PATH_LIB_CLASS;
 $config->classes = array_merge( array(
-	'message'		=>	$config->PATH_LIB_CLASS . '/message.class.php',
-	'timer'			=>	$config->PATH_LIB_CLASS . '/timer.class.php',
-	'mysql'			=>	$config->PATH_LIB_CLASS . '/mysql.class.php',
-	'query'			=>	$config->PATH_LIB_CLASS . '/query.class.php',
-	'Metric\Page\Page'	=>	$config->PATH_LIB_CLASS . '/page.abstract.php',
-	'request'		=>	$config->PATH_LIB_CLASS . '/request.class.php',
-	'pmail'			=>	$config->PATH_LIB_CLASS . '/pmail.class.php',
-	'database'		=>	$config->PATH_LIB_CLASS . '/database.abstract.php',
-	'Domain\Model'	=>	$config->PATH_LIB_CLASS . '/model.domain.php',
-	'Domain\Meta'	=>	$config->PATH_LIB_CLASS . '/meta.domain.php',
-	'Service\Model'	=>	$config->PATH_LIB_CLASS . '/model.service.php',
-	'Service\Collection'	=>	$config->PATH_LIB_CLASS . '/collection.service.php',
-	'Service\RESTException'	=>	$config->PATH_LIB_CLASS . '/rest.exception.php'
+	'message'		=>	$lib . '/message.class.php',
+	'timer'			=>	$lib . '/timer.class.php',
+	'mysql'			=>	$lib . '/mysql.class.php',
+	'query'			=>	$lib . '/query.class.php',
+	'Metric\Page\Page'	=>	$lib . '/page.abstract.php',
+	'request'		=>	$lib . '/request.class.php',
+	'pmail'			=>	$lib . '/pmail.class.php',
+	'database'		=>	$lib . '/database.abstract.php',
+	'Domain\Model'	=>	$lib . '/model.domain.php',
+	'Domain\Meta'	=>	$lib . '/meta.domain.php',
+	'Service\Model'	=>	$lib . '/model.service.php',
+	'Service\Collection'	=>	$lib . '/collection.service.php',
+	'Service\RESTException'	=>	$lib . '/rest.exception.php'
 ), $config->classes );
 ?>

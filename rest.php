@@ -1,5 +1,5 @@
 <?php
-include( $config->PATH_LIB_INCLUDE . '/http_status.inc.php' );
+require( $config->PATH_LIB_INCLUDE . '/http_status.inc.php' );
 
 $this->template = false;
 

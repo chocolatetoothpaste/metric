@@ -4,9 +4,7 @@ namespace Service;
 abstract class Model extends Collection
 {
 	public static $domain;
-	protected $get, $post, $put, $delete;
 	static public $method, $ranges = array(), $options = array();
-
 
 	/**
 	 * Processes a request from the rest server and dispatches the request to
@@ -29,15 +27,14 @@ abstract class Model extends Collection
 		if( ! empty( $_SERVER['HTTP_PRAGMA'] ) )
 			static::$options = static::tokenize( $_SERVER['HTTP_PRAGMA'] );
 
-		$domain = static::$domain;
-
 		// if domain is not set, default to collect. (without a domain, system
 		// wouldn't know how to pull a single entity anyway)
-		if( $domain )
+		if( ! empty( static::$domain ) )
 		{
+			$domain = static::$domain;
 			// pull the primary key(s) and diff against page params
 			// if any key is returned, assume it's a collection
-			$keys = (array) $domain::getKeys('primary');
+			$keys = (array) $domain::getKeys( 'primary' );
 
 			// swap fields (values) for keys
 			$keys = array_flip( $keys );
@@ -47,28 +44,32 @@ abstract class Model extends Collection
 			$collection = !! array_diff_key( $keys, $params );
 			unset( $keys );
 		}
+
 		// collection is the safest default. collections can return a single
-		// result, read method can't return a collection
+		// result, other methods can't return a collection
 		else
 			$collection = true;
 
 
+
 		try
 		{
-			// searching could probably be merged in collection method, though
-			// chunks of collection should be moved into some supporting
-			// functions. it's getting a bit chunky and could use some trimming
-			if( $method == 'GET' && $collection )
-			 	return static::collection( $method, $params );
+			if( $method == 'GET' )
+			{
+				return ( $collection
+					? static::getCollection( array_merge( $data, $params ) )
+					: static::get( $params, $data ) );
+			}
 
-			else if( $method == 'GET' && $domain )
-				return static::read( $params, $data );
-
-			else if( $method == 'POST' && $domain )
-				return static::create( array_merge( $data, $params ) );
+			else if( $method == 'POST' )
+			{
+				return ( $collection
+					? static::postCollection( array_merge( $data, $params ) )
+					: static::post( array_merge( $data, $params ) ) );
+			}
 
 			else if( $method == 'PUT' && $domain )
-				return static::update( $params, $data );
+				return static::put( $params, $data );
 
 			else if( $method == 'DELETE' && $domain )
 				return static::delete( $params );
@@ -106,7 +107,7 @@ abstract class Model extends Collection
 	} // end method init
 
 
-	public static function create( $post )
+	public static function post( $post )
 	{
 		global $config;
 
@@ -115,8 +116,10 @@ abstract class Model extends Collection
 			$domain = static::$domain;
 			$obj = new $domain();
 			$obj->update( $post );
-			error_log(print_r( $obj, true));
-			$obj->save();
+
+			// true to force insert
+			$obj->save( true );
+
 			return static::respond( $obj, $config->HTTP_OK );
 		}
 		catch( \Exception $e )
@@ -129,7 +132,7 @@ abstract class Model extends Collection
 		return static::respond( $obj, $config->HTTP_CREATED );
 	}
 
-	public static function read( $id, $get )
+	public static function get( $id, $get )
 	{
 		global $config;
 
@@ -147,7 +150,7 @@ abstract class Model extends Collection
 		}
 	}
 
-	public static function update( $params, $put )
+	public static function put( $params, $put )
 	{
 		global $config;
 
@@ -247,210 +250,6 @@ abstract class Model extends Collection
 	} // end method tokenize
 
 
-	/**
-	 * Returns a collection of objects in response to a REST request
-	 * @param	string	$method		the HTTP request method
-	 * @return	array
-	 */
-
-	public static function collection( $method, array $params = array() )
-	{
-		global $config;
-
-		// GET is the only method allowed for collections for now
-		if( $method != 'GET' )
-			throw new RESTException('Collections are read-only',
-				$config->HTTP_METHOD_NOT_ALLOWED );
-
-		// static::$ranges = array_merge( static::$ranges, $params );
-
-		// make a local copy of domain name so domain
-		// properties and methods can be accessed
-		// [can't do static::$domain::someMethod()]
-		$domain = static::$domain;
-
-		// if domain is empty it's probably an error or someone
-		// forgot to define it, so throw an error up the chain
-		if( empty( $domain ) )
-			throw new RESTException( 'Unable to load service interface',
-				$config->HTTP_INTERNAL_SERVER_ERROR );
-
-		$fields = $domain::getFields();
-		$connection = $domain::getConnection();
-
-		$q = new \query;
-		$q->where( $params );
-		$status = $config->HTTP_OK; // default status
-
-		// check for ranges and try to parse them
-		if( ! empty( static::$ranges ) )
-		{
-			$status = $config->HTTP_PARTIAL_CONTENT;
-			$ranges = preg_split( '/;\s*/', static::$ranges, -1,
-				PREG_SPLIT_NO_EMPTY );
-
-			foreach( $ranges as &$range )
-			{
-				// <=, >=, !=, <>, and = are the accepted operators, so 1 or 2
-				// matches are checked
-				$reg = '/([!<>]?=|[<>]{1,2})/';
-				$range = preg_split( $reg, $range, -1,
-					PREG_SPLIT_DELIM_CAPTURE );
-
-				//error_log( print_r($range, true));
-				$date_regex = '\d{4}-\d{2}-\d{2} '
-					. '(([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9])';
-
-				// check if range is numeric
-				if( 0 !== preg_match( '#^(\d*[,-][^/]?\d*-?)*$#', $range[2] ) )
-				{
-					$range[2] = static::parseRange( $range[2] );
-					$q->where( $range[0] )->in( $range[2] );
-				}
-
-				// check if range is dates
-				else if( preg_match( "#{$date_regex}/{$date_regex}#",
-					$range[2] ) )
-				{
-					$range[2] = explode( '/', $range[2] );
-					$q->where( $range[0] )->between( $range[2][0],
-						$range[2][1] );
-				}
-
-				else
-				{
-					$q->where( $range[0] . $range[1] . $range[2] );
-				}
-			}
-		}
-
-		// check for custom options
-		if( static::$options )
-		{
-			$options = static::$options;
-
-			// basic searchability in 6 lines!
-			if( ! empty( $options['search'] ) )
-			{
-				$terms = str_replace( ' ', '%', $options['search'] );
-				$search = $domain::getSearch();
-
-				$like = array();
-				foreach( $search as $field )
-					$like[$field] = $terms;
-
-				$q->like( $like );
-			}
-
-			if( ! empty( $options['group'] ) )
-				$q->group( $options['group'] );
-
-			$asc = $desc = array();
-
-			if( ! empty( $options['desc'] ) )
-			{
-				$desc = explode( ',', $options['desc'] );
-				$q->order( $desc, 'DESC' );
-			}
-
-			if( ! empty( $options['asc'] ) )
-			{
-				$asc = explode( ',', $options['asc'] );
-				$q->order( $asc );
-			}
-
-			// this is some pretty crappy hack checking, first run
-			$diff = array_diff( array_merge( $asc, $desc ), $fields );
-			if( $diff )
-				throw new RESTException(
-					'Fields not acceptable for ordering: '
-						. implode( ', ', $diff ),
-					$config->HTTP_NOT_ACCEPTABLE
-				);
-
-
-			if( ! empty( $options['limit'] ) ) {
-				if( empty( $options['offset'] ) )
-					$options['offset'] = 0;
-
-				if( preg_match( '/\D/', $options['limit'] ) )
-					throw new RESTException(
-						'Invalid limit: ' . $options['limit'],
-						$config->HTTP_NOT_ACCEPTABLE
-					);
-
-				if( preg_match( '/\D/', $options['offset'] ) )
-					throw new RESTException(
-						'Invalid offset: ' . $options['offset'],
-						$config->HTTP_NOT_ACCEPTABLE
-					);
-
-				$q->limit( $options['limit'], 0 );
-			}
-
-		}
-
-		$q->select( $fields, $domain::getTable() )->query();
-		$db = \mysql::instance( $config->db[$connection] );
-		$db->execute( $q );
-
-		if( $db->stmt->errorCode() === '00000' )
-		{
-			// check if results need to be grouped (assoc array)
-			if( ! empty( $options['index'] ) )
-			{
-				$data = array();
-				$index = explode( ',', $options['index'] );
-
-				// do some n00b hack checking
-				$diff = array_diff( $index, $fields );
-				if( $diff )
-					throw new RESTException(
-						'Fields not acceptable for indexing: '
-							. implode( ', ', $diff ),
-						$config->HTTP_NOT_ACCEPTABLE
-					);
-
-				$db->stmt->setFetchMode( \PDO::FETCH_ASSOC );
-
-				// I was hoping to do away with unnecessary "0" indexes (when
-				// only one set exists), but consistency is WAY more important
-				// i.e., $index[0] = row
-				while( $row = $db->next() )
-				{
-					// unlimited groupability, at the
-					// low, low cost of compute cycles :P
-					$d =& $data;
-					foreach( $index as $g )
-						$d =& $d[$row[$g]];
-					$d[] = $row;
-				}
-			}
-
-			// no special grouping, just return all results. consistency is
-			// broken here rows are not under sub arrays, so no 0 index :(
-			else
-				$data = $db->stmt->fetchAll( \PDO::FETCH_ASSOC );
-
-			return static::respond( $data, $status );
-		}
-
-		else
-		{
-			// error code and query are only in response if config::DEV is true
-			// @see self::init()
-			$info = $db->stmt->errorInfo();
-			throw new RESTException(
-				'Unable to retrieve data',
-				$config->HTTP_BAD_REQUEST,
-				$info[1],
-				$info[2]
-			);
-		}
-
-	} // end method collection
-
-
 	public static function respond( $data, $status = 200, $success = 'true' )
 	{
 		return array(
@@ -459,6 +258,5 @@ abstract class Model extends Collection
 			'data' => $data
 		);
 	}
-
 }
 ?>
