@@ -334,7 +334,7 @@ abstract class Page
 	 * @param	boolean	$return
 	 */
 
-	public function frag( $frag )
+	public function frag( $frag, $data = array() )
 	{
 		global $config;
 		$frag = $config->PATH_FRAG . "/{$frag}.phtml";
@@ -354,7 +354,7 @@ abstract class Page
 	 * @param	string	$var
 	 */
 
-	public function write( $var )
+	public function write( &$var )
 	{
 		return ( ! empty( $var ) ? $var : '' );
 	}
