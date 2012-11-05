@@ -48,7 +48,7 @@ abstract class Model extends Collection
 				unset( $keys );
 			}
 
-			else if( $method == 'POST' )
+			elseif( $method == 'POST' )
 			{
 				$fields = $domain::getFields();
 
@@ -80,7 +80,6 @@ abstract class Model extends Collection
 
 			else if( $method == 'POST' )
 			{
-				// error_log( print_r( $data, true ) );
 				return ( $collection
 					? static::postCollection( $data )
 					: static::post( array_merge( $data, $params ) ) );
