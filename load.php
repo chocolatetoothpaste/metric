@@ -33,9 +33,9 @@ $max = 0;
 foreach( $list as &$file )
 {
 	// check to see if a "meta" reference has been defined in config
-	if( ! empty( $config->$ext[$file] ) )
+	if( ! empty( $config->{$ext}[$file] ) )
 	{
-		foreach( $config->$ext[$file] as $f )
+		foreach( $config->{$ext}[$file] as $f )
 			require( "$dir/$f.$ext" );
 	}
 
