@@ -58,11 +58,11 @@ abstract class Model
 
 	public function update( array &$array )
 	{
-		$keys = static::getKeys('primary');
+		$keys = (array) static::getKeys('primary');
 		$keys = array_flip( $keys );
 
 		foreach( $array as $k => $v )
-			if( property_exists( $this, $k ) && ! isset( $keys[$k] ) )
+			if( property_exists( $this, $k ) )// && ! isset( $keys[$k] ) )
 				$this->{$k} = $v;
 	}
 
@@ -95,7 +95,7 @@ abstract class Model
 				$update = false;
 		});
 
-		if( ! $force_new || $update )
+		if( ! $force_new && $update )
 		{
 			$columns = array_diff( $columns, $intersect );
 			$query->update( $table, $columns )->where( $intersect )->query();

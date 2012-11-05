@@ -72,6 +72,9 @@ abstract class Page
 				});
 				//*/
 
+				if( empty( $matches['service'] ) )
+					throw new \Exception( 'Undefined Service' );
+
 				$this->file = $config->PAGE_REST_SERVER;
 				$service = 'Service\\' . ucwords( $matches['service'] );
 
