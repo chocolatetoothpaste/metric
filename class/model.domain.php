@@ -95,9 +95,10 @@ abstract class Model
 				$update = false;
 		});
 
+
 		if( ! $force_new && $update )
 		{
-			$columns = array_diff( $columns, $intersect );
+			$columns = array_diff_assoc( $columns, $intersect );
 			$query->update( $table, $columns )->where( $intersect )->query();
 		}
 
