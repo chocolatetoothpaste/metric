@@ -341,7 +341,7 @@ abstract class Page
 		try {
 			// if included file returns a value, return that. if not then the
 			// return statement is safely ignored and the file included normally
-			return include( $frag );
+			include( $frag );
 		} catch( \Exception $e ) {
 			echo "Unable to load fragment $frag: ", $e->getMessage();
 			die;
