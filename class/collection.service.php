@@ -9,7 +9,7 @@ abstract class Collection
 	 * @return	array
 	 */
 
-	public static function getCollection( array $params )
+	public static function getCollection( array $params, $separator = 'AND' )
 	{
 		global $config;
 
@@ -34,7 +34,7 @@ abstract class Collection
 		$connection = $domain::getConnection();
 
 		$q = new \query;
-		$q->where( $params );
+		$q->where( $params, $separator );
 		$status = $config->HTTP_OK; // default status
 
 		// check for ranges and try to parse them
