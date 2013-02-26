@@ -31,20 +31,12 @@ $max = 0;
 //$page->cache( $files, $max );
 
 foreach( $list as &$file )
-{
 	// check to see if a "meta" reference has been defined in config
 	if( ! empty( $config->{$ext} ) && ! empty( $config->{$ext}[$file] ) )
-	{
 		foreach( $config->{$ext}[$file] as $f )
 			require( "$dir/$f.$ext" );
-	}
-
 	else
-	{
-		$file = "$dir/$file.$ext";
-		require( $file );
-	}
-}
+		require( "$dir/$file.$ext" );
 
 //$this->mtime = array_walk( 'filemtime', $list );
 //$this->mtime = max( $this->mtime );
