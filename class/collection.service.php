@@ -114,6 +114,11 @@ abstract class Collection
 				$q->order( $asc );
 			}
 
+			if( ! empty( $options['fields'] ) )
+			{
+				$fields = explode( ',', $options['fields'] );
+			}
+
 			// this is some pretty crappy hack checking, first run
 			$diff = array_diff( array_merge( $asc, $desc ), $fields );
 			if( $diff )
