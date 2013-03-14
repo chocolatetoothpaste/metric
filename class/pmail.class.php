@@ -167,7 +167,7 @@ class pmail
 		{
 			$this->content_type = 'multipart/alternative';
 		}
-		
+
 		return $this->message;
 	}
 
@@ -237,8 +237,7 @@ class pmail
 		$headers .= "--$this->boundary\r\n";
 
 		$this->message .= "\r\n\r\n--{$this->boundary}--";
-		echo $headers . $this->message;
-		die;
+
 		return mail( $this->to, $this->subject, $this->message, $headers );
 	}	//	end method send
 
