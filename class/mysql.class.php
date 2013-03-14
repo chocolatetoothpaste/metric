@@ -124,7 +124,9 @@ class mysql extends database
 
 	public function execute( query $query )
 	{
-		$this->stmt = parent::prepare( $query->query );
+		// only
+		if( empty( $this->stmt ) )
+			$this->stmt = parent::prepare( $query->query );
 		/*if( ! empty( $params['limit'] ) )
 		{
 			$limit = (int) $params['limit'];

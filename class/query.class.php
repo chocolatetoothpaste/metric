@@ -211,11 +211,18 @@ class query
 	 * @return string
 	 */
 
-	public function update( $table, array $params )
+	public function update( $table, $params )
 	{
-		$this->params = $params;
-		$columns = asprintf( '`%1$s` = :%1$s', array_keys( $params ) );
-		$columns = implode( ', ', $columns );
+		if( is_array( $params ) )
+		{
+			$this->params = $params;
+			$columns = asprintf( '`%1$s` = :%1$s', array_keys( $params ) );
+			$columns = implode( ', ', $columns );
+		}
+		else
+		{
+			$columns = $params;
+		}
 		$this->query = "UPDATE $table SET $columns";
 
 		return $this;
