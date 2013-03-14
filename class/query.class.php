@@ -18,7 +18,7 @@ class query
 		$this->table = $table;
 
 		$this->columns = ( is_array( $columns )
-			? '`' . implode( '`, `', $columns ) . '`'
+			? implode( ', ', $columns )
 			: $columns );
 
 		$this->query = "SELECT {$this->columns} FROM {$this->table}";

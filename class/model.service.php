@@ -60,6 +60,9 @@ abstract class Model extends Collection
 				$collection = ! array_intersect_key( $fields, $data );
 				unset( $fields );
 			}
+
+			else
+				$collection = false;
 		}
 
 		// collection is the safest default. collections can return a single
