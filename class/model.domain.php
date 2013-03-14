@@ -84,6 +84,8 @@ abstract class Model
 		$keys = $this->getKeys();
 		$columns = $this->getFields( $this );
 
+
+
 		$keys = ( ! empty( $keys['unique'] )
 			? array_merge( (array)$keys['primary'], (array)$keys['unique'] )
 			: (array)$keys['primary'] );
@@ -95,16 +97,20 @@ abstract class Model
 				$update = false;
 		});
 
-
 		if( ! $force_new && $update )
 		{
 			$columns = array_diff_assoc( $columns, $intersect );
+
+		error_log(print_r($columns, true));
 			$query->update( $table, $columns )->where( $intersect )->query();
 		}
 
 		else
 			$query->insert( $table, $columns )->query();
+
+
 		error_log($query->query);
+		error_log(print_r($query->params, true));
 
 		$db->execute( $query );
 

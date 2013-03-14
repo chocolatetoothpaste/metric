@@ -174,6 +174,8 @@ abstract class Model extends Collection
 	{
 		global $config;
 
+
+
 		try
 		{
 			$domain = static::$domain;
