@@ -104,6 +104,7 @@ abstract class Model
 
 		else
 			$query->insert( $table, $columns )->query();
+		error_log($query->query);
 
 		$db->execute( $query );
 

@@ -48,7 +48,7 @@ abstract class Collection
 			{
 				// <=, >=, !=, <>, and = are the accepted operators, so 1 or 2
 				// matches are checked
-				$reg = '/([!<>]?=|[<>]{1,2})/';
+				$reg = '/([!<>]?=|[<>]|\&{1,2})/';
 				$range = preg_split( $reg, $range, -1,
 					PREG_SPLIT_DELIM_CAPTURE );
 
