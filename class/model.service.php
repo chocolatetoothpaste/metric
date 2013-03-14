@@ -174,12 +174,9 @@ abstract class Model extends Collection
 	{
 		global $config;
 
-
-
 		try
 		{
 			$domain = static::$domain;
-
 			$obj = new $domain( $params );
 			$obj->update( $put );
 			$obj->save();
