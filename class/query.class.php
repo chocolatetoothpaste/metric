@@ -213,16 +213,16 @@ class query
 
 	public function update( $table, $params )
 	{
-		if( is_array( $params ) )
-		{
+		// if( is_array( $params ) )
+		// {
 			$this->params = $params;
 			$columns = asprintf( '`%1$s` = :%1$s', array_keys( $params ) );
 			$columns = implode( ', ', $columns );
-		}
-		else
-		{
-			$columns = $params;
-		}
+		// }
+		// else
+		// {
+		// 	$columns = $params;
+		// }
 		$this->query = "UPDATE $table SET $columns";
 
 		return $this;
