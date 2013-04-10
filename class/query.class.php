@@ -121,9 +121,9 @@ class query
 		return $this;
 	}
 
-	public function limit( $limit, $offset = 0 )
+	public function limit( $limit, $offset = null )
 	{
-		$this->limit = "$offset, $limit";
+		$this->limit = ( ! is_null( $offset ) ? "$offset, $limit" : $limit );
 		return $this;
 	}
 
