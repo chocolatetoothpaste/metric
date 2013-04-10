@@ -132,7 +132,7 @@ abstract class Model
 		$db = \mysql::instance( $config->db[static::$connection] );
 		$table = $this->getTable();
 		$keys = $this->getKeys();
-		$keys = $keys['primary'];
+		$keys = (array)$keys['primary'];
 		$val = array();
 
 		foreach( $keys as $v )
