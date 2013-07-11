@@ -3,8 +3,9 @@ namespace Metric;
 
  class Page
 {
-	public $file, $view, $cache, $body, $hash, $request, $https, $callback;
+	public $file, $view, $body, $hash, $request, $https, $callback;
 	public $template = false;
+	public $cache = false;
 	public $title = '';
 	public $js = array(), $css = array();
 	public $params = array();
@@ -34,12 +35,10 @@ namespace Metric;
 		else
 			$this->file = $config->PAGE_404;
 
-		// check if there is a view associated with the page
-		$path = pathinfo( $this->file );
-		$path['dirname'] = str_replace( $config->PATH_CONTROLLER,
-			$config->PATH_VIEW, $path['dirname'] );
-		$path = "$path[dirname]/$path[filename].phtml";
-		$this->view = ( file_exists( $path ) ? $path : null );
+		$file = pathinfo( $this->file, PATHINFO_FILENAME );
+		$file = "{$config->PATH_VIEW}/$file.phtml";
+
+		$this->view = ( file_exists( $file ) ? $file : null );
 
 		unset($path);
 
@@ -71,7 +70,9 @@ namespace Metric;
 			$class->init();
 		}
 		//*/
-	}	// end method parseURL
+
+		$this->body = ob_get_clean();
+	}	// end method load
 
 
 	public function template( $t )
@@ -175,7 +176,6 @@ namespace Metric;
 
 	public function render()
 	{
-		$this->body = ob_get_clean();
 
 		// in the past, there have been a couple (minor) issues with the
 		// browser trying to download the page rather than render it,
@@ -247,7 +247,7 @@ namespace Metric;
 		}
 		else if( file_exists( $this->cache ) && filesize( $this->cache ) > 0 )
 		{
-			header( "X-Cache-Retrieved: {$this->hash}" );
+			header( "X-Cache-Loaded: {$this->hash}" );
 			echo file_get_contents( $this->cache );
 			die;
 		}
