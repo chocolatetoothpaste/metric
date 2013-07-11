@@ -32,8 +32,8 @@ RewriteRule $ / [R=302,L]\n\n
 \tBrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html\n\n
 
 \t# Don't compress images\n
-\tSetEnvIfNoCase Request_URI \\n
-\t\.(?:gif|jpe?g|png)$ no-gzip dont-vary\n\n
+\tSetEnvIfNoCase Request_URI \\\\\\n
+\t\t\.(?:gif|jpe?g|png)$ no-gzip dont-vary\n\n
 
 \t<IfModule mod_headers.c>\n
 \t\t# Make sure proxies don't deliver the wrong content\n
@@ -55,13 +55,17 @@ ErrorDocument 404 /404\n\n
 \tRewriteRule . /index.php [L]\n\n
 
 \t# Make sure the HTTP_AUTHORIZATION header gets passed for API requests\n
-\tRewriteRule .* - [env=HTTP_AUTHORIZATION:%{HTTP:Authorization},last]\n
+\tRewriteRule .\052 - [env=HTTP_AUTHORIZATION:%{HTTP:Authorization},last]\n
 </IfModule>\n\c";
 
 # main page class
-PAGE="<?php\n \
-class Template extends \Metric\Page\Page {}\n \
-?>\c";
+PAGE="<!doctype html>\n
+<html>\n
+\t<head>\n
+\t\t<title><?=( \$config->DEV ? 'DEV: ' : '' ) . \$this->title?></title>\n
+\t</head>\n
+\t<body><?=\$this->body?></body>\n
+</html>";
 
 # main config file
 CONFIG="<?php\n
@@ -92,12 +96,22 @@ CONFIG="<?php\n
 # main file "welcome" message
 MAIN="<p>Help! I'm alive, my heart keeps beating like a hammer</p><p><em>&#968; Metric</em></p>\c"
 
+ERR="<?php\n
+header( 'HTTP/1.1 404 Not Found' );\n
+\$this->title = '404 Not Found';\n
+?>\n
+\t<h1>Page Not Found</h1>\n
+\t<p>The request <?php echo \$this->request; ?> was not found.</p>\n
+\t<p><em>&#968; Metric</em></p>\n"
+
 # go up one level and start deploying stuff
 cd ..
 
+echo 'Creating config...'
 # trim stupid leading spaces
 echo -e $CONFIG | sed 's/^ *//g' > config.inc.php
 
+echo 'Creating directories...'
 # create page directory hierarchy
 mkdir -p page/template
 mkdir page/controller
@@ -105,14 +119,18 @@ mkdir page/view
 mkdir page/frag
 mkdir page/cache
 
+echo 'Creating initial scripts...'
 # trim stupid leading spaces
-echo -e $PAGE | sed 's/^ *//g' > page/template/template.class.php
+echo -e $PAGE | sed 's/^ *//g' > page/template/template.php
 
 # views won't load without a controller present, so create an empty one
 touch page/controller/index.php
 echo -e $MAIN > page/view/index.phtml
+echo -e $ERR | sed 's/^ *//g'  > page/controller/404.php
 
 # create public dir to point web server to and inject bootstrap into index file
 mkdir public
 echo "<?php include( '../lib/bootstrap.php' ); ?>" > public/index.php
 echo -e $HTACCESS | sed 's/^ *//g' > public/.htaccess
+
+echo -e '\n...done!'

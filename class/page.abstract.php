@@ -1,10 +1,11 @@
 <?php
-namespace Metric\Page;
+namespace Metric;
 
-abstract class Page
+ class Page
 {
 	public $file, $view, $cache, $body, $hash, $request, $https, $callback;
 	public $template = false;
+	public $title = '';
 	public $js = array(), $css = array();
 	public $params = array();
 	public $content_type = 'text/html; charset=utf-8';
@@ -17,7 +18,7 @@ abstract class Page
 	 * @param string $request
 	 */
 
-	public function parseURL( $request )
+	public function load( $request )
 	{
 		global $config;
 		$this->request = $request;
@@ -27,131 +28,21 @@ abstract class Page
 		// as a service or alias to a file
 		if( file_exists( $config->PATH_CONTROLLER . $this->request . '.php' ) )
 			$this->file = $config->PATH_CONTROLLER . $this->request . '.php';
-		elseif( ! empty( $config->alias[$this->request] ) )
+		elseif( ! empty( $config->alias[$this->request] )
+		&& file_exists( $config->alias[$this->request] ) )
 			$this->file = $config->alias[$this->request];
-		else//if( false !== strpos($request, $config->URL_REST, 0) )
-		{
-			/**
-			 * grab all routes and combine them into a single pattern so the
-			 * URL matching is only executed once. Do regex substitutions
-			 * for extracting named params and the service name. The (?J)
-			 * modifier allows duplicate named params in the combined regex,
-			 * since multiple routes will have params with the same names
-			 */
-			$string = '(?J)^' . implode( '$|^', $config->routes ) . '$';
-			$match = array(
-				'#/:([\w]+)#',
-				'#/@(\w+)#',
-				'#/%(\w+)#'
-			);
-
-			$replace = array(
-				'/(?P<service>${1})',
-				'/(?P<${1}>[\w]+)',
-				'/?(?P<${1}>[\w]+)*'
-			);
-
-			$pattern = preg_replace( $match, $replace, $string );
-			$pattern = "#{$pattern}#";
-
-			preg_match_all( $pattern, $this->request,
-				$matches, PREG_SET_ORDER );
-
-			if( $matches )
-			{
-				// shift a useless index
-				$matches = $matches[0];
-
-				/// this is a REALLY shitty way to do this, but at the time of
-				// writing, there is no alternative. hopefully a flag or
-				// modifier will be introduced in the future
-				array_walk( $matches, function( $v, $k ) use( &$matches )
-				{
-					if( ! $v || is_numeric( $k ) )
-						unset($matches[$k]);
-				});
-				//*/
-
-				if( empty( $matches['service'] ) )
-					throw new \Exception( 'Undefined Service' );
-
-				$this->file = $config->PAGE_REST_SERVER;
-				$service = 'Service\\' . ucwords( $matches['service'] );
-
-				unset( $matches['service'] );
-
-				$this->params = $matches;
-				if( ! empty( $config->classes[$service] ) )
-					$this->callback = array( $service, 'init' );
-
-				return;
-			}
-		}
-
-		if( ! file_exists( $this->file ) )
-		{
-			$this->notFound();
-		}
 		else
-		{
-			// check if there is a view associated with the page
-			$path = pathinfo( $this->file );
-			$path['dirname'] = str_replace( $config->PATH_CONTROLLER,
-				$config->PATH_VIEW, $path['dirname'] );
-			$path = "$path[dirname]/$path[filename].phtml";
-			$this->view = ( file_exists( $path ) ? $path : null );
-			unset($path);
-		}
-	}	// end method parseURL
+			$this->file = $config->PAGE_404;
 
+		// check if there is a view associated with the page
+		$path = pathinfo( $this->file );
+		$path['dirname'] = str_replace( $config->PATH_CONTROLLER,
+			$config->PATH_VIEW, $path['dirname'] );
+		$path = "$path[dirname]/$path[filename].phtml";
+		$this->view = ( file_exists( $path ) ? $path : null );
 
-	/**
-	 * Display a 404 Not Found page
-	 */
+		unset($path);
 
-	private function notFound()
-	{
-		header( 'HTTP/1.1 404 Not Found' );
-		echo '<!doctype html><html>',
-			'<head><title>404 Not Found</title></head><body>',
-			'<h1>Page Not Found</h1>',
-			'<p>The request ', $this->request, ' was not found.</p>',
-			'<p><em>&#968; Metric</em></p>',
-			'</body></html>';
-		die;
-	}
-
-
-	/**
-	 * Load page specific scripts passed as function args
-	 */
-
-	public function js()
-	{
-		$this->js = array_merge( func_get_args(), $this->js );
-	}
-
-
-	/**
-	 * Load page specific styles passed as function args
-	 */
-
-	public function css()
-	{
-		$this->css = array_merge( func_get_args(), $this->css );
-	}
-
-
-	/**
-	 * Load the page controller and view
-	 */
-
-	public function load()
-	{
-		global $config;
-
-		// start an output buffer to begin building page. this allows headers
-		// to be set in the script before anything is output
 		ob_start();
 
 		// it is likely page controllers will be classes in the future, so this
@@ -180,6 +71,99 @@ abstract class Page
 			$class->init();
 		}
 		//*/
+	}	// end method parseURL
+
+
+	public function template( $t )
+	{
+		global $config;
+		$this->template = $t;
+	}
+
+
+	/**
+	 * Load page specific scripts passed as function args
+	 */
+
+	public function js()
+	{
+		$this->js = array_merge( func_get_args(), $this->js );
+	}
+
+
+	/**
+	 * Load page specific styles passed as function args
+	 */
+
+	public function css()
+	{
+		$this->css = array_merge( func_get_args(), $this->css );
+	}
+
+
+	/**
+	 * Route API requests
+	 */
+
+	public function route()
+	{
+		global $config;
+
+		/**
+		 * grab all routes and combine them into a single pattern so the
+		 * URL matching is only executed once. Do regex substitutions
+		 * for extracting named params and the service name. The (?J)
+		 * modifier allows duplicate named params in the combined regex,
+		 * since multiple routes will have params with the same names
+		 */
+		$string = '(?J)^' . implode( '$|^', $config->routes ) . '$';
+		$match = array(
+			'#/:([\w]+)#',
+			'#/@(\w+)#',
+			'#/%(\w+)#'
+		);
+
+		$replace = array(
+			'/(?P<service>${1})',
+			'/(?P<${1}>[\w]+)',
+			'/?(?P<${1}>[\w]+)*'
+		);
+
+		$pattern = preg_replace( $match, $replace, $string );
+		$pattern = "#{$pattern}#";
+
+		preg_match_all( $pattern, $this->request,
+			$matches, PREG_SET_ORDER );
+
+		if( $matches )
+		{
+			// shift a useless index
+			$matches = $matches[0];
+
+			/// this is a REALLY shitty way to do this, but at the time of
+			// writing, there is no alternative. hopefully a flag or
+			// modifier will be introduced in the future
+			array_walk( $matches, function( $v, $k ) use( &$matches )
+			{
+				if( ! $v || is_numeric( $k ) )
+					unset($matches[$k]);
+			});
+			///
+
+			if( empty( $matches['service'] ) )
+				throw new \Exception( 'Undefined Service' );
+
+			$this->file = $config->PAGE_REST_SERVER;
+			$service = 'Service\\' . ucwords( $matches['service'] );
+
+			unset( $matches['service'] );
+
+			$this->params = $matches;
+			if( ! empty( $config->classes[$service] ) )
+				$this->callback = array( $service, 'init' );
+
+			return;
+		}
 	}
 
 

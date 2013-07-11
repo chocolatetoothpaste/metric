@@ -42,6 +42,9 @@ $config->define( 'PATH_LIB_INCLUDE',	$config->PATH_LIB . '/include' );
 if( ! isset( $config->PAGE_REST_SERVER ) )
 	$config->define( 'PAGE_REST_SERVER', $config->PATH_LIB . '/rest.php' );
 
+if( ! isset( $config->PAGE_404 ) )
+	$config->define( 'PAGE_404', $config->PATH_CONTROLLER . '/404.php' );
+
 if( ! isset( $config->DIE_BEFORE_REDIRECT ) )
 	$config->define( 'DIE_BEFORE_REDIRECT', false );
 
@@ -58,7 +61,7 @@ $config->classes = array_merge( array(
 	'timer'			=>	$lib . '/timer.class.php',
 	'mysql'			=>	$lib . '/mysql.class.php',
 	'query'			=>	$lib . '/query.class.php',
-	'Metric\Page\Page'	=>	$lib . '/page.abstract.php',
+	'Metric\Page'	=>	$lib . '/page.abstract.php',
 	'request'		=>	$lib . '/request.class.php',
 	'pmail'			=>	$lib . '/pmail.class.php',
 	'database'		=>	$lib . '/database.abstract.php',
