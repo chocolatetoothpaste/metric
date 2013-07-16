@@ -12,14 +12,12 @@ $_start__ = microtime( true );
 include( 'include/include.inc.php' );
 session_start();
 
-$page = new Page();
-
 // make sure the page doesn't get cached unless told to
 header( "Cache-Control: must-revalidate, max-age=0" );
 
 // load the page/view then render it
+$page = Page::load( strtok( $_SERVER['REQUEST_URI'], '?' ) );
 $page->template( $config->template );
-$page->load( strtok( $_SERVER['REQUEST_URI'], '?' ) );
 $page->render();
 
 // end timing page execution and display it as a comment after </html>
