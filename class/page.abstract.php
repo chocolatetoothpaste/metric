@@ -1,9 +1,13 @@
 <?php
 namespace Metric;
 
- class Page
+
+abstract class Page
 {
-	public $file, $view, $body, $hash, $request, $https, $callback;
+	abstract public function init();
+
+
+	public $file, $view, $body, $hash, $request;
 	public $template = false;
 	public $cache = false;
 	public $title = '';
@@ -14,66 +18,65 @@ namespace Metric;
 
 
 	/**
-	 * Parses $request and tries to find a matching page/script. Looks
-	 * at public files as well as files protected below site root.
+	 * Parses $request and tries to find a matching controller. Looks in the
+	 * controller directory as well as at an array of aliases the resolve to
+	 * physical files on disk
 	 * @param string $request
 	 */
 
-	public function load( $request )
+	final public static function load( $request )
 	{
 		global $config;
-		$this->request = $request;
 
 		// check if the page is in the public dir, protected pages dir, or if
 		// a "view" exists. finally, check if request is defined in config file
 		// as a service or alias to a file
-		if( file_exists( $config->PATH_CONTROLLER . $this->request . '.php' ) )
-			$this->file = $config->PATH_CONTROLLER . $this->request . '.php';
-		elseif( ! empty( $config->alias[$this->request] )
-		&& file_exists( $config->alias[$this->request] ) )
-			$this->file = $config->alias[$this->request];
+		if( file_exists( $config->PATH_CONTROLLER . $request . '.php' ) )
+			$file = $config->PATH_CONTROLLER . $request . '.php';
+		elseif( ! empty( $config->alias[$request] )
+		&& file_exists( $config->alias[$request] ) )
+			$file = $config->alias[$request];
 		else
-			$this->file = $config->PAGE_404;
+			$file = $config->PAGE_404;
 
-		$file = pathinfo( $this->file, PATHINFO_FILENAME );
-		$file = "{$config->PATH_VIEW}/$file.phtml";
 
-		$this->view = ( file_exists( $file ) ? $file : null );
-
-		unset($path);
-
-		ob_start();
-
-		// it is likely page controllers will be classes in the future, so this
-		// section and the section below are left as comments to enable it
-		/*// get all declared class names to compare after including file
-		$classes = get_declared_classes();
-		//*/
+		// get all declared class names to compare after including file
+		// I know reusing vars is bad, but it has very limited, local scope
+		$new_class = get_declared_classes();
 
 		// load the page controller...
-		require_once( $this->file );
+		require_once( $file );
 
-		// ...and the view, if there is one
-		if( $this->view )
-			require_once( $this->view );
+		// get the update list of defined classes and see if a new one was
+		// defined by controller. reusing $new_class var, see (~20 lines) above
+		// for admission of guilt
+		$new_class = array_diff( get_declared_classes(), $new_class );
+		$new_class = end( $new_class );
 
-		/*//
-		// get the new list of classes and see
-		// if a new one was defined by controller
-		$new_class = array_diff( get_declared_classes(), $classes );
-		unset( $classes );
 		// if a new class was found, instantiate it and call init function
-		if( $new_class )
+		if( $new_class && is_subclass_of( $new_class, '\Metric\Page' ) )
 		{
-			list( $new_class ) = $new_class;
 			$class = new $new_class;
+			$class->file =& $file;
+			$class->request =& $request;
+
+			// set the view file through a series of checks. set early so
+			// static::init() can overwrite if desired
+			$class->view = pathinfo( $file, PATHINFO_FILENAME );
+			$class->view = "{$config->PATH_VIEW}/{$class->view}.phtml";
+
 			$class->init();
 		}
-		//*/
+		else
+			throw new \Exception( 'Controller must declare a new class and must inherit from \Metric\Page' );
 
-		$this->body = ob_get_clean();
+		return $class;
 	}	// end method load
 
+
+	/**
+	 * Set the template file to be loaded
+	 */
 
 	public function template( $t )
 	{
@@ -83,12 +86,42 @@ namespace Metric;
 
 
 	/**
+	 * Compile an array of JS/CSS files to load in a somewhat logical manner
+	 * This function is called from static::js() and static::css() and should
+	 * really only matter to these functions
+	 */
+
+	private function assets( $prev, $args )
+	{
+		$prepend = end( $args );
+
+		if( $args ) {
+			if( is_bool( $prepend ) === true && $prepend === true ) {
+				array_pop( $args );
+				$prev = array_merge( $args, $prev );
+			}
+
+			else
+				$prev = array_merge( $prev, $args );
+		}
+
+		return $prev;
+
+	}
+
+
+	/**
 	 * Load page specific scripts passed as function args
 	 */
 
 	public function js()
 	{
-		$this->js = array_merge( func_get_args(), $this->js );
+		$args = func_get_args();
+
+		if( $args )
+			$this->js = $this->assets( $this->js, $args );
+
+		return $this->js;
 	}
 
 
@@ -98,15 +131,20 @@ namespace Metric;
 
 	public function css()
 	{
-		$this->css = array_merge( func_get_args(), $this->css );
+		$args = func_get_args();
+
+		if( $args )
+			$this->css = $this->assets( $this->js, $args );
+
+		return $this->css;
 	}
 
 
 	/**
-	 * Route API requests
+	 * Deprecated, move this to Node.js project
 	 */
 
-	public function route()
+	public function route( $request )
 	{
 		global $config;
 
@@ -117,7 +155,11 @@ namespace Metric;
 		 * modifier allows duplicate named params in the combined regex,
 		 * since multiple routes will have params with the same names
 		 */
+
+		$this->file = $config->PAGE_REST_SERVER;
+
 		$string = '(?J)^' . implode( '$|^', $config->routes ) . '$';
+
 		$match = array(
 			'#/:([\w]+)#',
 			'#/@(\w+)#',
@@ -133,8 +175,7 @@ namespace Metric;
 		$pattern = preg_replace( $match, $replace, $string );
 		$pattern = "#{$pattern}#";
 
-		preg_match_all( $pattern, $this->request,
-			$matches, PREG_SET_ORDER );
+		preg_match_all( $pattern, $request, $matches, PREG_SET_ORDER );
 
 		if( $matches )
 		{
@@ -154,16 +195,15 @@ namespace Metric;
 			if( empty( $matches['service'] ) )
 				throw new \Exception( 'Undefined Service' );
 
-			$this->file = $config->PAGE_REST_SERVER;
 			$service = 'Service\\' . ucwords( $matches['service'] );
 
 			unset( $matches['service'] );
 
 			$this->params = $matches;
 			if( ! empty( $config->classes[$service] ) )
-				$this->callback = array( $service, 'init' );
+				$callback = array( $service, 'init' );
 
-			return;
+			return $callback;
 		}
 	}
 
@@ -176,39 +216,50 @@ namespace Metric;
 
 	public function render()
 	{
-
+		global $config;
 		// in the past, there have been a couple (minor) issues with the
 		// browser trying to download the page rather than render it,
 		// this header should fix this.
 		header( "Content-Type: {$this->content_type}" );
 
+		ob_start();
+
+		// load the view, if there is one. late check allows the controller to
+		// specify a view file and produce an error if path is somehow incorrect
+		if( file_exists( $this->view ) )
+			require_once( $this->view );
+		else
+			// since this framework does not require a view file, and in the
+			// event one does not exist, set view to null to allow apps to
+			// check the state of the view file
+			$this->view = null;
+
+		$this->body = ob_get_clean();
+
 		if( ! $this->template )
 			echo $this->body;
 		else
-		{
-			// a lot of pages/templates will use config vars,
-			// so $config should be pulled into scope
-			global $config;
 			require( $this->template );
 
-			// cache the page if the stars are aligned (no errors),
-			// because caching an errored page would be stupid
-			if( $this->cache && strlen( $this->body ) && ! error_get_last() )
-			{
-				$date = strtotime( '+1 month' );
-				$date = gmdate( DATE_RFC1123, $date );
-				header( "Expires: {$date}" );
 
-				// check if the cache directory is writable
-				// and attempt to cache page output
-				if( is_writable( dirname( $this->cache ) ) )
-					file_put_contents( $this->cache,
-						ob_get_contents(), LOCK_EX );
-			}
+		// cache the page if the stars are aligned (no errors),
+		// because caching an errored page would be stupid
+		if( $this->cache && strlen( $this->body ) && ! error_get_last() )
+		{
+			$date = strtotime( '+1 month' );
+			$date = gmdate( DATE_RFC1123, $date );
+			header( "Expires: {$date}" );
 
-			// display page, even if it doesn't get cached
-			ob_end_flush();
+			// check if the cache directory is writable
+			// and attempt to cache page output
+			if( is_writable( dirname( $this->cache ) ) )
+				file_put_contents( $this->cache,
+					ob_get_contents(), LOCK_EX );
 		}
+
+		// display page, even if it doesn't get cached
+		ob_end_flush();
+
 	}	// end method render
 
 
@@ -296,9 +347,7 @@ namespace Metric;
 	public static function https( $redirect = true )
 	{
 		global $config;
-		$https = ( $config->DEV && ! $config->FORCE_SSL
-			? true
-			: ! empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on' );
+		$https = ( ! empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on' );
 
 		// if redirect is true and https is not on, redirect to https site
 		if( $redirect && ! $https )

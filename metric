@@ -59,13 +59,37 @@ ErrorDocument 404 /404\n\n
 </IfModule>\n\c";
 
 # main page class
-PAGE="<!doctype html>\n
+PAGE="<?php\n
+\t\$this->js( 'jquery-2.0.3.min', true );\n
+?>\n
+<!doctype html>\n
 <html>\n
 \t<head>\n
 \t\t<title><?=( \$config->DEV ? 'DEV: ' : '' ) . \$this->title?></title>\n
+\t\t<?php\n
+\t\t\t// load each file individually when in dev mode (or additional\n
+\t\t\t// modes, e.g. staging) to make debugging more pleasant\n
+\t\t\tif( \$config->DEV ):\n
+\t\t\t\tforeach( \$this->css as \$file ): ?>\n
+\t\t\t\t\t<link rel=\"stylesheet\" type=\"text/css\" href=\"/load?css=<?=\$file?>\">\n
+\t\t\t\t<?php endforeach; ?>\n
+\n
+\t\t\t\t<?php foreach( \$this->js as \$file ): ?>\n
+\t\t\t\t\t<script src=\"/load?js=<?=\$file?>\" type=\"text/javascript\"></script>\n
+\t\t\t\t<?php endforeach; ?>\n
+\n
+\t\t<?php\n
+\t\t\t// combine files into one HTTP request when on live servers\n
+\t\t\telse:\n
+\t\t\t\t\$js = implode( ',', \$this->js );\n
+\t\t\t\t\$css = implode( ',', \$this->css ); ?>\n
+\n
+\t\t\t\t<link rel=\"stylesheet\" type=\"text/css\" href=\"/load?css=<?=\$css?>\">\n
+\t\t\t\t<script src=\"/load?js=<?=\$js?>\" type=\"text/javascript\"></script>\n
+\t\t<?php endif; ?>\n
 \t</head>\n
 \t<body><?=\$this->body?></body>\n
-</html>";
+</html>\c";
 
 # main config file
 CONFIG="<?php\n
@@ -113,23 +137,19 @@ echo -e $CONFIG | sed 's/^ *//g' > config.inc.php
 
 echo 'Creating directories...'
 # create page directory hierarchy
-mkdir -p page/template
-mkdir page/controller
-mkdir page/view
-mkdir page/frag
-mkdir page/cache
+mkdir -p page/template page/controller page/view page/frag page/cache
 
 echo 'Creating initial scripts...'
 # trim stupid leading spaces
-echo -e $PAGE | sed 's/^ *//g' > page/template/template.php
+echo -e $PAGE | sed 's/^ *//g' > page/template/template.phtml
 
 # views won't load without a controller present, so create an empty one
-touch page/controller/index.php
 echo -e $MAIN > page/view/index.phtml
 echo -e $ERR | sed 's/^ *//g'  > page/controller/404.php
 
 # create public dir to point web server to and inject bootstrap into index file
-mkdir public
+mkdir -p public/js public/css
+
 echo "<?php include( '../lib/bootstrap.php' ); ?>" > public/index.php
 echo -e $HTACCESS | sed 's/^ *//g' > public/.htaccess
 
