@@ -57,18 +57,13 @@ $config->alias = array_merge( array(
 
 $lib = $config->PATH_LIB_CLASS;
 $config->classes = array_merge( array(
-	'message'		=>	$lib . '/message.class.php',
+	'database'		=>	$lib . '/db/database.abstract.php',
+	'mysql'			=>	$lib . '/db/mysql.class.php',
+	'query'			=>	$lib . '/db/query.class.php',
 	'timer'			=>	$lib . '/timer.class.php',
-	'mysql'			=>	$lib . '/mysql.class.php',
-	'query'			=>	$lib . '/query.class.php',
 	'Metric\Page'	=>	$lib . '/page.abstract.php',
-	'request'		=>	$lib . '/request.class.php',
 	'pmail'			=>	$lib . '/pmail.class.php',
-	'database'		=>	$lib . '/database.abstract.php',
 	'Domain\Model'	=>	$lib . '/model.domain.php',
-	'Domain\Meta'	=>	$lib . '/meta.domain.php',
-	'Service\Model'	=>	$lib . '/model.service.php',
-	'Service\Collection'	=>	$lib . '/collection.service.php',
-	'Service\RESTException'	=>	$lib . '/rest.exception.php'
+	'Domain\Meta'	=>	$lib . '/meta.domain.php'
 ), $config->classes );
 ?>
