@@ -110,19 +110,14 @@ abstract class Model
 
 		$db->execute( $query );
 
+		$info = $db->stmt->errorInfo();
+
 		// 00000 means no errors
-		if( $db->stmt->errorCode() === '00000' )
-		{
-			if( ! $update )
-				$this->{$keys[0]} = $db->lastInsertId();
-
-		}
-
-		else
-		{
-			$info = $db->stmt->errorInfo();
+		if( $info[0] !== '00000' || ! is_null( $info[1] ) )
 			throw new \Exception( $info[2], $info[1] );
-		}
+
+		if( ! $update )
+			$this->{$keys[0]} = $db->lastInsertId();
 	}
 
 
@@ -146,12 +141,10 @@ abstract class Model
 
 		$db->execute( $q, $val );
 
-		// 00000 means no errors
-		if( $db->stmt->errorCode() !== '00000' )
-		{
-			$info = $db->stmt->errorInfo();
+		$info = $db->stmt->errorInfo();
+
+		if( $info[0] !== '00000' || ! is_null( $info[1] ) )
 			throw new \Exception( $info[2], $info[1] );
-		}
 	}
 
 
