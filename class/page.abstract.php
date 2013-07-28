@@ -1,20 +1,21 @@
 <?php
 namespace Metric;
 
-
 abstract class Page
 {
+	// require page classes to define this function
 	abstract public function init();
 
 
 	public $file, $view, $body, $hash, $request;
 	public $template = false;
-	public $cache = false;
 	public $title = '';
 	public $js = array(), $css = array();
-	public $params = array();
+	public $params = array(), $data = array();
 	public $content_type = 'text/html; charset=utf-8';
 	public $visibility = 'public';
+
+	private $cache = false;
 
 
 	/**
@@ -42,7 +43,7 @@ abstract class Page
 
 		// get all declared class names to compare after including file
 		// I know reusing vars is bad, but it has very limited, local scope
-		$new_class = get_declared_classes();
+		// $new_class = get_declared_classes();
 
 		// load the page controller...
 		require_once( $file );
@@ -50,7 +51,8 @@ abstract class Page
 		// get the update list of defined classes and see if a new one was
 		// defined by controller. reusing $new_class var, see (~20 lines) above
 		// for admission of guilt
-		$new_class = array_diff( get_declared_classes(), $new_class );
+		// $new_class = array_diff( get_declared_classes(), $new_class );
+		$new_class = get_declared_classes();
 		$new_class = end( $new_class );
 
 		// if a new class was found, instantiate it and call init function
@@ -106,7 +108,6 @@ abstract class Page
 		}
 
 		return $prev;
-
 	}
 
 
@@ -134,77 +135,9 @@ abstract class Page
 		$args = func_get_args();
 
 		if( $args )
-			$this->css = $this->assets( $this->js, $args );
+			$this->css = $this->assets( $this->css, $args );
 
 		return $this->css;
-	}
-
-
-	/**
-	 * Deprecated, move this to Node.js project
-	 */
-
-	public function route( $request )
-	{
-		global $config;
-
-		/**
-		 * grab all routes and combine them into a single pattern so the
-		 * URL matching is only executed once. Do regex substitutions
-		 * for extracting named params and the service name. The (?J)
-		 * modifier allows duplicate named params in the combined regex,
-		 * since multiple routes will have params with the same names
-		 */
-
-		$this->file = $config->PAGE_REST_SERVER;
-
-		$string = '(?J)^' . implode( '$|^', $config->routes ) . '$';
-
-		$match = array(
-			'#/:([\w]+)#',
-			'#/@(\w+)#',
-			'#/%(\w+)#'
-		);
-
-		$replace = array(
-			'/(?P<service>${1})',
-			'/(?P<${1}>[\w]+)',
-			'/?(?P<${1}>[\w]+)*'
-		);
-
-		$pattern = preg_replace( $match, $replace, $string );
-		$pattern = "#{$pattern}#";
-
-		preg_match_all( $pattern, $request, $matches, PREG_SET_ORDER );
-
-		if( $matches )
-		{
-			// shift a useless index
-			$matches = $matches[0];
-
-			/// this is a REALLY shitty way to do this, but at the time of
-			// writing, there is no alternative. hopefully a flag or
-			// modifier will be introduced in the future
-			array_walk( $matches, function( $v, $k ) use( &$matches )
-			{
-				if( ! $v || is_numeric( $k ) )
-					unset($matches[$k]);
-			});
-			///
-
-			if( empty( $matches['service'] ) )
-				throw new \Exception( 'Undefined Service' );
-
-			$service = 'Service\\' . ucwords( $matches['service'] );
-
-			unset( $matches['service'] );
-
-			$this->params = $matches;
-			if( ! empty( $config->classes[$service] ) )
-				$callback = array( $service, 'init' );
-
-			return $callback;
-		}
 	}
 
 
@@ -367,18 +300,16 @@ abstract class Page
 	 * @param	boolean	$return
 	 */
 
-	public function frag( $frag, $data = array() )
+	public function frag( $frag )
 	{
 		global $config;
 		$frag = $config->PATH_FRAG . "/{$frag}.phtml";
-		try {
-			// if included file returns a value, return that. if not then the
-			// return statement is safely ignored and the file included normally
+
+		// send data to frags and access it through $this->data
+		if( file_exists( $frag ) )
 			include( $frag );
-		} catch( \Exception $e ) {
-			echo "Unable to load fragment $frag: ", $e->getMessage();
-			die;
-		}
+		else
+			throw new Exception( "Unable to load fragment $frag" );
 	}
 
 
