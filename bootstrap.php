@@ -1,8 +1,4 @@
 <?php
-/**
- * @author ross paskett <rpaskett@gmail.com>
- * @see /page/controller and /page/view for actual pages
- */
 namespace Metric;
 
 // begin timing page execution

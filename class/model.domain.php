@@ -1,11 +1,4 @@
 <?php
-
-/**
- * Model
- *
- * @author rosspaskett
- */
-
 namespace Domain;
 
 abstract class Model

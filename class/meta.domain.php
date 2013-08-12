@@ -1,9 +1,6 @@
 <?php
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 namespace Domain;
+
 class Meta extends Model
 {
 	protected static $table, $keys, $connection;

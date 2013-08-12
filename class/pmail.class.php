@@ -1,11 +1,4 @@
 <?php
-
-/**
-* @author ross paskett [rpaskett@gmail.com]
-*
-*/
-
-
 class pmail
 {
 

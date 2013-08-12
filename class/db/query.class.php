@@ -158,7 +158,8 @@ class query
 	public function insert( $table, array $params )
 	{
 		$columns = array();
-		if( is_multi( $params ) )
+		$multi = ( count( $params ) != count( $params, COUNT_RECURSIVE ) );
+		if( $multi )
 		{
 			$arr = array();
 			foreach( $params as $k => $void )

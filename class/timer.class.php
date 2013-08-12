@@ -1,10 +1,4 @@
 <?php
-/**
- * Timer class
- * @author Ross Paskett <rpaskett@gmail.com>
- */
-
-
 class timer
 {
 	private $start = array();

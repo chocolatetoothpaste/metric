@@ -1,9 +1,4 @@
 <?php
-/**
- *
- * @author ross paskett
- */
-
 abstract class database extends PDO
 {
 	abstract public function fetchIntoObject( &$obj, query $query );
