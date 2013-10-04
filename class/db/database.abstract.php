@@ -1,4 +1,6 @@
 <?php
+namespace Metric\DB;
+
 abstract class database extends PDO
 {
 	abstract public function fetchIntoObject( &$obj, query $query );

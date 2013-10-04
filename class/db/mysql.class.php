@@ -1,9 +1,5 @@
 <?php
-/**
- * a wicked awesome extension to PDO.
- * @author ross paskett - rpaskett@gmail.com
- * @package framework
- */
+namespace Metric\DB;
 
 class mysql extends database
 {
