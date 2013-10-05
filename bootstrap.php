@@ -21,5 +21,4 @@ $page->render();
 if( $page->template )
 	echo '<!-- ', microtime( true ) - $_start__, ' hash: ', $page->hash, '-->';
 
-// ross tests
 ?>
