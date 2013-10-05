@@ -1,4 +1,5 @@
 <?php
+namespace Metric;
 
 /*
  * Bitwise values
@@ -57,13 +58,12 @@ $config->alias = array_merge( array(
 
 $lib = $config->PATH_LIB_CLASS;
 $config->classes = array_merge( array(
-	'database'		=>	$lib . '/db/database.abstract.php',
-	'mysql'			=>	$lib . '/db/mysql.class.php',
-	'query'			=>	$lib . '/db/query.class.php',
-	'timer'			=>	$lib . '/timer.class.php',
-	'Metric\Page'	=>	$lib . '/page.abstract.php',
-	'pmail'			=>	$lib . '/pmail.class.php',
-	'Domain\Model'	=>	$lib . '/model.domain.php',
-	'Domain\Meta'	=>	$lib . '/meta.domain.php'
+	'Metric\DB\Model'		=>	$lib . '/db/model.database.php',
+	'Metric\DB\Mysql'		=>	$lib . '/db/mysql.database.php',
+	'Metric\DB\Query'		=>	$lib . '/db/query.class.php',
+	'Metric\Util\Timer'		=>	$lib . '/timer.class.php',
+	'Metric\Page\Model'		=>	$lib . '/model.page.php',
+	// 'pmail'					=>	$lib . '/pmail.class.php',
+	'Metric\ORM\Model'		=>	$lib . '/model.orm.php',
 ), $config->classes );
 ?>

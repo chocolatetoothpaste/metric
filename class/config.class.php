@@ -1,4 +1,6 @@
 <?php
+namespace Metric;
+
 class config
 {
 	private $const_ = array(), $var_ = array('classes' => array(),
@@ -21,7 +23,7 @@ class config
 			if( ! $int )
 				$this->const_ = array_merge( $this->const_, $const );
 			else
-				throw new Exception( 'Cannot redeclare config constants'
+				throw new \Exception( 'Cannot redeclare config constants'
 					. implode( ', ', $const ) );
 		}
 
@@ -30,7 +32,7 @@ class config
 			if( ! isset( $this->const_[$const] ) )
 				$this->const_[$const] = $val;
 			else
-				throw new Exception( "Cannot redeclare config constant $const" );
+				throw new \Exception( "Cannot redeclare config constant $const" );
 
 		}
 	}
@@ -49,7 +51,7 @@ class config
 		elseif( isset( $this->var_[$var] ) )
 			return $this->var_[$var];
 		else
-			throw new Exception( "Property '$var' not found" );
+			throw new \Exception( "Property '$var' not found" );
 	}
 
 
@@ -62,7 +64,7 @@ class config
 	public function __set( $var, $val = '' )
 	{
 		if( isset( $this->const_[$var] ) )
-			throw new Exception( "Configuration constant $var already defined" );
+			throw new \Exception( "Configuration constant $var already defined" );
 		else
 			$this->var_[$var] = $val;
 	}
@@ -88,11 +90,11 @@ class config
     public function __unset( $var )
     {
         if( isset( $this->const_[$var] ) )
-			throw new Exception( "Cannot unset configuration constants: $var" );
+			throw new \Exception( "Cannot unset configuration constants: $var" );
 		elseif( isset( $this->var_[$var] ) )
 			unset( $this->var_[$var] );
 		else
-			throw new Exception( "Illegal double free on '$var'" );
+			throw new \Exception( "Illegal double free on '$var'" );
     }
 }
 ?>

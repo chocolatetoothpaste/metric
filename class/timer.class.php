@@ -1,5 +1,7 @@
 <?php
-class timer
+namespace Metric\Util;
+
+class Timer
 {
 	private $start = array();
 	private $stop = array();

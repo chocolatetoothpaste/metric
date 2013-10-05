@@ -1,8 +1,4 @@
 <?php
-/**
- * @author ross paskett <rpaskett@gmail.com>
- */
-
 ///
 // this passes script errors to the exception handler
 set_error_handler( function( $errno, $errstr, $errfile, $errline )
@@ -17,7 +13,7 @@ date_default_timezone_set( 'America/Denver' );
 // essential constants and some setup functions
 $root = dirname( __DIR__ );
 require( $root . '/class/config.class.php' );
-$config = new config;
+$config = new Metric\config;
 
 require( dirname( $root ) . '/config.inc.php' );
 require( $root . '/include/config.inc.php' );

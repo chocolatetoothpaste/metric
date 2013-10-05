@@ -1,7 +1,7 @@
 <?php
-namespace Metric;
+namespace Metric\Page;
 
-abstract class Page
+abstract class Model
 {
 	// require page classes to define this function
 	abstract public function init();
@@ -56,7 +56,7 @@ abstract class Page
 		$new_class = end( $new_class );
 
 		// if a new class was found, instantiate it and call init function
-		if( $new_class && is_subclass_of( $new_class, '\Metric\Page' ) )
+		if( $new_class && is_subclass_of( $new_class, '\Metric\Page\Model' ) )
 		{
 			$class = new $new_class;
 			$class->file =& $file;

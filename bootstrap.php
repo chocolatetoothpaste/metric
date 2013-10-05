@@ -1,5 +1,5 @@
 <?php
-namespace Metric;
+namespace Metric\Page;
 
 // begin timing page execution
 $_start__ = microtime( true );
@@ -11,8 +11,9 @@ session_start();
 // make sure the page doesn't get cached unless told to
 header( "Cache-Control: must-revalidate, max-age=0" );
 
+
 // load the page/view then render it
-$page = Page::load( strtok( $_SERVER['REQUEST_URI'], '?' ) );
+$page = Model::load( strtok( $_SERVER['REQUEST_URI'], '?' ) );
 $page->template( $config->template );
 $page->render();
 

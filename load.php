@@ -1,19 +1,28 @@
 <?php
-$this->template = false;
+namespace Metric\Page;
+
+class LoadPage extends Model {
+	function init()
+	{
+		global $config;
+// $this->template = false;
 
 // find the type of content to load and set some vars
-if( $files = get('js') ):
-	$this->content_type = 'text/javascript';
+if( ! empty( $_GET['js'] ) ):
+	$files = $_GET['js'];
+	// $this->content_type = 'text/javascript';
 	$dir = $config->PATH_JS;
 	$ext = 'js';
 
-elseif( $files = get('css') ):
-	$this->content_type = 'text/css';
+elseif( ! empty( $_GET['css'] ) ):
+	$files = $_GET['css'];
+	// $this->content_type = 'text/css';
 	$dir = $config->PATH_CSS;
 	$ext = 'css';
 
-elseif( $files = get( 'frag' ) ):
-	$this->content_type = 'text/html; charset=utf-8';
+elseif( ! empty( $_GET['frag'] ) ):
+	$files = $_GET['frag'];
+	// $this->content_type = 'text/html; charset=utf-8';
 	$dir = $config->PATH_FRAG;
 	$ext = 'phtml';
 
@@ -46,4 +55,6 @@ foreach( $list as &$file )
 // 	if( $file )
 // 		require( $file );
 // unset( $file );
+}
+}
 ?>

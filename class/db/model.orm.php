@@ -1,5 +1,5 @@
 <?php
-namespace Domain;
+namespace Metric\ORM;
 
 abstract class Model
 {

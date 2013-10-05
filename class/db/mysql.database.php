@@ -1,7 +1,7 @@
 <?php
 namespace Metric\DB;
 
-class mysql extends database
+class Mysql extends Model
 {
 	public $err_code, $stmt, $fetch_mode, $option;
 
@@ -36,9 +36,9 @@ class mysql extends database
 			});
 
 			$info = 'mysql:' . implode(';', $info);
-			parent::__construct( $info, $user, $pass );//, array( PDO::ATTR_PERSISTENT => true ) );
+			parent::__construct( $info, $user, $pass );//, array( \PDO::ATTR_PERSISTENT => true ) );
 		}
-		catch( PDOException $e )
+		catch( \PDOException $e )
 		{
 			if( $config->DEV )
 				die( 'Error connecting to the database: ' . $e->getMessage() . print_r("<br> Connection string: $info", true) );
@@ -54,13 +54,13 @@ class mysql extends database
 	 * @param	object	$query	a query object
 	 */
 
-	public function fetchIntoObject( &$obj, query $query )
+	public function fetchIntoObject( &$obj, \Metric\DB\Query $query )
 	{
 		$this->stmt = $this->execute( $query );
 
 		if( $this->stmt )
 		{
-			$this->stmt->setFetchMode( PDO::FETCH_INTO, $obj );
+			$this->stmt->setFetchMode( \PDO::FETCH_INTO, $obj );
 			$this->stmt->fetch();
 		}
 
@@ -75,16 +75,16 @@ class mysql extends database
 	 * @return object
 	 */
 
-	public function fetchClass( $class, query $query )
+	public function fetchClass( $class, \Metric\DB\Query $query )
 	{
 		$this->stmt = $this->execute( $query );
 
 		if( $this->stmt )
 		{
-			//$this->stmt->setFetchMode( PDO::FETCH_CLASS, $class );
+			//$this->stmt->setFetchMode( \PDO::FETCH_CLASS, $class );
 			//$return = $this->stmt->fetch();
 			$this->option = $class;
-			$this->fetch_mode = PDO::FETCH_CLASS;
+			$this->fetch_mode = \PDO::FETCH_CLASS;
 			$return = $this->stmt->fetchObject($class);
 		}
 
@@ -93,13 +93,13 @@ class mysql extends database
 
 
 	/**
-	 * Fetches the next row from a PDOStatement object stored in $this->stmt
+	 * Fetches the next row from a \PDOStatement object stored in $this->stmt
 	 * @return mixed
 	 */
 
 	public function next()
 	{
-		return $this->stmt->fetch( PDO::FETCH_ORI_NEXT );
+		return $this->stmt->fetch( \PDO::FETCH_ORI_NEXT );
 	}
 
 
@@ -118,7 +118,7 @@ class mysql extends database
 	 * Executes a query using passed params and returns a statement obj
 	 */
 
-	public function execute( query $query )
+	public function execute( \Metric\DB\Query $query )
 	{
 		// only
 		// if( empty( $this->stmt ) )
@@ -126,7 +126,7 @@ class mysql extends database
 		/*if( ! empty( $params['limit'] ) )
 		{
 			$limit = (int) $params['limit'];
-			$this->stmt->bindParam( ':limit', $limit, \PDO::PARAM_INT );
+			$this->stmt->bindParam( ':limit', $limit, \\PDO::PARAM_INT );
 			//unset( $params['limit'] );
 		}*/
 
