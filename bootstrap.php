@@ -20,4 +20,6 @@ $page->render();
 // end timing page execution and display it as a comment after </html>
 if( $page->template )
 	echo '<!-- ', microtime( true ) - $_start__, ' hash: ', $page->hash, '-->';
+
+// ross test
 ?>
