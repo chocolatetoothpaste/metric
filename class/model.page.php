@@ -40,13 +40,13 @@ abstract class Model
 		else
 			$file = $config->PAGE_404;
 
-
 		// get all declared class names to compare after including file
 		// I know reusing vars is bad, but it has very limited, local scope
 		// $new_class = get_declared_classes();
 
 		// load the page controller...
 		require_once( $file );
+
 
 		// get the update list of defined classes and see if a new one was
 		// defined by controller. reusing $new_class var, see (~20 lines) above
@@ -168,6 +168,8 @@ abstract class Model
 			$this->view = null;
 
 		$this->body = ob_get_clean();
+
+		ob_start();
 
 		if( ! $this->template )
 			echo $this->body;
