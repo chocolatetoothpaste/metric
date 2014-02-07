@@ -146,6 +146,8 @@ abstract class Model
 
 		$this->body = ob_get_clean();
 
+		ob_start();
+
 		if( ! $this->template )
 			echo $this->body;
 		else

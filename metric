@@ -88,9 +88,7 @@ PAGE="<?php\n
 \t\t\t\t<script src=\"/load?js=<?=\$js?>\" type=\"text/javascript\"></script>\n
 \t\t<?php endif; ?>\n
 \t</head>\n
-\t<body>\n
-This is just an example. Replace it with some nice <a href=\"http://html5boilerplate.com/\">html5 boilerplate</a> code.\n
-<?=\$this->body?></body>\n
+\t<body><?=\$this->body?></body>\n
 </html>";
 
 # resource loader
@@ -141,15 +139,12 @@ CONFIG="<?php\n
 \$config->define( 'PATH_CACHE',		\$config->PATH_PAGE . '/cache' );\n
 \$config->define( 'PATH_TEMPLATE',	\$config->PATH_PAGE . '/template' );\n\n
 
-\$config->classes = array(\n
-\t'Template'	=>	\$config->PATH_TEMPLATE . '/template.class.php'\n
-);\n\n
-
 \$config->alias = array(\n
 \t'/'	=>	\$config->PATH_CONTROLLER . '/index.php'\n
 );\n\n
 
-\$config->template = 'Template';";
+\$config->template = \$config->PATH_TEMPLATE . '/template.phtml';\n
+";
 
 # main file "welcome" message
 MAIN="<p>Help! I'm alive, my heart keeps beating like a hammer</p><p><em>&#968; Metric</em></p>\c"
@@ -161,6 +156,7 @@ header( 'HTTP/1.1 404 Not Found' );\n
 <h1>Page Not Found</h1>\n
 <p>The request <?php echo \$this->request; ?> was not found.</p>\n
 <p><em>&#968; Metric</em></p>"
+
 
 # go up one level and start deploying stuff
 cd ..
@@ -179,7 +175,9 @@ echo -e $PAGE | sed 's/^ *//g' > page/template/template.phtml
 
 # views won't load without a controller present, so create an empty one
 echo -e $MAIN > page/view/index.phtml
-echo -e $ERR | sed 's/^ *//g'  > page/controller/404.php
+echo -e $MAINC | sed 's/^ *//g'  > page/controller/index.php
+echo -e $ERRC | sed 's/^ *//g'  > page/controller/404.php
+echo -e $ERRV | sed 's/^ *//g'  > page/view/404.phtml
 
 # create public dir to point web server to and inject bootstrap into index file
 mkdir -p public/js public/css
