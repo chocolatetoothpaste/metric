@@ -40,9 +40,6 @@ define('', 1073741824);
 $config->define( 'PATH_LIB_CLASS',		$config->PATH_LIB . '/class' );
 $config->define( 'PATH_LIB_INCLUDE',	$config->PATH_LIB . '/include' );
 
-if( ! isset( $config->PAGE_REST_SERVER ) )
-	$config->define( 'PAGE_REST_SERVER', $config->PATH_LIB . '/rest.php' );
-
 if( ! isset( $config->PAGE_404 ) )
 	$config->define( 'PAGE_404', $config->PATH_CONTROLLER . '/404.php' );
 

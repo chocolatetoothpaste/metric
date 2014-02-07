@@ -56,7 +56,7 @@ ErrorDocument 404 /404\n\n
 
 \t# Make sure the HTTP_AUTHORIZATION header gets passed for API requests\n
 \tRewriteRule .\052 - [env=HTTP_AUTHORIZATION:%{HTTP:Authorization},last]\n
-</IfModule>\n\c";
+</IfModule>";
 
 # main page class
 PAGE="<?php\n
@@ -91,7 +91,7 @@ PAGE="<?php\n
 \t<body>\n
 This is just an example. Replace it with some nice <a href=\"http://html5boilerplate.com/\">html5 boilerplate</a> code.\n
 <?=\$this->body?></body>\n
-</html>\c";
+</html>";
 
 # resource loader
 LOAD="<?php\n
@@ -124,8 +124,7 @@ foreach( \$list as &\$file )\n
 \t\tforeach( \$config->{\$ext}[\$file] as \$f )\n
 \t\t\trequire( \"\$dir/\$f.\$ext\" );\n
 \telse\n
-\t\trequire( \"\$dir/\$file.\$ext\" );\n
-?>\c";
+\t\trequire( \"\$dir/\$file.\$ext\" );";
 
 # main config file
 CONFIG="<?php\n
@@ -150,8 +149,7 @@ CONFIG="<?php\n
 \t'/'	=>	\$config->PATH_CONTROLLER . '/index.php'\n
 );\n\n
 
-\$config->template = 'Template';\n
-?>\c";
+\$config->template = 'Template';";
 
 # main file "welcome" message
 MAIN="<p>Help! I'm alive, my heart keeps beating like a hammer</p><p><em>&#968; Metric</em></p>\c"
@@ -159,10 +157,10 @@ MAIN="<p>Help! I'm alive, my heart keeps beating like a hammer</p><p><em>&#968; 
 ERR="<?php\n
 header( 'HTTP/1.1 404 Not Found' );\n
 \$this->title = '404 Not Found';\n
-?>\n
-\t<h1>Page Not Found</h1>\n
-\t<p>The request <?php echo \$this->request; ?> was not found.</p>\n
-\t<p><em>&#968; Metric</em></p>\n"
+?>\n\n
+<h1>Page Not Found</h1>\n
+<p>The request <?php echo \$this->request; ?> was not found.</p>\n
+<p><em>&#968; Metric</em></p>"
 
 # go up one level and start deploying stuff
 cd ..

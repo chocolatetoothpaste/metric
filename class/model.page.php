@@ -34,45 +34,22 @@ abstract class Model
 		// as a service or alias to a file
 		if( file_exists( $config->PATH_CONTROLLER . $request . '.php' ) )
 			$file = $config->PATH_CONTROLLER . $request . '.php';
+		elseif( file_exists( $config->PATH_VIEW . $request . '.php' ) )
+			$file = $config->PATH_VIEW . $request . '.php';
 		elseif( ! empty( $config->alias[$request] )
 		&& file_exists( $config->alias[$request] ) )
 			$file = $config->alias[$request];
 		else
 			$file = $config->PAGE_404;
 
-
-		// get all declared class names to compare after including file
-		// I know reusing vars is bad, but it has very limited, local scope
-		// $new_class = get_declared_classes();
-
 		// load the page controller...
 		require_once( $file );
 
-		// get the update list of defined classes and see if a new one was
-		// defined by controller. reusing $new_class var, see (~20 lines) above
-		// for admission of guilt
-		// $new_class = array_diff( get_declared_classes(), $new_class );
-		$new_class = get_declared_classes();
-		$new_class = end( $new_class );
+		$view = pathinfo( $file, PATHINFO_FILENAME );
+		$view = "{$config->PATH_VIEW}/{$this->view}.phtml";
 
-		// if a new class was found, instantiate it and call init function
-		if( $new_class && is_subclass_of( $new_class, '\Metric\Page\Model' ) )
-		{
-			$class = new $new_class;
-			$class->file =& $file;
-			$class->request =& $request;
-
-			// set the view file through a series of checks. set early so
-			// static::init() can overwrite if desired
-			$class->view = pathinfo( $file, PATHINFO_FILENAME );
-			$class->view = "{$config->PATH_VIEW}/{$class->view}.phtml";
-
-			$class->init();
-		}
-		else
-			throw new \Exception( 'Controller must declare a new class and must inherit from \Metric\Page' );
-
-		return $class;
+		if( file_exists( $view ) )
+			$this->view = $view;
 	}	// end method load
 
 
@@ -324,4 +301,3 @@ abstract class Model
 	}
 
 }	// end class page
-?>
